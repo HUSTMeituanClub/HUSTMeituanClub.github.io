@@ -21,14 +21,14 @@
 
 &lt;p&gt;提示，可用E命令和A命令以两种方式将指令写入内存。注意用T命令执行时，CS:IP的指向。&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;将下面3条指令写入从2000:0开始的内存单元中，利用这3条指令计算2的8次方。&lt;/p&gt;
-&lt;h1&gt;!x86asm&lt;/h1&gt;
-&lt;p&gt;mov ax, 1
-add ax, ax
-jmp 2000:0003&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;将下面3条指令写入从2000:0开始的内存单元中，利用这3条指令计算2的8次方。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 1
+add ax, ax
+jmp 2000:0003
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;每次执行 add ax, ax 相当于将ax乘2，重复执行该条指令8次即可。&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;查看内存中的内容。
@@ -48,26 +48,31 @@ PC机主板上的ROM写有一个生产日期，在内存FFF00H～FFFFFH的某几
 &lt;p&gt;通过向内存中的显存地址空间写入数据，控制在屏幕上的不同位置显示不同颜色的字符。&lt;/p&gt;
 &lt;h2&gt;实验2 用机器指令和汇编指令编程&lt;/h2&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;使用Debug，将下面的程序段写入内存，逐条执行，根据指令执行后的实验运行情况填空。&lt;/p&gt;
-&lt;h1&gt;!x86asm&lt;/h1&gt;
-&lt;p&gt;mov ax, ffff
-mov ds, ax&lt;/p&gt;
-&lt;p&gt;mov ax, 2200
-mov ss, ax&lt;/p&gt;
-&lt;p&gt;mov sp, 1000&lt;/p&gt;
-&lt;p&gt;mov ax,[0]  ;ax = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt;
-add ax,[2]  ;ax = &lt;/strong&gt;&lt;strong&gt;&lt;em&gt;
-mov bx,[4]  ;bx = &lt;/em&gt;&lt;/strong&gt;__
-add bx,[6]  ;bx = _____&lt;/p&gt;
-&lt;p&gt;push ax     ;sp = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt; 修改的内存单元的地址是&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;内容为&lt;/em&gt;&lt;/strong&gt;&lt;strong&gt;
-push bx     ;sp = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt; 修改的内存单元的地址是&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;内容为&lt;/em&gt;&lt;/strong&gt;&lt;/strong&gt;
-pop ax      ;sp = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt; ax = &lt;/strong&gt;&lt;strong&gt;&lt;em&gt;
-pop bx      ;sp = &lt;/em&gt;&lt;/strong&gt;__ bx = _____&lt;/p&gt;
-&lt;p&gt;push [4]    ;sp = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt; 修改的内存单元的地址是&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;内容为&lt;/em&gt;&lt;/strong&gt;&lt;strong&gt;
-push [6]    ;sp = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt; 修改的内存单元的地址是&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;内容为&lt;/em&gt;&lt;/strong&gt;&lt;/strong&gt;&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;使用Debug，将下面的程序段写入内存，逐条执行，根据指令执行后的实验运行情况填空。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, ffff
+mov ds, ax
+
+mov ax, 2200
+mov ss, ax
+
+mov sp, 1000
+
+mov ax,[0]  ;ax = _____
+add ax,[2]  ;ax = _____
+mov bx,[4]  ;bx = _____
+add bx,[6]  ;bx = _____
+
+push ax     ;sp = _____ 修改的内存单元的地址是_____内容为_____
+push bx     ;sp = _____ 修改的内存单元的地址是_____内容为_____
+pop ax      ;sp = _____ ax = _____
+pop bx      ;sp = _____ bx = _____
+
+push [4]    ;sp = _____ 修改的内存单元的地址是_____内容为_____
+push [6]    ;sp = _____ 修改的内存单元的地址是_____内容为_____
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;结果（不唯一）:&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;D4EA
 25EE

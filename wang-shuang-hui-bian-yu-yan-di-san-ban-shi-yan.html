@@ -120,14 +120,14 @@
 
 <p>提示，可用E命令和A命令以两种方式将指令写入内存。注意用T命令执行时，CS:IP的指向。</p>
 <ol>
-<li>
-<p>将下面3条指令写入从2000:0开始的内存单元中，利用这3条指令计算2的8次方。</p>
-<h1>!x86asm</h1>
-<p>mov ax, 1
-add ax, ax
-jmp 2000:0003</p>
-</li>
+<li>将下面3条指令写入从2000:0开始的内存单元中，利用这3条指令计算2的8次方。</li>
 </ol>
+<div class="highlight"><pre><span></span>mov ax, 1
+add ax, ax
+jmp 2000:0003
+</pre></div>
+
+
 <p>每次执行 add ax, ax 相当于将ax乘2，重复执行该条指令8次即可。</p>
 <ol>
 <li>查看内存中的内容。
@@ -147,26 +147,31 @@ PC机主板上的ROM写有一个生产日期，在内存FFF00H～FFFFFH的某几
 <p>通过向内存中的显存地址空间写入数据，控制在屏幕上的不同位置显示不同颜色的字符。</p>
 <h2>实验2 用机器指令和汇编指令编程</h2>
 <ol>
-<li>
-<p>使用Debug，将下面的程序段写入内存，逐条执行，根据指令执行后的实验运行情况填空。</p>
-<h1>!x86asm</h1>
-<p>mov ax, ffff
-mov ds, ax</p>
-<p>mov ax, 2200
-mov ss, ax</p>
-<p>mov sp, 1000</p>
-<p>mov ax,[0]  ;ax = <strong><em>_</em>
-add ax,[2]  ;ax = </strong><strong><em>
-mov bx,[4]  ;bx = </em></strong>__
-add bx,[6]  ;bx = _____</p>
-<p>push ax     ;sp = <strong><em>_</em> 修改的内存单元的地址是</strong><strong><em>内容为</em></strong><strong>
-push bx     ;sp = <strong><em>_</em> 修改的内存单元的地址是</strong><strong><em>内容为</em></strong></strong>
-pop ax      ;sp = <strong><em>_</em> ax = </strong><strong><em>
-pop bx      ;sp = </em></strong>__ bx = _____</p>
-<p>push [4]    ;sp = <strong><em>_</em> 修改的内存单元的地址是</strong><strong><em>内容为</em></strong><strong>
-push [6]    ;sp = <strong><em>_</em> 修改的内存单元的地址是</strong><strong><em>内容为</em></strong></strong></p>
-</li>
+<li>使用Debug，将下面的程序段写入内存，逐条执行，根据指令执行后的实验运行情况填空。</li>
 </ol>
+<div class="highlight"><pre><span></span>mov ax, ffff
+mov ds, ax
+
+mov ax, 2200
+mov ss, ax
+
+mov sp, 1000
+
+mov ax,[0]  ;ax = _____
+add ax,[2]  ;ax = _____
+mov bx,[4]  ;bx = _____
+add bx,[6]  ;bx = _____
+
+push ax     ;sp = _____ 修改的内存单元的地址是_____内容为_____
+push bx     ;sp = _____ 修改的内存单元的地址是_____内容为_____
+pop ax      ;sp = _____ ax = _____
+pop bx      ;sp = _____ bx = _____
+
+push [4]    ;sp = _____ 修改的内存单元的地址是_____内容为_____
+push [6]    ;sp = _____ 修改的内存单元的地址是_____内容为_____
+</pre></div>
+
+
 <p>结果（不唯一）:</p>
 <div class="highlight"><pre><span></span>D4EA
 25EE
