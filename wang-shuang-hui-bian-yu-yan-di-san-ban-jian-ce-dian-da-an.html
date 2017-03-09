@@ -134,30 +134,31 @@
 <h2>第二章 寄存器</h2>
 <h3>检测点 2.1</h3>
 <ol>
-<li>写出每条汇编指令执行后相关寄存器中的值
-    {% codeblock lang:x86asm %}
-    mov ax, 62627       AX =
-    mov ah, 31H     AX =
-    mov al, 23H     AX =
-    add ax, ax      AX =
-    mov bx, 826CH       BX =
-    mov cx, ax      CX =
-    mov ax, bx      AX =
-    add ax, bx      AX =
-    mov al, bh      AX =
-    mov ah, bl      AX =
-    add ah, ah      AX =
-    add al, 6       AX =
-    add al, al      AX =
-    mov ax, cx      AX =
-    {% endcodeblock %}
-    <strong>F4A3H 31A3H   3123H 6246H 826CH   6246H   826CH   04D8H   0482H   6C82H   D882H   D888H   D810H   6246H</strong></li>
-<li _="%" endcodeblock>只能使用目前学过的汇编指令，最多使用4条指令，编程计算2的4次方。
-    {% codeblock lang:x86asm %}
-    mov ax, 2 <br>
-    add ax, ax
-    add ax, ax
-    add ax, ax</li>
+<li>
+<p>写出每条汇编指令执行后相关寄存器中的值</p>
+<p><code>x86asm
+mov ax, 62627       AX =
+mov ah, 31H     AX =
+mov al, 23H     AX =
+add ax, ax      AX =
+mov bx, 826CH       BX =
+mov cx, ax      CX =
+mov ax, bx      AX =
+add ax, bx      AX =
+mov al, bh      AX =
+mov ah, bl      AX =
+add ah, ah      AX =
+add al, 6       AX =
+add al, al      AX =
+mov ax, cx      AX =</code></p>
+<p><strong>F4A3H 31A3H   3123H 6246H 826CH   6246H   826CH   04D8H   0482H   6C82H   D882H   D888H   D810H   6246H</strong>
+2. 只能使用目前学过的汇编指令，最多使用4条指令，编程计算2的4次方。
+<code>x86asm
+mov ax, 2   
+add ax, ax
+add ax, ax
+add ax, ax</code></p>
+</li>
 </ol>
 <h3>检测点 2.2</h3>
 <ol>
@@ -169,11 +170,13 @@
     <strong>20000H - 00000H = 20000H</strong></li>
 </ol>
 <h3>检测点 2.3</h3>
-<p _="%" endcodeblock>下面的3条指令执行后，CPU几次修改IP？都是在什么时候？最后IP中的值是多少？
-{% codeblock lang:x86asm %}
-mov ax, bx
+<p>下面的3条指令执行后，CPU几次修改IP？都是在什么时候？最后IP中的值是多少？</p>
+<div class="highlight"><pre><span></span>mov ax, bx
 sub ax, ax
-jmp ax</p>
+jmp ax
+</pre></div>
+
+
 <p>修改了四次：</p>
 <ol>
 <li>第1条指令执行后，IP指向第2条指令</li>
@@ -186,12 +189,11 @@ jmp ax</p>
 <ol>
 <li>
 <p>在Debug中，用“d 0:0 1f”查看内存，结果如下。
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     0000:0000 70 80 F0 30 EF 60 30 E2-00 80 80 12 66 20 22 60
-    0000:0010 62 26 E6 D6 CC 2E 3C 3B-AB BA 00 00 26 06 66 88
-    {% endcodeblock %} 
+    0000:0010 62 26 E6 D6 CC 2E 3C 3B-AB BA 00 00 26 06 66 88</code>
     下面的程序执行前，AX=0，BX=0，写出每条汇编指令执行完后相关寄存器中的值。
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     mov ax, 1
     mov ds, ax
     mov ax, [0000]          AX = 
@@ -205,8 +207,7 @@ jmp ax</p>
     mov al, [0002]          AX = 
     mov bx, 0           BX =
     mov bl, [000C]          BX = 
-    add al, bl          AX = 
-    {% endcodeblock %} 
+    add al, bl          AX =</code>
     提示，注意ds的设置。</p>
 <p>2662H   E626H   E626H   2662H   D6E6H   FD48H   2C14H   0   00E6H   0   0026H   000CH
 2. 内存中的情况如图3.6所示。
@@ -275,13 +276,13 @@ jmp ax</p>
 <h3>检测点 3.2</h3>
 <ol>
 <li>
-<p _="%" endcodeblock>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。逆序复制的含义如图3.17所示（图中内存里的数据均为假设）。
-    {% codeblock lang:x86asm %}
+<p>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。逆序复制的含义如图3.17所示（图中内存里的数据均为假设）。
+    <code>x86asm
     mov ax, 1000H
     mov ds, ax
-    <strong><em>_</em></strong><strong><em>
-    </em></strong><strong><em>_</em></strong>
-    <strong><em>_</em></strong>___
+    __________
+    __________
+    __________
     push [0]
     push [2]
     push [4]
@@ -289,22 +290,21 @@ jmp ax</p>
     push [8]
     push [A]
     push [C]
-    push [E]
-    {% endcodeblock %}
+    push [E]</code>
     答案： 
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     mov ax, 2000H
     mov ss, ax
-    mov sp, 0010H</p>
+    mov sp, 0010H</code> </p>
 </li>
 <li>
-<p _="%" endcodeblock>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。
-    {% codeblock lang:x86asm %}
+<p>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。
+    <code>x86asm
     mov ax, 2000H
     mov ds, ax
-    <strong><em>_</em></strong><strong><em>
-    </em></strong><strong><em>_</em></strong>
-    <strong><em>_</em></strong>___
+    __________
+    __________
+    __________
     pop [E]
     pop [C]
     pop [A]
@@ -312,13 +312,12 @@ jmp ax</p>
     pop [6]
     pop [4]
     pop [2]
-    pop [0]
-    {% endcodeblock %}
+    pop [0]</code>
     答案： 
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     mov ax, 1000H
     mov ss, ax
-    mov sp, 0</p>
+    mov sp, 0</code> </p>
 </li>
 </ol>
 <h2>第六章 包含多个段的程序</h2>
@@ -326,7 +325,7 @@ jmp ax</p>
 <ol>
 <li>
 <p>下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，完成程序：
-    {% codeblock lang:x86asm %}
+    ```x86asm
     assume cs:codesg</p>
 <p>codesg segment
     dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h</p>
@@ -347,15 +346,14 @@ int 21h
 
 
 <p>codesg ends</p>
-<p _="%" endcodeblock>end start
-{% endcodeblock %} 
-答案：
-{% codeblock lang:x86asm %}
-mov cs:[bx], ax</p>
+<p>end start
+<code>答案：</code>x86asm
+mov cs:[bx], ax
+``` </p>
 </li>
 <li>
 <p>下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，数据的传送用栈来进行。栈空间设置在程序内。完成程序：
-    {% codeblock lang:x86asm %}
+    ```x86asm
     assume cs:codesg
         dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h</p>
 <div class="highlight"><pre><span></span>dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
@@ -382,13 +380,12 @@ int 21h
 
 
 <p>codesg ends</p>
-<p _="%" endcodeblock>end start
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
+<p>end start
+<code>答案：</code>x86asm
 0
 24h
-pop cs:[bx]</p>
+pop cs:[bx]
+``` </p>
 </li>
 </ol>
 <h2>第九章 转移指令的原理</h2>
@@ -396,7 +393,7 @@ pop cs:[bx]</p>
 <ol>
 <li>
 <p>程序如下
-    {% codeblock lang:x86asm %}
+    ```x86asm
     assume cs:code</p>
 <p>data segment
     <strong><em>_</em></strong>____
@@ -406,17 +403,16 @@ start:  mov ax, data
     mov ds, ax
     mov bx, 0
     jmp word ptr [bx+1]</p>
-<p _="%" endcodeblock>code ends
+<p>code ends
 end start
-{% endcodeblock %}
-若要使程序中的jmp指令执行后，CS:IP指向程序的第一条指令，在data段中应该定义哪些数据？
-答案：
-{% codeblock lang:x86asm %}
-dw 0, 0</p>
+<code>若要使程序中的jmp指令执行后，CS:IP指向程序的第一条指令，在data段中应该定义哪些数据？
+答案：</code>x86asm
+dw 0, 0
+```</p>
 </li>
 <li>
 <p>程序如下
-    {% codeblock lang:x86asm %}
+    ```x86asm
     assume cs:code</p>
 <p>data segment
     dd 12345678H
@@ -430,67 +426,65 @@ data ends</p>
     jmp dword ptr ds:[0]</p>
 <p>code ends</p>
 <p>end start
-{% endcodeblock %}
-补全程序，使jmp指令执行后，CS:IP指向程序的第一条指令。
-答案：
-{% codeblock lang:x86asm %}
+<code>补全程序，使jmp指令执行后，CS:IP指向程序的第一条指令。
+答案：</code>x86asm
 bx
 cs
-{% endcodeblock %}
+```
 注意：bx指向低位，bx+2指向高位，低位为IP，而高位为CS。</p>
 </li>
 <li>
 <p>用Debug查看内存，结果如下：
-    {% codeblock lang:x86asm %}
-    2000:1000 BE 00 06 00 00 00 ......
-    {% endcodeblock %}
+    <code>x86asm
+    2000:1000 BE 00 06 00 00 00 ......</code>
     则此时，CPU执行指令：
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     mov ax, 2000H
     mov es, ax
-    jmp dword ptr es:[1000H]
-    {% endcodeblock %}
+    jmp dword ptr es:[1000H]</code>
     后，(CS)=?，(IP)=?
     答案：
     (CS)=0006，(IP)=00BE</p>
 </li>
 </ol>
 <h3>检测点 9.2</h3>
-<p _="%" endcodeblock>补全编程，利用jcxz指令，实现在内存2000H段中查找第一个值为0的字节，找到后，将它的偏移地址存储在dx中。
-{% codeblock lang:x86asm %}
-assume cs:code
+<p>补全编程，利用jcxz指令，实现在内存2000H段中查找第一个值为0的字节，找到后，将它的偏移地址存储在dx中。</p>
+<div class="highlight"><pre><span></span>assume cs:code
 code segment
 start:  mov ax, 2000H
     mov ds, ax
     mov bx, 0
-s:  <strong><em>_</em></strong><strong><em>
-    </em></strong><strong><em>_</em></strong>
-    <strong><em>_</em></strong><strong><em>
-    </em></strong><strong><em>_</em></strong>
+s:  __________
+    __________
+    __________
+    __________
     jmp short s
 ok: mov dx, bx
     mov ax, 4c00h
     int 21h
 code ends
 end start
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
-mov cl, [bx]
+</pre></div>
+
+
+<p>答案：</p>
+<div class="highlight"><pre><span></span>mov cl, [bx]
 mov ch, 0 ;注意这一步的必要性
 jcxz ok
-inc bx</p>
+inc bx
+</pre></div>
+
+
 <h3>检测点 9.3</h3>
-<p _="%" endcodeblock>补全编程，利用loop指令，实现在内存的2000H段中查找第一个值为0的字节，找到后，将它的偏移地址存储在dx中。
-{% codeblock lang:x86asm %}
-assume cs:code
+<p>补全编程，利用loop指令，实现在内存的2000H段中查找第一个值为0的字节，找到后，将它的偏移地址存储在dx中。</p>
+<div class="highlight"><pre><span></span>assume cs:code
 code segment
 start:  mov ax, 2000H
     mov ds, ax
     mov bx, 0
 s:  mov cl, [bx]
     mov ch, 0
-    <strong><em>_</em></strong>__
+    _________
     inc bx
     loop s
 ok: dec bx
@@ -499,34 +493,44 @@ ok: dec bx
     int 21h
 code ends
 end start
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
-inc cx ;注意loop的工作原理</p>
+</pre></div>
+
+
+<p>答案：</p>
+<div class="highlight"><pre><span></span>inc cx ;注意loop的工作原理
+</pre></div>
+
+
 <h2>第十章 CALL和RET指令</h2>
 <h3>检测点 10.1</h3>
-<p>补全程序，实现从内存1000：0000处开始执行指令。
-{% codeblock lang:x86asm %}
-assume cs:code</p>
-<p>stack segment
+<p>补全程序，实现从内存1000：0000处开始执行指令。</p>
+<div class="highlight"><pre><span></span>assume cs:code
+
+stack segment
     db 16 dup (0)
-stack ends</p>
-<p>code segment
+stack ends
+
+code segment
 start:  mov ax,stack
     mov ss,ax
     mov sp,16
-    mov ax, <strong><em>_
+    mov ax, ____
     push ax
-    mov ax, </em></strong>_ 
+    mov ax, ____ 
     push ax
     retf
-code ends</p>
-<p _="%" endcodeblock>end start
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
-1000h
-0</p>
+code ends
+
+end start
+</pre></div>
+
+
+<p>答案：</p>
+<div class="highlight"><pre><span></span>1000h
+0
+</pre></div>
+
+
 <h3>检测点 10.2</h3>
 <p>下面的程序执行后，ax中的数值为多少？</p>
 <table>
@@ -653,7 +657,7 @@ code ends</p>
 <ol>
 <li>
 <p>下面的程序执行后，ax中的数值为多少？
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     assume cs:code
     stack segment
         dw 8 dup (0)
@@ -671,14 +675,13 @@ code ends</p>
         mov ax,4c00h
         int 21h
     code ends
-    end start
-    {% endcodeblock %}
+    end start</code>
     ax中的数值为3，注意ds与ss中存放的段地址相同，在执行了call word ptr ds:[0EH]之后，程序会先将下一条指令inc ax的偏移量压栈，然后跳转到栈顶所指向的指令的位置，即跳转至第一条inc ax的位置，故最后ax的值为3。
     注意：在使用Debug单步跟踪的时候，由于t命令所导致的中断，而影响了栈中的值。</p>
 </li>
 <li>
-<p _="%" endcodeblock>下面的程序执行后，ax和bx中的数值为多少？
-    {% codeblock lang:x86asm %}
+<p>下面的程序执行后，ax和bx中的数值为多少？
+    <code>x86asm
     assume cs:codesg
     data segment
         dw 8 dup (0)
@@ -692,13 +695,13 @@ code ends</p>
         call dword ptr ss:[0]
         nop
     s:  mov ax,offset s
-        sub ax,ss:[0ch]   <br>
+        sub ax,ss:[0ch]     
         mov bx,cs
         sub bx,ss:[0eh]
         mov ax,4c00h
         int 21h
     code ends
-    end start</p>
+    end start</code></p>
 <p>ax中的数值为1，bx中的数值为0，注意到程序的一开始将a的偏移量和cs放入ss:[0]和ss:[2]中，然后调用call指令，将CS和IP(nop指令的偏移量)依此压栈后跳转到s处继续执行，ax最终为s的偏移量减去nop指令所在位置的偏移量，为1，bx最终为cs的段地址相减，为0。</p>
 </li>
 </ol>
@@ -851,7 +854,7 @@ code ends</p>
 <ol>
 <li>
 <p>补全下面的程序，统计F000:0处32个字节中，大小在[32,128]的数据的个数。
-    {% codeblock lang:x86asm %}
+    ```x86asm
         mov ax, 0f000h
         mov ds, ax</p>
 <div class="highlight"><pre><span></span>mov bx, 0
@@ -860,7 +863,7 @@ mov cx, 32
 </pre></div>
 
 
-<p _="%" endcodeblock>s:  mov al, [bx]
+<p>s:  mov al, [bx]
     cmp al, 32
     <strong><em>_</em></strong><strong><em>
     cmp al, 128
@@ -868,15 +871,14 @@ mov cx, 32
     inc dx
 s0: inc bx
     loop s
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
+<code>答案：</code>x86asm
 jb s0
-ja s0</p>
+ja s0
+```</p>
 </li>
 <li>
 <p>补全下面的程序，统计F000:0处32个字节中，大小在(32,128)的数据的个数。
-    {% codeblock lang:x86asm %}
+    ```x86asm
         mov ax, 0f000h
         mov ds, ax</p>
 <div class="highlight"><pre><span></span>mov bx, 0
@@ -885,7 +887,7 @@ mov cx, 32
 </pre></div>
 
 
-<p _="%" endcodeblock>s:  mov al, [bx]
+<p>s:  mov al, [bx]
     cmp al, 32
     <strong><em>_</em></strong><strong><em>
     cmp al, 128
@@ -893,17 +895,15 @@ mov cx, 32
     inc dx
 s0: inc bx
     loop s
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
+<code>答案：</code>x86asm
 jna s0
-jnb s0</p>
+jnb s0
+```</p>
 </li>
 </ol>
 <h3>检测点 11.4</h3>
 <p>下面的程序执行后：(ax)=?</p>
-<p>{% codeblock lang:x86asm %}
-mov ax, 0
+<div class="highlight"><pre><span></span>mov ax, 0
 push ax
 popf ;将PSW置0(本章所学习的标志位都为0)
 mov ax, 0fff0h
@@ -912,8 +912,10 @@ pushf
 pop ax ;(将PSW保存至ax)
 and al, 11000101B
 and ah, 00001000B ;只考虑CF,PF,ZF,SF,OF五个标志位
-{% endcodeblock %}
-答案：
+</pre></div>
+
+
+<p>答案：
 (ax)=45H</p>
 <h2>第十二章 内中断</h2>
 <h3>检测点 12.1</h3>
@@ -940,14 +942,14 @@ and ah, 00001000B ;只考虑CF,PF,ZF,SF,OF五个标志位
     答案：65535</p>
 </li>
 <li>
-<p _="%" endcodeblock>用7ch中断例程完成jmp near ptr s指令的功能，用bx向中断例程传送转移位移。
+<p>用7ch中断例程完成jmp near ptr s指令的功能，用bx向中断例程传送转移位移。
     答案：
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     jnp:    push bp
         mov bp, sp
         add [bp+2], bx
         pop bp
-        iret</p>
+        iret</code></p>
 </li>
 </ol>
 <h3>检测点 13.2</h3>
@@ -961,132 +963,135 @@ and ah, 00001000B ;只考虑CF,PF,ZF,SF,OF五个标志位
 <h2>第十四章 端口</h2>
 <h3>检测点 14.1</h3>
 <ol>
-<li _="%" endcodeblock>编程，读取CMOS RAM的2号单元的内容。
-    {% codeblock lang:x86asm %}
+<li>编程，读取CMOS RAM的2号单元的内容。
+    <code>x86asm
     mov al, 2
     out 70h, 2
-    in al, 71h</li>
-<li _="%" endcodeblock>编程，向CMOS RAM的2号单元写入0。 
-    {% codeblock lang:x86asm %}
+    in al, 71h</code></li>
+<li>编程，向CMOS RAM的2号单元写入0。 
+    <code>x86asm
     mov al, 2
     out 70h, 2
     mov al, 0
-    out 71h, al</li>
+    out 71h, al</code></li>
 </ol>
 <h3>检测点 14.2</h3>
 <p>编程，用加法和位移指令计算(ax)=(ax)*10。
 提示，(ax)*10=(ax)*2+(ax)*8。</p>
-<p _="%" endcodeblock>{% codeblock lang:x86asm %}
-mov bx, ax
+<div class="highlight"><pre><span></span>mov bx, ax
 shl ax, 1
 mov cl, 3
 shl bx, cx
-add ax, bx</p>
+add ax, bx
+</pre></div>
+
+
 <h2>第十五章 外中断</h2>
 <h3>检测点 15.1</h3>
 <ol>
 <li>
 <p>仔细分析一下上面的int 9中断例程，看看是否可以精简一下？
     其实在我们的int 9中断例程中，模拟int指令调用原int 9中断例程的程序段是可以精简的，因为在进入中断例程后，IF和TF都已经置0，没有必要再进行设置了。对于程序段：
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     pushf
     pushf
     pop ax
     and ah, 11111100B
     push ax
     popf
-    call dword ptr ds:[0]
-    {% endcodeblock %}
+    call dword ptr ds:[0]</code>
     可以精简为：
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     pushf
-    call dword ptr ds:[0]
-    {% endcodeblock %}
+    call dword ptr ds:[0]</code>
     两条指令。</p>
 </li>
 <li>
-<p _="%" endcodeblock>仔细分析上面程序中的主程序，看看有什么潜在的问题？
+<p>仔细分析上面程序中的主程序，看看有什么潜在的问题？
     在主程序中，如果在执行设置int 9中断例程的段地址和偏移地址的指令之间发生了键盘中断，则CPU将转去一个错误的地址执行，将发生错误。
     找出这样的程序段，改写它们，排除潜在的问题。
     提示，注意sti和cli指令的用法。
     答案：
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     cli
-    mov word ptr es:[9<em>4],offset int9
-    mov word ptr es:[9</em>4+2],cs
-    sti
-    {% endcodeblock %}
+    mov word ptr es:[9*4],offset int9
+    mov word ptr es:[9*4+2],cs
+    sti</code>
     以及：
-    {% codeblock lang:x86asm %}
+    <code>x86asm
     cli
     push ds:[0]
-    pop es:[9<em>4]
+    pop es:[9*4]
     push ds:[2]
-    pop es:[9</em>4+2]
-    sti</p>
+    pop es:[9*4+2]
+    sti</code></p>
 </li>
 </ol>
 <h2>第十六章 直接定址表</h2>
 <h3>检测点 16.1</h3>
-<p>下面的程序将code段中a处的8个数据累加，结果存储到b处的双字中，补全程序。
-{% codeblock lang:x86asm %}
-assume cs:code
+<p>下面的程序将code段中a处的8个数据累加，结果存储到b处的双字中，补全程序。</p>
+<div class="highlight"><pre><span></span>assume cs:code
 code segment
     a dw 1, 2, 3, 4, 5, 6, 7, 8
     b dd 0
 start:  mov si, 0
     mov cx, 8
-s:  mov ax, <strong><em>_
-    add </em></strong><em>, ax
-    adc <strong><em>_, 0
-    add si, </em></strong></em>
-    loop s</p>
-<div class="highlight"><pre><span></span>mov ax, 4c00h
-int 21h
+s:  mov ax, ____
+    add ____, ax
+    adc ____, 0
+    add si, ____
+    loop s
+
+    mov ax, 4c00h
+    int 21h
+
+code ends
+end start
 </pre></div>
 
 
-<p>code ends
-end start
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
-a[si]
+<p>答案：</p>
+<div class="highlight"><pre><span></span>a[si]
 word ptr b[0]
 word ptr b[2]
 2
-{% endcodeblock %}
-注意word ptr的使用</p>
+</pre></div>
+
+
+<p>注意word ptr的使用</p>
 <h3>检测点 16.2</h3>
-<p>下面的程序将data段中a处的8个数据累加，结果存储到b处的字中，补全程序。
-{% codeblock lang:x86asm %}
-assume cs:code, es:data</p>
-<p>data segment
+<p>下面的程序将data段中a处的8个数据累加，结果存储到b处的字中，补全程序。</p>
+<div class="highlight"><pre><span></span>assume cs:code, es:data
+
+data segment
 a   db 1, 2, 3, 4, 5, 6, 7, 8
 b   dw 0
-data ends</p>
-<p>code segment
-start:  <strong><em>_</em></strong><strong><em>
-    </em></strong><strong><em>_</em></strong>
+data ends
+
+code segment
+start:  __________
+    __________
     mov si, 0
     mov cx, 8
 s:  mov al, a[si]
     mov ah, 0
     add b, ax
     inc si
-    loop s</p>
-<div class="highlight"><pre><span></span>mov ax, 4c00h
-int 21h
+    loop s
+
+    mov ax, 4c00h
+    int 21h
+code ends
+end start
 </pre></div>
 
 
-<p _="%" endcodeblock>code ends
-end start
-{% endcodeblock %}
-答案：
-{% codeblock lang:x86asm %}
-mov ax, data
-mov es, ax</p>
+<p>答案：</p>
+<div class="highlight"><pre><span></span>mov ax, data
+mov es, ax
+</pre></div>
+
+
 <h2>第十七章 使用BIOS进行键盘输入和磁盘读写</h2>
 <h3>检测点 17.1</h3>
 <p>“在int 16h中断例程中，一定有设置IF=1的指令”，这种说法对吗？</p>
