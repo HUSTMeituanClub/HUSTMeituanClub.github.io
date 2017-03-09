@@ -122,7 +122,7 @@
 <ol>
 <li>
 <p>将下面3条指令写入从2000:0开始的内存单元中，利用这3条指令计算2的8次方。</p>
-<h1>!assembly languages</h1>
+<h1>!x86asm</h1>
 <p>mov ax, 1
 add ax, ax
 jmp 2000:0003</p>
@@ -149,7 +149,7 @@ PC机主板上的ROM写有一个生产日期，在内存FFF00H～FFFFFH的某几
 <ol>
 <li>
 <p>使用Debug，将下面的程序段写入内存，逐条执行，根据指令执行后的实验运行情况填空。</p>
-<h1>!assembly languages</h1>
+<h1>!x86asm</h1>
 <p>mov ax, ffff
 mov ds, ax</p>
 <p>mov ax, 2200
@@ -189,7 +189,7 @@ push [6]    ;sp = <strong><em>_</em> 修改的内存单元的地址是</strong><
 <ol>
 <li>
 <p>将下面的程序保存为t1.asm文件，将其生成可执行文件t1.exe。</p>
-<h1>!assembly languages</h1>
+<h1>!x86asm</h1>
 <p>assume cs:codesg</p>
 <p>codesg segment
 mov ax, 2000H

@@ -23,7 +23,7 @@
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;将下面3条指令写入从2000:0开始的内存单元中，利用这3条指令计算2的8次方。&lt;/p&gt;
-&lt;h1&gt;!assembly languages&lt;/h1&gt;
+&lt;h1&gt;!x86asm&lt;/h1&gt;
 &lt;p&gt;mov ax, 1
 add ax, ax
 jmp 2000:0003&lt;/p&gt;
@@ -50,7 +50,7 @@ PC机主板上的ROM写有一个生产日期，在内存FFF00H～FFFFFH的某几
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;使用Debug，将下面的程序段写入内存，逐条执行，根据指令执行后的实验运行情况填空。&lt;/p&gt;
-&lt;h1&gt;!assembly languages&lt;/h1&gt;
+&lt;h1&gt;!x86asm&lt;/h1&gt;
 &lt;p&gt;mov ax, ffff
 mov ds, ax&lt;/p&gt;
 &lt;p&gt;mov ax, 2200
@@ -90,7 +90,7 @@ push [6]    ;sp = &lt;strong&gt;&lt;em&gt;_&lt;/em&gt; 修改的内存单元的�
 &lt;ol&gt;
 &lt;li&gt;
 &lt;p&gt;将下面的程序保存为t1.asm文件，将其生成可执行文件t1.exe。&lt;/p&gt;
-&lt;h1&gt;!assembly languages&lt;/h1&gt;
+&lt;h1&gt;!x86asm&lt;/h1&gt;
 &lt;p&gt;assume cs:codesg&lt;/p&gt;
 &lt;p&gt;codesg segment
 mov ax, 2000H
