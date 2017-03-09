@@ -2498,8 +2498,6 @@ mov es, ax
 &lt;p&gt;“在int 16h中断例程中，一定有设置IF=1的指令”，这种说法对吗？&lt;/p&gt;
 &lt;p&gt;正确，int 16h中断例程在键盘缓冲区中没有数据时，会等待直到键盘缓冲区中有数据为止，因此，int 16h中需要处理int 9h中断，所以一定有设置IF=1的指令。&lt;/p&gt;
 &lt;p&gt;over&lt;/p&gt;</content><category term="答案"></category><category term="汇编"></category></entry><entry><title>Java泛型中List、List&lt;Object&gt;、List&lt;?&gt;的区别</title><link href="/javafan-xing-zhong-list-listobject-listde-qu-bie.html" rel="alternate"></link><published>2017-02-14T16:30:00+08:00</published><updated>2017-02-14T16:30:00+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-02-14:/javafan-xing-zhong-list-listobject-listde-qu-bie.html</id><summary type="html">&lt;p&gt;Java 1.5中引入了泛型的概念以增加代码的安全性与清晰度，同时为了提供对旧代码的兼容性，让旧代码不经过改动也可以在新版本中运行，Java提供了原生态类型（或称原始类型）。但是实际中在新的代码中已经不应该使用原生态类型。&lt;/p&gt;
-&lt;!--more--&gt;
-
 &lt;p&gt;原生态类型的含义是不带任何实际参数的泛型名称，例如Java 1.5后改为泛型实现的&lt;code&gt;List&amp;lt;E&amp;gt;&lt;/code&gt;，&lt;code&gt;List&lt;/code&gt;就是它的原生态类型，与没有引入泛型之前的类型完全一致。&lt;/p&gt;
 &lt;p&gt;而在虚拟机层面上，是没有泛型这一概念的——所有对象都属于普通类。在编译时，所有的泛型类都会被视为原生态类型。&lt;/p&gt;
 &lt;p&gt;那么为什么不应该使用原生态类型呢？&lt;/p&gt;
@@ -2512,8 +2510,6 @@ mov es, ax
 &lt;ul&gt;
 &lt;li&gt;&lt;code&gt;List&lt;/code&gt;：&lt;strong&gt;原生态类型&lt;/strong&gt;&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;List&amp;lt;Object&amp;gt;&lt;/code&gt;：&lt;strong&gt;参数化的类型&lt;/strong&gt;，表明&lt;code&gt;List&lt;/code&gt;中可以 …&lt;/li&gt;&lt;/ul&gt;</summary><content type="html">&lt;p&gt;Java 1.5中引入了泛型的概念以增加代码的安全性与清晰度，同时为了提供对旧代码的兼容性，让旧代码不经过改动也可以在新版本中运行，Java提供了原生态类型（或称原始类型）。但是实际中在新的代码中已经不应该使用原生态类型。&lt;/p&gt;
-&lt;!--more--&gt;
-
 &lt;p&gt;原生态类型的含义是不带任何实际参数的泛型名称，例如Java 1.5后改为泛型实现的&lt;code&gt;List&amp;lt;E&amp;gt;&lt;/code&gt;，&lt;code&gt;List&lt;/code&gt;就是它的原生态类型，与没有引入泛型之前的类型完全一致。&lt;/p&gt;
 &lt;p&gt;而在虚拟机层面上，是没有泛型这一概念的——所有对象都属于普通类。在编译时，所有的泛型类都会被视为原生态类型。&lt;/p&gt;
 &lt;p&gt;那么为什么不应该使用原生态类型呢？&lt;/p&gt;
