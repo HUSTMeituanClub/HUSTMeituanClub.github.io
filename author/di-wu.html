@@ -117,12 +117,12 @@
     <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
         <header class="post-header" itemprop="headline">
             <h2 class="post-title">
-                <a href="/javafan-xing-zhong-list-listobject-listde-qu-bie.html" itemprop="url" rel="bookmark">
-                    Java泛型中List、List<Object>、List<?>的区别
+                <a href="/javafan-xing-zhong-list-list-listde-qu-bie.html" itemprop="url" rel="bookmark">
+                    Java泛型中`List`、`List`、`List`的区别
                 </a>
             </h2>
         </header>
-        <section class="post-excerpt">Java 1.5中引入了泛型的概念以增加代码的安全性与清晰度，同时为了提供对旧代码的兼容性，让旧代码不经过改动也可以在新版本中运行，Java提供了原生态类型（或称原始类型）。但是实际中在新的代码中已经不应该使用原生态类型。 原生态类型的含义是不带任何实际参数的泛型名称，例如Java 1.5后改为泛型实现的List<E>，List就是它的原生态类型，与没有引入泛型之前的类型完全一致。 而在虚拟机层面上，是没有泛型这一概念的——所有对象都属于普通类。在编译时，所有的泛型类都会被视为原生态类型。 那么为什么不应该使用原生态类型呢？ 如果使用原生态类型，就失掉了泛型在安全性和表述性方面的所有优势。——Effective Java 泛型的目的简单地说就是可以让一些运行时才能发现的错误可以在编译期间就可以被编译器所检测出，运行时出问题的代价与编译期出现问题的代价的差别可想而知。换句话说，泛型是编译器的一种及时发现错误的机制，同时也给用户带来了代码的清晰与简洁的附加好处（不必再写一些复杂而危险并且不直观的强制类型转换）。 下面就进入正题谈谈以List为例时List、List<Object>、List<?>的区别。 先下定义： List：原生态类型 List<Object>：参数化的类型，表明List中可以 …<a class="read-more" itemprop="url" href="/javafan-xing-zhong-list-listobject-listde-qu-bie.html" title="Read this article" rel="bookmark"> &raquo;</a>
+        <section class="post-excerpt">Java 1.5中引入了泛型的概念以增加代码的安全性与清晰度，同时为了提供对旧代码的兼容性，让旧代码不经过改动也可以在新版本中运行，Java提供了原生态类型（或称原始类型）。但是实际中在新的代码中已经不应该使用原生态类型。 原生态类型的含义是不带任何实际参数的泛型名称，例如Java 1.5后改为泛型实现的List<E>，List就是它的原生态类型，与没有引入泛型之前的类型完全一致。 而在虚拟机层面上，是没有泛型这一概念的——所有对象都属于普通类。在编译时，所有的泛型类都会被视为原生态类型。 那么为什么不应该使用原生态类型呢？ 如果使用原生态类型，就失掉了泛型在安全性和表述性方面的所有优势。——Effective Java 泛型的目的简单地说就是可以让一些运行时才能发现的错误可以在编译期间就可以被编译器所检测出，运行时出问题的代价与编译期出现问题的代价的差别可想而知。换句话说，泛型是编译器的一种及时发现错误的机制，同时也给用户带来了代码的清晰与简洁的附加好处（不必再写一些复杂而危险并且不直观的强制类型转换）。 下面就进入正题谈谈以List为例时List、List<Object>、List<?>的区别。 先下定义： List：原生态类型 List<Object>：参数化的类型，表明List中可以 …<a class="read-more" itemprop="url" href="/javafan-xing-zhong-list-list-listde-qu-bie.html" title="Read this article" rel="bookmark"> &raquo;</a>
         </section>
         <footer class="post-meta">
             <img class="author-thumb" src="" alt="Di Wu" nopin="nopin">
