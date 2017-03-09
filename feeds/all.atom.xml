@@ -33,11 +33,13 @@
 4
 5
 6
-7&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;DiffInGeneric&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+7
+8&lt;/pre&gt;&lt;/div&gt;&lt;/td&gt;&lt;td class="code"&gt;&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;DiffInGeneric&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
     &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;main&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;[]&lt;/span&gt; &lt;span class="n"&gt;args&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
         &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;strings&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ArrayList&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;gt;();&lt;/span&gt;
         &lt;span class="n"&gt;List&lt;/span&gt; &lt;span class="n"&gt;list&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//ok&lt;/span&gt;
-        &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;Object&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;objects&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//Error: java: incompatible types: java.util.List&amp;lt;java.lang.String&amp;gt; cannot be converted to java.util.List&amp;lt;java.lang.Object&amp;gt;&lt;/span&gt;
+        &lt;span class="n"&gt;List&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;Object&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="n"&gt;objects&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;strings&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="c1"&gt;//Error: java: incompatible types: java.util.List&amp;lt;java.lang.String&amp;gt; cannot be converted to java.util.List&amp;lt;java.lang.Object&amp;gt;&lt;/span&gt;
     &lt;span class="o"&gt;}&lt;/span&gt;
 &lt;span class="o"&gt;}&lt;/span&gt;
 &lt;/pre&gt;&lt;/div&gt;
