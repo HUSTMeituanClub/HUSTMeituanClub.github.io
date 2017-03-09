@@ -1486,10 +1486,9 @@ end start
 &lt;h2&gt;第二章 寄存器&lt;/h2&gt;
 &lt;h3&gt;检测点 2.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;写出每条汇编指令执行后相关寄存器中的值&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;x86asm
-mov ax, 62627       AX =
+&lt;li&gt;写出每条汇编指令执行后相关寄存器中的值&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 62627       AX =
 mov ah, 31H     AX =
 mov al, 23H     AX =
 add ax, ax      AX =
@@ -1502,16 +1501,24 @@ mov ah, bl      AX =
 add ah, ah      AX =
 add al, 6       AX =
 add al, al      AX =
-mov ax, cx      AX =&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;&lt;strong&gt;F4A3H 31A3H   3123H 6246H 826CH   6246H   826CH   04D8H   0482H   6C82H   D882H   D888H   D810H   6246H&lt;/strong&gt;
-2. 只能使用目前学过的汇编指令，最多使用4条指令，编程计算2的4次方。
-&lt;code&gt;x86asm
-mov ax, 2   
-add ax, ax
-add ax, ax
-add ax, ax&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
+mov ax, cx      AX =
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;**F4A3H 31A3H   3123H 6246H 826CH   6246H   826CH   04D8H   0482H   6C82H   D882H   D888H   D810H   6246H**
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;只能使用目前学过的汇编指令，最多使用4条指令，编程计算2的4次方。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 2   
+add ax, ax
+add ax, ax
+add ax, ax
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h3&gt;检测点 2.2&lt;/h3&gt;
 &lt;ol&gt;
 &lt;li&gt;给定段地址为0001H，仅通过变化偏移地址寻址，CPU的寻址范围为_____到_____。
@@ -1539,35 +1546,42 @@ jmp ax
 &lt;h2&gt;第三章 寄存器（内存访问）&lt;/h2&gt;
 &lt;h3&gt;检测点 3.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;在Debug中，用“d 0:0 1f”查看内存，结果如下。
-    &lt;code&gt;x86asm
-    0000:0000 70 80 F0 30 EF 60 30 E2-00 80 80 12 66 20 22 60
-    0000:0010 62 26 E6 D6 CC 2E 3C 3B-AB BA 00 00 26 06 66 88&lt;/code&gt;
-    下面的程序执行前，AX=0，BX=0，写出每条汇编指令执行完后相关寄存器中的值。
-    &lt;code&gt;x86asm
-    mov ax, 1
-    mov ds, ax
-    mov ax, [0000]          AX = 
-    mov bx, [0001]          BX = 
-    mov ax, bx          AX = 
-    mov ax, [0000]          AX = 
-    mov bx, [0002]          BX =
-    add ax, bx          AX = 
-    add ax, [0004]          AX = 
-    mov ax, 0           AX = 
-    mov al, [0002]          AX = 
-    mov bx, 0           BX =
-    mov bl, [000C]          BX = 
-    add al, bl          AX =&lt;/code&gt;
-    提示，注意ds的设置。&lt;/p&gt;
-&lt;p&gt;2662H   E626H   E626H   2662H   D6E6H   FD48H   2C14H   0   00E6H   0   0026H   000CH
-2. 内存中的情况如图3.6所示。
-各寄存器的初始值：CS=2000H，IP=0，DS=1000H，AX=0，BX=0；
-①写出CPU执行的指令序列（用汇编指令写出）
-②写出CPU执行每条指令后，CS、IP和相关寄存器中的数值。
-③再次体会：数据和程序有区别吗？如何确定内存中的信息哪些是数据，哪些是程序？&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;在Debug中，用“d 0:0 1f”查看内存，结果如下。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="mi"&gt;0000&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;0000&lt;/span&gt; &lt;span class="mi"&gt;70&lt;/span&gt; &lt;span class="mi"&gt;80&lt;/span&gt; &lt;span class="n"&gt;F0&lt;/span&gt; &lt;span class="mi"&gt;30&lt;/span&gt; &lt;span class="n"&gt;EF&lt;/span&gt; &lt;span class="mi"&gt;60&lt;/span&gt; &lt;span class="mi"&gt;30&lt;/span&gt; &lt;span class="n"&gt;E2&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="mi"&gt;80&lt;/span&gt; &lt;span class="mi"&gt;80&lt;/span&gt; &lt;span class="mi"&gt;12&lt;/span&gt; &lt;span class="mi"&gt;66&lt;/span&gt; &lt;span class="mi"&gt;20&lt;/span&gt; &lt;span class="mi"&gt;22&lt;/span&gt; &lt;span class="mi"&gt;60&lt;/span&gt;
+&lt;span class="mi"&gt;0000&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;0010&lt;/span&gt; &lt;span class="mi"&gt;62&lt;/span&gt; &lt;span class="mi"&gt;26&lt;/span&gt; &lt;span class="n"&gt;E6&lt;/span&gt; &lt;span class="n"&gt;D6&lt;/span&gt; &lt;span class="n"&gt;CC&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="n"&gt;E&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="n"&gt;C&lt;/span&gt; &lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;AB&lt;/span&gt; &lt;span class="n"&gt;BA&lt;/span&gt; &lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="mi"&gt;26&lt;/span&gt; &lt;span class="mi"&gt;06&lt;/span&gt; &lt;span class="mi"&gt;66&lt;/span&gt; &lt;span class="mi"&gt;88&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面的程序执行前，AX=0，BX=0，写出每条汇编指令执行完后相关寄存器中的值。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 1
+mov ds, ax
+mov ax, [0000]          AX = 
+mov bx, [0001]          BX = 
+mov ax, bx          AX = 
+mov ax, [0000]          AX = 
+mov bx, [0002]          BX =
+add ax, bx          AX = 
+add ax, [0004]          AX = 
+mov ax, 0           AX = 
+mov al, [0002]          AX = 
+mov bx, 0           BX =
+mov bl, [000C]          BX = 
+add al, bl          AX = 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示，注意ds的设置。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;2662H   E626H   E626H   2662H   D6E6H   FD48H   2C14H   0   00E6H   0   0026H   000CH
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;内存中的情况如图3.6所示。
+    各寄存器的初始值：CS=2000H，IP=0，DS=1000H，AX=0，BX=0；
+    ①写出CPU执行的指令序列（用汇编指令写出）
+    ②写出CPU执行每条指令后，CS、IP和相关寄存器中的数值。
+    ③再次体会：数据和程序有区别吗？如何确定内存中的信息哪些是数据，哪些是程序？&lt;/li&gt;
 &lt;/ol&gt;
 &lt;table&gt;
 &lt;thead&gt;
@@ -1627,178 +1641,207 @@ jmp ax
 &lt;p&gt;程序和数据没有区别，本质上都是二进制01码，关键在于CPU如何解读。&lt;/p&gt;
 &lt;h3&gt;检测点 3.2&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。逆序复制的含义如图3.17所示（图中内存里的数据均为假设）。
-    &lt;code&gt;x86asm
-    mov ax, 1000H
-    mov ds, ax
-    __________
-    __________
-    __________
-    push [0]
-    push [2]
-    push [4]
-    push [6]
-    push [8]
-    push [A]
-    push [C]
-    push [E]&lt;/code&gt;
-    答案： 
-    &lt;code&gt;x86asm
-    mov ax, 2000H
-    mov ss, ax
-    mov sp, 0010H&lt;/code&gt; &lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。
-    &lt;code&gt;x86asm
-    mov ax, 2000H
-    mov ds, ax
-    __________
-    __________
-    __________
-    pop [E]
-    pop [C]
-    pop [A]
-    pop [8]
-    pop [6]
-    pop [4]
-    pop [2]
-    pop [0]&lt;/code&gt;
-    答案： 
-    &lt;code&gt;x86asm
-    mov ax, 1000H
-    mov ss, ax
-    mov sp, 0&lt;/code&gt; &lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。逆序复制的含义如图3.17所示（图中内存里的数据均为假设）。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 1000H
+mov ds, ax
+__________
+__________
+__________
+push [0]
+push [2]
+push [4]
+push [6]
+push [8]
+push [A]
+push [C]
+push [E]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;答案： &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 2000H
+mov ss, ax
+mov sp, 0010H
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 2000H
+mov ds, ax
+__________
+__________
+__________
+pop [E]
+pop [C]
+pop [A]
+pop [8]
+pop [6]
+pop [4]
+pop [2]
+pop [0]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;答案： &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 1000H
+mov ss, ax
+mov sp, 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h2&gt;第六章 包含多个段的程序&lt;/h2&gt;
 &lt;h3&gt;检测点 6.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，完成程序：
-    ```x86asm
-    assume cs:codesg&lt;/p&gt;
-&lt;p&gt;codesg segment
-    dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h&lt;/p&gt;
-&lt;p&gt;start:  mov ax, 0
+&lt;li&gt;下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，完成程序：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:codesg
+
+codesg segment
+    dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h
+
+start:  mov ax, 0
     mov ds, ax
-    mov bx, 0&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov cx, 8
-&lt;/pre&gt;&lt;/div&gt;
+    mov bx, 0
 
-
-&lt;p&gt;s:  mov ax, [bx]
-    &lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;__
+    mov cx, 8
+s:  mov ax, [bx]
+    _________
     add bx, 2
-    loop s&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 4c00h
-int 21h
+    loop s
+
+    mov ax, 4c00h
+    int 21h
+
+codesg ends
+
+end start
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;codesg ends&lt;/p&gt;
-&lt;p&gt;end start
-&lt;code&gt;答案：&lt;/code&gt;x86asm
-mov cs:[bx], ax
-``` &lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，数据的传送用栈来进行。栈空间设置在程序内。完成程序：
-    ```x86asm
-    assume cs:codesg
-        dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;答案：
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;start:  mov ax, &lt;strong&gt;&lt;em&gt;_
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov cs:[bx], ax
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，数据的传送用栈来进行。栈空间设置在程序内。完成程序：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:codesg
+    dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h
+
+    dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+start:  mov ax, ____
     mov ss, ax
-    mov sp, &lt;/em&gt;&lt;/strong&gt;_&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 0
-mov ds, ax
-mov bx, 0
-mov cx, 8
-&lt;/pre&gt;&lt;/div&gt;
+    mov sp, ____
 
-
-&lt;p&gt;s:  push [bx]
-    &lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;_____
+    mov ax, 0
+    mov ds, ax
+    mov bx, 0
+    mov cx, 8
+s:  push [bx]
+    ____________
     add bx, 2
-    loop s&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 4c00h
-int 21h
+    loop s
+
+    mov ax, 4c00h
+    int 21h
+
+codesg ends
+
+end start
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;codesg ends&lt;/p&gt;
-&lt;p&gt;end start
-&lt;code&gt;答案：&lt;/code&gt;x86asm
-0
+&lt;p&gt;答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;0
 24h
 pop cs:[bx]
-``` &lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h2&gt;第九章 转移指令的原理&lt;/h2&gt;
 &lt;h3&gt;检测点 9.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;程序如下
-    ```x86asm
-    assume cs:code&lt;/p&gt;
-&lt;p&gt;data segment
-    &lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;____
-data ends&lt;/p&gt;
-&lt;p&gt;code segment
+&lt;li&gt;程序如下&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:code
+
+data segment
+    ___________
+data ends
+
+code segment
 start:  mov ax, data
     mov ds, ax
     mov bx, 0
-    jmp word ptr [bx+1]&lt;/p&gt;
-&lt;p&gt;code ends
+    jmp word ptr [bx+1]
+
+code ends
 end start
-&lt;code&gt;若要使程序中的jmp指令执行后，CS:IP指向程序的第一条指令，在data段中应该定义哪些数据？
-答案：&lt;/code&gt;x86asm
-dw 0, 0
-```&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;程序如下
-    ```x86asm
-    assume cs:code&lt;/p&gt;
-&lt;p&gt;data segment
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;若要使程序中的jmp指令执行后，CS:IP指向程序的第一条指令，在data段中应该定义哪些数据？
+答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dw 0, 0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;程序如下&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:code
+
+data segment
     dd 12345678H
-data ends&lt;/p&gt;
-&lt;p&gt;code segment&lt;/p&gt;
-&lt;p&gt;start:  mov ax, data
+data ends
+
+code segment
+
+start:  mov ax, data
     mov ds, ax
     mov bx, 0
-    mov [bx], &lt;strong&gt;&lt;em&gt;_
-    mov [bx + 2], &lt;/em&gt;&lt;/strong&gt;_
-    jmp dword ptr ds:[0]&lt;/p&gt;
-&lt;p&gt;code ends&lt;/p&gt;
-&lt;p&gt;end start
-&lt;code&gt;补全程序，使jmp指令执行后，CS:IP指向程序的第一条指令。
-答案：&lt;/code&gt;x86asm
-bx
+    mov [bx], ____
+    mov [bx + 2], ____
+    jmp dword ptr ds:[0]
+
+code ends
+
+end start
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;补全程序，使jmp指令执行后，CS:IP指向程序的第一条指令。
+答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;bx
 cs
-```
-注意：bx指向低位，bx+2指向高位，低位为IP，而高位为CS。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;用Debug查看内存，结果如下：
-    &lt;code&gt;x86asm
-    2000:1000 BE 00 06 00 00 00 ......&lt;/code&gt;
-    则此时，CPU执行指令：
-    &lt;code&gt;x86asm
-    mov ax, 2000H
-    mov es, ax
-    jmp dword ptr es:[1000H]&lt;/code&gt;
-    后，(CS)=?，(IP)=?
-    答案：
-    (CS)=0006，(IP)=00BE&lt;/p&gt;
-&lt;/li&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;注意：bx指向低位，bx+2指向高位，低位为IP，而高位为CS。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;用Debug查看内存，结果如下：&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="mi"&gt;2000&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt; &lt;span class="n"&gt;BE&lt;/span&gt; &lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="mi"&gt;06&lt;/span&gt; &lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="mi"&gt;00&lt;/span&gt; &lt;span class="o"&gt;......&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;则此时，CPU执行指令后，(CS)=?，(IP)=?&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 2000H
+mov es, ax
+jmp dword ptr es:[1000H]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;答案：
+(CS)=0006，(IP)=00BE&lt;/p&gt;
 &lt;h3&gt;检测点 9.2&lt;/h3&gt;
 &lt;p&gt;补全编程，利用jcxz指令，实现在内存2000H段中查找第一个值为0的字节，找到后，将它的偏移地址存储在dx中。&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:code
@@ -2007,56 +2050,58 @@ end start
 &lt;p&gt;ax中的数值为0BH，分析方法类似检测点10.2&lt;/p&gt;
 &lt;h3&gt;检测点 10.5&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;下面的程序执行后，ax中的数值为多少？
-    &lt;code&gt;x86asm
-    assume cs:code
-    stack segment
-        dw 8 dup (0)
-    stack ends
-    code segment
-    start:  mov ax,stack
-        mov ss,ax
-        mov sp,16
-        mov ds,ax
-        mov ax,0
-        call word ptr ds:[0eh]
-        inc ax
-        inc ax
-        inc ax
-        mov ax,4c00h
-        int 21h
-    code ends
-    end start&lt;/code&gt;
-    ax中的数值为3，注意ds与ss中存放的段地址相同，在执行了call word ptr ds:[0EH]之后，程序会先将下一条指令inc ax的偏移量压栈，然后跳转到栈顶所指向的指令的位置，即跳转至第一条inc ax的位置，故最后ax的值为3。
-    注意：在使用Debug单步跟踪的时候，由于t命令所导致的中断，而影响了栈中的值。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;下面的程序执行后，ax和bx中的数值为多少？
-    &lt;code&gt;x86asm
-    assume cs:codesg
-    data segment
-        dw 8 dup (0)
-    data ends
-    code segment
-    start:  mov ax,data
-        mov ss,ax
-        mov sp,16
-        mov word ptr ss:[0],offset s
-        mov ss:[2],cs
-        call dword ptr ss:[0]
-        nop
-    s:  mov ax,offset s
-        sub ax,ss:[0ch]     
-        mov bx,cs
-        sub bx,ss:[0eh]
-        mov ax,4c00h
-        int 21h
-    code ends
-    end start&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;ax中的数值为1，bx中的数值为0，注意到程序的一开始将a的偏移量和cs放入ss:[0]和ss:[2]中，然后调用call指令，将CS和IP(nop指令的偏移量)依此压栈后跳转到s处继续执行，ax最终为s的偏移量减去nop指令所在位置的偏移量，为1，bx最终为cs的段地址相减，为0。&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;下面的程序执行后，ax中的数值为多少？&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:code
+stack segment
+    dw 8 dup (0)
+stack ends
+code segment
+start:  mov ax,stack
+    mov ss,ax
+    mov sp,16
+    mov ds,ax
+    mov ax,0
+    call word ptr ds:[0eh]
+    inc ax
+    inc ax
+    inc ax
+    mov ax,4c00h
+    int 21h
+code ends
+end start
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ax中的数值为3，注意ds与ss中存放的段地址相同，在执行了call word ptr ds:[0EH]之后，程序会先将下一条指令inc ax的偏移量压栈，然后跳转到栈顶所指向的指令的位置，即跳转至第一条inc ax的位置，故最后ax的值为3。&lt;/p&gt;
+&lt;p&gt;注意：在使用Debug单步跟踪的时候，由于t命令所导致的中断，而影响了栈中的值。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;下面的程序执行后，ax和bx中的数值为多少？&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;assume cs:codesg
+data segment
+    dw 8 dup (0)
+data ends
+code segment
+start:  mov ax,data
+    mov ss,ax
+    mov sp,16
+    mov word ptr ss:[0],offset s
+    mov ss:[2],cs
+    call dword ptr ss:[0]
+    nop
+s:  mov ax,offset s
+    sub ax,ss:[0ch]     
+    mov bx,cs
+    sub bx,ss:[0eh]
+    mov ax,4c00h
+    int 21h
+code ends
+end start
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;ax中的数值为1，bx中的数值为0，注意到程序的一开始将a的偏移量和cs放入ss:[0]和ss:[2]中，然后调用call指令，将CS和IP(nop指令的偏移量)依此压栈后跳转到s处继续执行，ax最终为s的偏移量减去nop指令所在位置的偏移量，为1，bx最终为cs的段地址相减，为0。&lt;/p&gt;
 &lt;h2&gt;第十一章 标志寄存器&lt;/h2&gt;
 &lt;h3&gt;检测点 11.1&lt;/h3&gt;
 &lt;p&gt;写出下面每条指令执行后，ZF、PF、SF等标志位的值&lt;/p&gt;
@@ -2204,55 +2249,57 @@ end start
 &lt;/table&gt;
 &lt;h3&gt;检测点 11.3&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;补全下面的程序，统计F000:0处32个字节中，大小在[32,128]的数据的个数。
-    ```x86asm
-        mov ax, 0f000h
-        mov ds, ax&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov bx, 0
-mov dx, 0
-mov cx, 32
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;s:  mov al, [bx]
-    cmp al, 32
-    &lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;
-    cmp al, 128
-    &lt;/em&gt;&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;
-    inc dx
-s0: inc bx
-    loop s
-&lt;code&gt;答案：&lt;/code&gt;x86asm
-jb s0
-ja s0
-```&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;补全下面的程序，统计F000:0处32个字节中，大小在(32,128)的数据的个数。
-    ```x86asm
-        mov ax, 0f000h
-        mov ds, ax&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov bx, 0
-mov dx, 0
-mov cx, 32
-&lt;/pre&gt;&lt;/div&gt;
-
-
-&lt;p&gt;s:  mov al, [bx]
-    cmp al, 32
-    &lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;
-    cmp al, 128
-    &lt;/em&gt;&lt;/strong&gt;&lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;
-    inc dx
-s0: inc bx
-    loop s
-&lt;code&gt;答案：&lt;/code&gt;x86asm
-jna s0
-jnb s0
-```&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;补全下面的程序，统计F000:0处32个字节中，大小在[32,128]的数据的个数。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    mov ax, 0f000h
+    mov ds, ax
+
+    mov bx, 0
+    mov dx, 0
+    mov cx, 32
+s:  mov al, [bx]
+    cmp al, 32
+    __________
+    cmp al, 128
+    __________
+    inc dx
+s0: inc bx
+    loop s
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;jb s0
+ja s0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;补全下面的程序，统计F000:0处32个字节中，大小在(32,128)的数据的个数。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    mov ax, 0f000h
+    mov ds, ax
+
+    mov bx, 0
+    mov dx, 0
+    mov cx, 32
+s:  mov al, [bx]
+    cmp al, 32
+    __________
+    cmp al, 128
+    __________
+    inc dx
+    s0: inc bx
+    loop s
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;jna s0
+jnb s0
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h3&gt;检测点 11.4&lt;/h3&gt;
 &lt;p&gt;下面的程序执行后：(ax)=?&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov ax, 0
@@ -2272,61 +2319,67 @@ and ah, 00001000B ;只考虑CF,PF,ZF,SF,OF五个标志位
 &lt;h2&gt;第十二章 内中断&lt;/h2&gt;
 &lt;h3&gt;检测点 12.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;用Debug查看内存，情况如下：
+&lt;li&gt;用Debug查看内存，情况如下：
     0000:0000 68 10 A7 00 8B 01 70 00-16 00 9D 03 8B 01 70 00
-    则3号中断源对应的中断处理程序的入口地址为：&lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;_____
-    答案：
-    0070:018B
-    注意高地址存放段地址，低地址存放偏移地址&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;存储N号中断源对应的中断处理程序入口的偏移地址的内存单元的地址为：&lt;strong&gt;&lt;em&gt;_
-    存储N号中断源对应的中断处理程序入口的段地址的内存单元的地址为：&lt;/em&gt;&lt;/strong&gt;_
-    答案：4N，4N+2&lt;/p&gt;
-&lt;/li&gt;
+    则3号中断源对应的中断处理程序的入口地址为：&lt;strong&gt;&lt;em&gt;_&lt;/em&gt;&lt;/strong&gt;_____&lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;答案：&lt;/p&gt;
+&lt;p&gt;0070:018B&lt;/p&gt;
+&lt;p&gt;注意高地址存放段地址，低地址存放偏移地址&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;存储N号中断源对应的中断处理程序入口的偏移地址的内存单元的地址为：&lt;strong&gt;&lt;em&gt;_
+    存储N号中断源对应的中断处理程序入口的段地址的内存单元的地址为：&lt;/em&gt;&lt;/strong&gt;_&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;答案：4N，4N+2&lt;/p&gt;
 &lt;h2&gt;第十三章 int指令&lt;/h2&gt;
 &lt;h3&gt;检测点 13.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;在上面的内容中，我们用7ch中断例程实现loop的功能，则上面的7ch中断例程所能进行的最大转移位移为多少？
-    答案：65535&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;用7ch中断例程完成jmp near ptr s指令的功能，用bx向中断例程传送转移位移。
-    答案：
-    &lt;code&gt;x86asm
-    jnp:    push bp
-        mov bp, sp
-        add [bp+2], bx
-        pop bp
-        iret&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;在上面的内容中，我们用7ch中断例程实现loop的功能，则上面的7ch中断例程所能进行的最大转移位移为多少？&lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;答案：65535&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;用7ch中断例程完成jmp near ptr s指令的功能，用bx向中断例程传送转移位移。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;jnp&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;    &lt;span class="n"&gt;push&lt;/span&gt; &lt;span class="n"&gt;bp&lt;/span&gt;
+    &lt;span class="n"&gt;mov&lt;/span&gt; &lt;span class="n"&gt;bp&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;sp&lt;/span&gt;
+    &lt;span class="n"&gt;add&lt;/span&gt; &lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;bp&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="o"&gt;],&lt;/span&gt; &lt;span class="n"&gt;bx&lt;/span&gt;
+    &lt;span class="n"&gt;pop&lt;/span&gt; &lt;span class="n"&gt;bp&lt;/span&gt;
+    &lt;span class="n"&gt;iret&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h3&gt;检测点 13.2&lt;/h3&gt;
 &lt;p&gt;判断下面说法的正误：&lt;/p&gt;
 &lt;ol&gt;
-&lt;li&gt;我们可以编程改变FFFF:0处的指令，使得CPU不去执行BIOS中的硬件系统检测和初始化程序。
-    错误：FFFF:0处的内容无法修改&lt;/li&gt;
-&lt;li&gt;int 19h中断例程，可以由DOS提供。
-    错误：此时DOS还未被引导&lt;/li&gt;
+&lt;li&gt;我们可以编程改变FFFF:0处的指令，使得CPU不去执行BIOS中的硬件系统检测和初始化程序。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;错误：FFFF:0处的内容无法修改&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;int 19h中断例程，可以由DOS提供。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;错误：此时DOS还未被引导&lt;/p&gt;
 &lt;h2&gt;第十四章 端口&lt;/h2&gt;
 &lt;h3&gt;检测点 14.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;编程，读取CMOS RAM的2号单元的内容。
-    &lt;code&gt;x86asm
-    mov al, 2
-    out 70h, 2
-    in al, 71h&lt;/code&gt;&lt;/li&gt;
-&lt;li&gt;编程，向CMOS RAM的2号单元写入0。 
-    &lt;code&gt;x86asm
-    mov al, 2
-    out 70h, 2
-    mov al, 0
-    out 71h, al&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;编程，读取CMOS RAM的2号单元的内容。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov al, 2
+out 70h, 2
+in al, 71h
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ol&gt;
+&lt;li&gt;编程，向CMOS RAM的2号单元写入0。 &lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mov al, 2
+out 70h, 2
+mov al, 0
+out 71h, al
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h3&gt;检测点 14.2&lt;/h3&gt;
 &lt;p&gt;编程，用加法和位移指令计算(ax)=(ax)*10。
 提示，(ax)*10=(ax)*2+(ax)*8。&lt;/p&gt;
@@ -2341,44 +2394,50 @@ add ax, bx
 &lt;h2&gt;第十五章 外中断&lt;/h2&gt;
 &lt;h3&gt;检测点 15.1&lt;/h3&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;仔细分析一下上面的int 9中断例程，看看是否可以精简一下？
-    其实在我们的int 9中断例程中，模拟int指令调用原int 9中断例程的程序段是可以精简的，因为在进入中断例程后，IF和TF都已经置0，没有必要再进行设置了。对于程序段：
-    &lt;code&gt;x86asm
-    pushf
-    pushf
-    pop ax
-    and ah, 11111100B
-    push ax
-    popf
-    call dword ptr ds:[0]&lt;/code&gt;
-    可以精简为：
-    &lt;code&gt;x86asm
-    pushf
-    call dword ptr ds:[0]&lt;/code&gt;
-    两条指令。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;仔细分析上面程序中的主程序，看看有什么潜在的问题？
+&lt;li&gt;仔细分析一下上面的int 9中断例程，看看是否可以精简一下？
+    其实在我们的int 9中断例程中，模拟int指令调用原int 9中断例程的程序段是可以精简的，因为在进入中断例程后，IF和TF都已经置0，没有必要再进行设置了。对于程序段：&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pushf
+pushf
+pop ax
+and ah, 11111100B
+push ax
+popf
+call dword ptr ds:[0]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以精简为：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pushf
+call dword ptr ds:[0]
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;两条指令。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;仔细分析上面程序中的主程序，看看有什么潜在的问题？
     在主程序中，如果在执行设置int 9中断例程的段地址和偏移地址的指令之间发生了键盘中断，则CPU将转去一个错误的地址执行，将发生错误。
     找出这样的程序段，改写它们，排除潜在的问题。
-    提示，注意sti和cli指令的用法。
-    答案：
-    &lt;code&gt;x86asm
-    cli
-    mov word ptr es:[9*4],offset int9
-    mov word ptr es:[9*4+2],cs
-    sti&lt;/code&gt;
-    以及：
-    &lt;code&gt;x86asm
-    cli
-    push ds:[0]
-    pop es:[9*4]
-    push ds:[2]
-    pop es:[9*4+2]
-    sti&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
+    提示，注意sti和cli指令的用法。&lt;/li&gt;
 &lt;/ol&gt;
+&lt;p&gt;答案：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cli
+mov word ptr es:[9*4],offset int9
+mov word ptr es:[9*4+2],cs
+sti
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;以及：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cli
+push ds:[0]
+pop es:[9*4]
+push ds:[2]
+pop es:[9*4+2]
+sti
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h2&gt;第十六章 直接定址表&lt;/h2&gt;
 &lt;h3&gt;检测点 16.1&lt;/h3&gt;
 &lt;p&gt;下面的程序将code段中a处的8个数据累加，结果存储到b处的双字中，补全程序。&lt;/p&gt;

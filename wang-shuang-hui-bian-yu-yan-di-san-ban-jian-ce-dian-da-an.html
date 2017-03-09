@@ -134,10 +134,9 @@
 <h2>第二章 寄存器</h2>
 <h3>检测点 2.1</h3>
 <ol>
-<li>
-<p>写出每条汇编指令执行后相关寄存器中的值</p>
-<p><code>x86asm
-mov ax, 62627       AX =
+<li>写出每条汇编指令执行后相关寄存器中的值</li>
+</ol>
+<div class="highlight"><pre><span></span>mov ax, 62627       AX =
 mov ah, 31H     AX =
 mov al, 23H     AX =
 add ax, ax      AX =
@@ -150,16 +149,24 @@ mov ah, bl      AX =
 add ah, ah      AX =
 add al, 6       AX =
 add al, al      AX =
-mov ax, cx      AX =</code></p>
-<p><strong>F4A3H 31A3H   3123H 6246H 826CH   6246H   826CH   04D8H   0482H   6C82H   D882H   D888H   D810H   6246H</strong>
-2. 只能使用目前学过的汇编指令，最多使用4条指令，编程计算2的4次方。
-<code>x86asm
-mov ax, 2   
-add ax, ax
-add ax, ax
-add ax, ax</code></p>
-</li>
+mov ax, cx      AX =
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>**F4A3H 31A3H   3123H 6246H 826CH   6246H   826CH   04D8H   0482H   6C82H   D882H   D888H   D810H   6246H**
+</pre></div>
+
+
+<ol>
+<li>只能使用目前学过的汇编指令，最多使用4条指令，编程计算2的4次方。</li>
 </ol>
+<div class="highlight"><pre><span></span>mov ax, 2   
+add ax, ax
+add ax, ax
+add ax, ax
+</pre></div>
+
+
 <h3>检测点 2.2</h3>
 <ol>
 <li>给定段地址为0001H，仅通过变化偏移地址寻址，CPU的寻址范围为_____到_____。
@@ -187,35 +194,42 @@ jmp ax
 <h2>第三章 寄存器（内存访问）</h2>
 <h3>检测点 3.1</h3>
 <ol>
-<li>
-<p>在Debug中，用“d 0:0 1f”查看内存，结果如下。
-    <code>x86asm
-    0000:0000 70 80 F0 30 EF 60 30 E2-00 80 80 12 66 20 22 60
-    0000:0010 62 26 E6 D6 CC 2E 3C 3B-AB BA 00 00 26 06 66 88</code>
-    下面的程序执行前，AX=0，BX=0，写出每条汇编指令执行完后相关寄存器中的值。
-    <code>x86asm
-    mov ax, 1
-    mov ds, ax
-    mov ax, [0000]          AX = 
-    mov bx, [0001]          BX = 
-    mov ax, bx          AX = 
-    mov ax, [0000]          AX = 
-    mov bx, [0002]          BX =
-    add ax, bx          AX = 
-    add ax, [0004]          AX = 
-    mov ax, 0           AX = 
-    mov al, [0002]          AX = 
-    mov bx, 0           BX =
-    mov bl, [000C]          BX = 
-    add al, bl          AX =</code>
-    提示，注意ds的设置。</p>
-<p>2662H   E626H   E626H   2662H   D6E6H   FD48H   2C14H   0   00E6H   0   0026H   000CH
-2. 内存中的情况如图3.6所示。
-各寄存器的初始值：CS=2000H，IP=0，DS=1000H，AX=0，BX=0；
-①写出CPU执行的指令序列（用汇编指令写出）
-②写出CPU执行每条指令后，CS、IP和相关寄存器中的数值。
-③再次体会：数据和程序有区别吗？如何确定内存中的信息哪些是数据，哪些是程序？</p>
-</li>
+<li>在Debug中，用“d 0:0 1f”查看内存，结果如下。</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="mi">0000</span><span class="o">:</span><span class="mi">0000</span> <span class="mi">70</span> <span class="mi">80</span> <span class="n">F0</span> <span class="mi">30</span> <span class="n">EF</span> <span class="mi">60</span> <span class="mi">30</span> <span class="n">E2</span><span class="o">-</span><span class="mi">00</span> <span class="mi">80</span> <span class="mi">80</span> <span class="mi">12</span> <span class="mi">66</span> <span class="mi">20</span> <span class="mi">22</span> <span class="mi">60</span>
+<span class="mi">0000</span><span class="o">:</span><span class="mi">0010</span> <span class="mi">62</span> <span class="mi">26</span> <span class="n">E6</span> <span class="n">D6</span> <span class="n">CC</span> <span class="mi">2</span><span class="n">E</span> <span class="mi">3</span><span class="n">C</span> <span class="mi">3</span><span class="n">B</span><span class="o">-</span><span class="n">AB</span> <span class="n">BA</span> <span class="mi">00</span> <span class="mi">00</span> <span class="mi">26</span> <span class="mi">06</span> <span class="mi">66</span> <span class="mi">88</span>
+</pre></div>
+
+
+<p>下面的程序执行前，AX=0，BX=0，写出每条汇编指令执行完后相关寄存器中的值。</p>
+<div class="highlight"><pre><span></span>mov ax, 1
+mov ds, ax
+mov ax, [0000]          AX = 
+mov bx, [0001]          BX = 
+mov ax, bx          AX = 
+mov ax, [0000]          AX = 
+mov bx, [0002]          BX =
+add ax, bx          AX = 
+add ax, [0004]          AX = 
+mov ax, 0           AX = 
+mov al, [0002]          AX = 
+mov bx, 0           BX =
+mov bl, [000C]          BX = 
+add al, bl          AX = 
+</pre></div>
+
+
+<p>提示，注意ds的设置。</p>
+<div class="highlight"><pre><span></span>2662H   E626H   E626H   2662H   D6E6H   FD48H   2C14H   0   00E6H   0   0026H   000CH
+</pre></div>
+
+
+<ol>
+<li>内存中的情况如图3.6所示。
+    各寄存器的初始值：CS=2000H，IP=0，DS=1000H，AX=0，BX=0；
+    ①写出CPU执行的指令序列（用汇编指令写出）
+    ②写出CPU执行每条指令后，CS、IP和相关寄存器中的数值。
+    ③再次体会：数据和程序有区别吗？如何确定内存中的信息哪些是数据，哪些是程序？</li>
 </ol>
 <table>
 <thead>
@@ -275,178 +289,207 @@ jmp ax
 <p>程序和数据没有区别，本质上都是二进制01码，关键在于CPU如何解读。</p>
 <h3>检测点 3.2</h3>
 <ol>
-<li>
-<p>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。逆序复制的含义如图3.17所示（图中内存里的数据均为假设）。
-    <code>x86asm
-    mov ax, 1000H
-    mov ds, ax
-    __________
-    __________
-    __________
-    push [0]
-    push [2]
-    push [4]
-    push [6]
-    push [8]
-    push [A]
-    push [C]
-    push [E]</code>
-    答案： 
-    <code>x86asm
-    mov ax, 2000H
-    mov ss, ax
-    mov sp, 0010H</code> </p>
-</li>
-<li>
-<p>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。
-    <code>x86asm
-    mov ax, 2000H
-    mov ds, ax
-    __________
-    __________
-    __________
-    pop [E]
-    pop [C]
-    pop [A]
-    pop [8]
-    pop [6]
-    pop [4]
-    pop [2]
-    pop [0]</code>
-    答案： 
-    <code>x86asm
-    mov ax, 1000H
-    mov ss, ax
-    mov sp, 0</code> </p>
-</li>
+<li>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。逆序复制的含义如图3.17所示（图中内存里的数据均为假设）。</li>
 </ol>
+<div class="highlight"><pre><span></span>mov ax, 1000H
+mov ds, ax
+__________
+__________
+__________
+push [0]
+push [2]
+push [4]
+push [6]
+push [8]
+push [A]
+push [C]
+push [E]
+</pre></div>
+
+
+<p>答案： </p>
+<div class="highlight"><pre><span></span>mov ax, 2000H
+mov ss, ax
+mov sp, 0010H
+</pre></div>
+
+
+<ol>
+<li>补全下面的程序，使其可以将10000H～1000FH中的8个字，逆序复制到20000H～2000FH中。</li>
+</ol>
+<div class="highlight"><pre><span></span>mov ax, 2000H
+mov ds, ax
+__________
+__________
+__________
+pop [E]
+pop [C]
+pop [A]
+pop [8]
+pop [6]
+pop [4]
+pop [2]
+pop [0]
+</pre></div>
+
+
+<p>答案： </p>
+<div class="highlight"><pre><span></span>mov ax, 1000H
+mov ss, ax
+mov sp, 0
+</pre></div>
+
+
 <h2>第六章 包含多个段的程序</h2>
 <h3>检测点 6.1</h3>
 <ol>
-<li>
-<p>下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，完成程序：
-    ```x86asm
-    assume cs:codesg</p>
-<p>codesg segment
-    dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h</p>
-<p>start:  mov ax, 0
+<li>下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，完成程序：</li>
+</ol>
+<div class="highlight"><pre><span></span>assume cs:codesg
+
+codesg segment
+    dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h
+
+start:  mov ax, 0
     mov ds, ax
-    mov bx, 0</p>
-<div class="highlight"><pre><span></span>mov cx, 8
-</pre></div>
+    mov bx, 0
 
-
-<p>s:  mov ax, [bx]
-    <strong><em>_</em></strong>__
+    mov cx, 8
+s:  mov ax, [bx]
+    _________
     add bx, 2
-    loop s</p>
-<div class="highlight"><pre><span></span>mov ax, 4c00h
-int 21h
+    loop s
+
+    mov ax, 4c00h
+    int 21h
+
+codesg ends
+
+end start
 </pre></div>
 
 
-<p>codesg ends</p>
-<p>end start
-<code>答案：</code>x86asm
-mov cs:[bx], ax
-``` </p>
-</li>
-<li>
-<p>下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，数据的传送用栈来进行。栈空间设置在程序内。完成程序：
-    ```x86asm
-    assume cs:codesg
-        dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h</p>
-<div class="highlight"><pre><span></span>dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+<div class="highlight"><pre><span></span>答案：
 </pre></div>
 
 
-<p>start:  mov ax, <strong><em>_
+<div class="highlight"><pre><span></span>mov cs:[bx], ax
+</pre></div>
+
+
+<ol>
+<li>下面的程序实现依此用内存0:0-0:15单元中的内容改写程序中的数据，数据的传送用栈来进行。栈空间设置在程序内。完成程序：</li>
+</ol>
+<div class="highlight"><pre><span></span>assume cs:codesg
+    dw 0123h, 0456h, 0789h, 0abch, 0defh, 0fedh, 0cbah, 0987h
+
+    dw 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+start:  mov ax, ____
     mov ss, ax
-    mov sp, </em></strong>_</p>
-<div class="highlight"><pre><span></span>mov ax, 0
-mov ds, ax
-mov bx, 0
-mov cx, 8
-</pre></div>
+    mov sp, ____
 
-
-<p>s:  push [bx]
-    <strong><em>_</em></strong>_____
+    mov ax, 0
+    mov ds, ax
+    mov bx, 0
+    mov cx, 8
+s:  push [bx]
+    ____________
     add bx, 2
-    loop s</p>
-<div class="highlight"><pre><span></span>mov ax, 4c00h
-int 21h
+    loop s
+
+    mov ax, 4c00h
+    int 21h
+
+codesg ends
+
+end start
 </pre></div>
 
 
-<p>codesg ends</p>
-<p>end start
-<code>答案：</code>x86asm
-0
+<p>答案：</p>
+<div class="highlight"><pre><span></span>0
 24h
 pop cs:[bx]
-``` </p>
-</li>
-</ol>
+</pre></div>
+
+
 <h2>第九章 转移指令的原理</h2>
 <h3>检测点 9.1</h3>
 <ol>
-<li>
-<p>程序如下
-    ```x86asm
-    assume cs:code</p>
-<p>data segment
-    <strong><em>_</em></strong>____
-data ends</p>
-<p>code segment
+<li>程序如下</li>
+</ol>
+<div class="highlight"><pre><span></span>assume cs:code
+
+data segment
+    ___________
+data ends
+
+code segment
 start:  mov ax, data
     mov ds, ax
     mov bx, 0
-    jmp word ptr [bx+1]</p>
-<p>code ends
+    jmp word ptr [bx+1]
+
+code ends
 end start
-<code>若要使程序中的jmp指令执行后，CS:IP指向程序的第一条指令，在data段中应该定义哪些数据？
-答案：</code>x86asm
-dw 0, 0
-```</p>
-</li>
-<li>
-<p>程序如下
-    ```x86asm
-    assume cs:code</p>
-<p>data segment
+</pre></div>
+
+
+<p>若要使程序中的jmp指令执行后，CS:IP指向程序的第一条指令，在data段中应该定义哪些数据？
+答案：</p>
+<div class="highlight"><pre><span></span>dw 0, 0
+</pre></div>
+
+
+<ol>
+<li>程序如下</li>
+</ol>
+<div class="highlight"><pre><span></span>assume cs:code
+
+data segment
     dd 12345678H
-data ends</p>
-<p>code segment</p>
-<p>start:  mov ax, data
+data ends
+
+code segment
+
+start:  mov ax, data
     mov ds, ax
     mov bx, 0
-    mov [bx], <strong><em>_
-    mov [bx + 2], </em></strong>_
-    jmp dword ptr ds:[0]</p>
-<p>code ends</p>
-<p>end start
-<code>补全程序，使jmp指令执行后，CS:IP指向程序的第一条指令。
-答案：</code>x86asm
-bx
+    mov [bx], ____
+    mov [bx + 2], ____
+    jmp dword ptr ds:[0]
+
+code ends
+
+end start
+</pre></div>
+
+
+<p>补全程序，使jmp指令执行后，CS:IP指向程序的第一条指令。
+答案：</p>
+<div class="highlight"><pre><span></span>bx
 cs
-```
-注意：bx指向低位，bx+2指向高位，低位为IP，而高位为CS。</p>
-</li>
-<li>
-<p>用Debug查看内存，结果如下：
-    <code>x86asm
-    2000:1000 BE 00 06 00 00 00 ......</code>
-    则此时，CPU执行指令：
-    <code>x86asm
-    mov ax, 2000H
-    mov es, ax
-    jmp dword ptr es:[1000H]</code>
-    后，(CS)=?，(IP)=?
-    答案：
-    (CS)=0006，(IP)=00BE</p>
-</li>
+</pre></div>
+
+
+<p>注意：bx指向低位，bx+2指向高位，低位为IP，而高位为CS。</p>
+<ol>
+<li>用Debug查看内存，结果如下：</li>
 </ol>
+<div class="highlight"><pre><span></span><span class="mi">2000</span><span class="o">:</span><span class="mi">1000</span> <span class="n">BE</span> <span class="mi">00</span> <span class="mi">06</span> <span class="mi">00</span> <span class="mi">00</span> <span class="mi">00</span> <span class="o">......</span>
+</pre></div>
+
+
+<p>则此时，CPU执行指令后，(CS)=?，(IP)=?</p>
+<div class="highlight"><pre><span></span>mov ax, 2000H
+mov es, ax
+jmp dword ptr es:[1000H]
+</pre></div>
+
+
+<p>答案：
+(CS)=0006，(IP)=00BE</p>
 <h3>检测点 9.2</h3>
 <p>补全编程，利用jcxz指令，实现在内存2000H段中查找第一个值为0的字节，找到后，将它的偏移地址存储在dx中。</p>
 <div class="highlight"><pre><span></span>assume cs:code
@@ -655,56 +698,58 @@ end start
 <p>ax中的数值为0BH，分析方法类似检测点10.2</p>
 <h3>检测点 10.5</h3>
 <ol>
-<li>
-<p>下面的程序执行后，ax中的数值为多少？
-    <code>x86asm
-    assume cs:code
-    stack segment
-        dw 8 dup (0)
-    stack ends
-    code segment
-    start:  mov ax,stack
-        mov ss,ax
-        mov sp,16
-        mov ds,ax
-        mov ax,0
-        call word ptr ds:[0eh]
-        inc ax
-        inc ax
-        inc ax
-        mov ax,4c00h
-        int 21h
-    code ends
-    end start</code>
-    ax中的数值为3，注意ds与ss中存放的段地址相同，在执行了call word ptr ds:[0EH]之后，程序会先将下一条指令inc ax的偏移量压栈，然后跳转到栈顶所指向的指令的位置，即跳转至第一条inc ax的位置，故最后ax的值为3。
-    注意：在使用Debug单步跟踪的时候，由于t命令所导致的中断，而影响了栈中的值。</p>
-</li>
-<li>
-<p>下面的程序执行后，ax和bx中的数值为多少？
-    <code>x86asm
-    assume cs:codesg
-    data segment
-        dw 8 dup (0)
-    data ends
-    code segment
-    start:  mov ax,data
-        mov ss,ax
-        mov sp,16
-        mov word ptr ss:[0],offset s
-        mov ss:[2],cs
-        call dword ptr ss:[0]
-        nop
-    s:  mov ax,offset s
-        sub ax,ss:[0ch]     
-        mov bx,cs
-        sub bx,ss:[0eh]
-        mov ax,4c00h
-        int 21h
-    code ends
-    end start</code></p>
-<p>ax中的数值为1，bx中的数值为0，注意到程序的一开始将a的偏移量和cs放入ss:[0]和ss:[2]中，然后调用call指令，将CS和IP(nop指令的偏移量)依此压栈后跳转到s处继续执行，ax最终为s的偏移量减去nop指令所在位置的偏移量，为1，bx最终为cs的段地址相减，为0。</p>
-</li>
+<li>下面的程序执行后，ax中的数值为多少？</li>
 </ol>
+<div class="highlight"><pre><span></span>assume cs:code
+stack segment
+    dw 8 dup (0)
+stack ends
+code segment
+start:  mov ax,stack
+    mov ss,ax
+    mov sp,16
+    mov ds,ax
+    mov ax,0
+    call word ptr ds:[0eh]
+    inc ax
+    inc ax
+    inc ax
+    mov ax,4c00h
+    int 21h
+code ends
+end start
+</pre></div>
+
+
+<p>ax中的数值为3，注意ds与ss中存放的段地址相同，在执行了call word ptr ds:[0EH]之后，程序会先将下一条指令inc ax的偏移量压栈，然后跳转到栈顶所指向的指令的位置，即跳转至第一条inc ax的位置，故最后ax的值为3。</p>
+<p>注意：在使用Debug单步跟踪的时候，由于t命令所导致的中断，而影响了栈中的值。</p>
+<ol>
+<li>下面的程序执行后，ax和bx中的数值为多少？</li>
+</ol>
+<div class="highlight"><pre><span></span>assume cs:codesg
+data segment
+    dw 8 dup (0)
+data ends
+code segment
+start:  mov ax,data
+    mov ss,ax
+    mov sp,16
+    mov word ptr ss:[0],offset s
+    mov ss:[2],cs
+    call dword ptr ss:[0]
+    nop
+s:  mov ax,offset s
+    sub ax,ss:[0ch]     
+    mov bx,cs
+    sub bx,ss:[0eh]
+    mov ax,4c00h
+    int 21h
+code ends
+end start
+</pre></div>
+
+
+<p>ax中的数值为1，bx中的数值为0，注意到程序的一开始将a的偏移量和cs放入ss:[0]和ss:[2]中，然后调用call指令，将CS和IP(nop指令的偏移量)依此压栈后跳转到s处继续执行，ax最终为s的偏移量减去nop指令所在位置的偏移量，为1，bx最终为cs的段地址相减，为0。</p>
 <h2>第十一章 标志寄存器</h2>
 <h3>检测点 11.1</h3>
 <p>写出下面每条指令执行后，ZF、PF、SF等标志位的值</p>
@@ -852,55 +897,57 @@ end start
 </table>
 <h3>检测点 11.3</h3>
 <ol>
-<li>
-<p>补全下面的程序，统计F000:0处32个字节中，大小在[32,128]的数据的个数。
-    ```x86asm
-        mov ax, 0f000h
-        mov ds, ax</p>
-<div class="highlight"><pre><span></span>mov bx, 0
-mov dx, 0
-mov cx, 32
-</pre></div>
-
-
-<p>s:  mov al, [bx]
-    cmp al, 32
-    <strong><em>_</em></strong><strong><em>
-    cmp al, 128
-    </em></strong><strong><em>_</em></strong>
-    inc dx
-s0: inc bx
-    loop s
-<code>答案：</code>x86asm
-jb s0
-ja s0
-```</p>
-</li>
-<li>
-<p>补全下面的程序，统计F000:0处32个字节中，大小在(32,128)的数据的个数。
-    ```x86asm
-        mov ax, 0f000h
-        mov ds, ax</p>
-<div class="highlight"><pre><span></span>mov bx, 0
-mov dx, 0
-mov cx, 32
-</pre></div>
-
-
-<p>s:  mov al, [bx]
-    cmp al, 32
-    <strong><em>_</em></strong><strong><em>
-    cmp al, 128
-    </em></strong><strong><em>_</em></strong>
-    inc dx
-s0: inc bx
-    loop s
-<code>答案：</code>x86asm
-jna s0
-jnb s0
-```</p>
-</li>
+<li>补全下面的程序，统计F000:0处32个字节中，大小在[32,128]的数据的个数。</li>
 </ol>
+<div class="highlight"><pre><span></span>    mov ax, 0f000h
+    mov ds, ax
+
+    mov bx, 0
+    mov dx, 0
+    mov cx, 32
+s:  mov al, [bx]
+    cmp al, 32
+    __________
+    cmp al, 128
+    __________
+    inc dx
+s0: inc bx
+    loop s
+</pre></div>
+
+
+<p>答案：</p>
+<div class="highlight"><pre><span></span>jb s0
+ja s0
+</pre></div>
+
+
+<ol>
+<li>补全下面的程序，统计F000:0处32个字节中，大小在(32,128)的数据的个数。</li>
+</ol>
+<div class="highlight"><pre><span></span>    mov ax, 0f000h
+    mov ds, ax
+
+    mov bx, 0
+    mov dx, 0
+    mov cx, 32
+s:  mov al, [bx]
+    cmp al, 32
+    __________
+    cmp al, 128
+    __________
+    inc dx
+    s0: inc bx
+    loop s
+</pre></div>
+
+
+<p>答案：</p>
+<div class="highlight"><pre><span></span>jna s0
+jnb s0
+</pre></div>
+
+
 <h3>检测点 11.4</h3>
 <p>下面的程序执行后：(ax)=?</p>
 <div class="highlight"><pre><span></span>mov ax, 0
@@ -920,61 +967,67 @@ and ah, 00001000B ;只考虑CF,PF,ZF,SF,OF五个标志位
 <h2>第十二章 内中断</h2>
 <h3>检测点 12.1</h3>
 <ol>
-<li>
-<p>用Debug查看内存，情况如下：
+<li>用Debug查看内存，情况如下：
     0000:0000 68 10 A7 00 8B 01 70 00-16 00 9D 03 8B 01 70 00
-    则3号中断源对应的中断处理程序的入口地址为：<strong><em>_</em></strong>_____
-    答案：
-    0070:018B
-    注意高地址存放段地址，低地址存放偏移地址</p>
-</li>
-<li>
-<p>存储N号中断源对应的中断处理程序入口的偏移地址的内存单元的地址为：<strong><em>_
-    存储N号中断源对应的中断处理程序入口的段地址的内存单元的地址为：</em></strong>_
-    答案：4N，4N+2</p>
-</li>
+    则3号中断源对应的中断处理程序的入口地址为：<strong><em>_</em></strong>_____</li>
 </ol>
+<p>答案：</p>
+<p>0070:018B</p>
+<p>注意高地址存放段地址，低地址存放偏移地址</p>
+<ol>
+<li>存储N号中断源对应的中断处理程序入口的偏移地址的内存单元的地址为：<strong><em>_
+    存储N号中断源对应的中断处理程序入口的段地址的内存单元的地址为：</em></strong>_</li>
+</ol>
+<p>答案：4N，4N+2</p>
 <h2>第十三章 int指令</h2>
 <h3>检测点 13.1</h3>
 <ol>
-<li>
-<p>在上面的内容中，我们用7ch中断例程实现loop的功能，则上面的7ch中断例程所能进行的最大转移位移为多少？
-    答案：65535</p>
-</li>
-<li>
-<p>用7ch中断例程完成jmp near ptr s指令的功能，用bx向中断例程传送转移位移。
-    答案：
-    <code>x86asm
-    jnp:    push bp
-        mov bp, sp
-        add [bp+2], bx
-        pop bp
-        iret</code></p>
-</li>
+<li>在上面的内容中，我们用7ch中断例程实现loop的功能，则上面的7ch中断例程所能进行的最大转移位移为多少？</li>
 </ol>
+<p>答案：65535</p>
+<ol>
+<li>用7ch中断例程完成jmp near ptr s指令的功能，用bx向中断例程传送转移位移。</li>
+</ol>
+<p>答案：</p>
+<div class="highlight"><pre><span></span><span class="n">jnp</span><span class="o">:</span>    <span class="n">push</span> <span class="n">bp</span>
+    <span class="n">mov</span> <span class="n">bp</span><span class="o">,</span> <span class="n">sp</span>
+    <span class="n">add</span> <span class="o">[</span><span class="n">bp</span><span class="o">+</span><span class="mi">2</span><span class="o">],</span> <span class="n">bx</span>
+    <span class="n">pop</span> <span class="n">bp</span>
+    <span class="n">iret</span>
+</pre></div>
+
+
 <h3>检测点 13.2</h3>
 <p>判断下面说法的正误：</p>
 <ol>
-<li>我们可以编程改变FFFF:0处的指令，使得CPU不去执行BIOS中的硬件系统检测和初始化程序。
-    错误：FFFF:0处的内容无法修改</li>
-<li>int 19h中断例程，可以由DOS提供。
-    错误：此时DOS还未被引导</li>
+<li>我们可以编程改变FFFF:0处的指令，使得CPU不去执行BIOS中的硬件系统检测和初始化程序。</li>
 </ol>
+<p>错误：FFFF:0处的内容无法修改</p>
+<ol>
+<li>int 19h中断例程，可以由DOS提供。</li>
+</ol>
+<p>错误：此时DOS还未被引导</p>
 <h2>第十四章 端口</h2>
 <h3>检测点 14.1</h3>
 <ol>
-<li>编程，读取CMOS RAM的2号单元的内容。
-    <code>x86asm
-    mov al, 2
-    out 70h, 2
-    in al, 71h</code></li>
-<li>编程，向CMOS RAM的2号单元写入0。 
-    <code>x86asm
-    mov al, 2
-    out 70h, 2
-    mov al, 0
-    out 71h, al</code></li>
+<li>编程，读取CMOS RAM的2号单元的内容。</li>
 </ol>
+<div class="highlight"><pre><span></span>mov al, 2
+out 70h, 2
+in al, 71h
+</pre></div>
+
+
+<ol>
+<li>编程，向CMOS RAM的2号单元写入0。 </li>
+</ol>
+<div class="highlight"><pre><span></span>mov al, 2
+out 70h, 2
+mov al, 0
+out 71h, al
+</pre></div>
+
+
 <h3>检测点 14.2</h3>
 <p>编程，用加法和位移指令计算(ax)=(ax)*10。
 提示，(ax)*10=(ax)*2+(ax)*8。</p>
@@ -989,44 +1042,50 @@ add ax, bx
 <h2>第十五章 外中断</h2>
 <h3>检测点 15.1</h3>
 <ol>
-<li>
-<p>仔细分析一下上面的int 9中断例程，看看是否可以精简一下？
-    其实在我们的int 9中断例程中，模拟int指令调用原int 9中断例程的程序段是可以精简的，因为在进入中断例程后，IF和TF都已经置0，没有必要再进行设置了。对于程序段：
-    <code>x86asm
-    pushf
-    pushf
-    pop ax
-    and ah, 11111100B
-    push ax
-    popf
-    call dword ptr ds:[0]</code>
-    可以精简为：
-    <code>x86asm
-    pushf
-    call dword ptr ds:[0]</code>
-    两条指令。</p>
-</li>
-<li>
-<p>仔细分析上面程序中的主程序，看看有什么潜在的问题？
+<li>仔细分析一下上面的int 9中断例程，看看是否可以精简一下？
+    其实在我们的int 9中断例程中，模拟int指令调用原int 9中断例程的程序段是可以精简的，因为在进入中断例程后，IF和TF都已经置0，没有必要再进行设置了。对于程序段：</li>
+</ol>
+<div class="highlight"><pre><span></span>pushf
+pushf
+pop ax
+and ah, 11111100B
+push ax
+popf
+call dword ptr ds:[0]
+</pre></div>
+
+
+<p>可以精简为：</p>
+<div class="highlight"><pre><span></span>pushf
+call dword ptr ds:[0]
+</pre></div>
+
+
+<p>两条指令。</p>
+<ol>
+<li>仔细分析上面程序中的主程序，看看有什么潜在的问题？
     在主程序中，如果在执行设置int 9中断例程的段地址和偏移地址的指令之间发生了键盘中断，则CPU将转去一个错误的地址执行，将发生错误。
     找出这样的程序段，改写它们，排除潜在的问题。
-    提示，注意sti和cli指令的用法。
-    答案：
-    <code>x86asm
-    cli
-    mov word ptr es:[9*4],offset int9
-    mov word ptr es:[9*4+2],cs
-    sti</code>
-    以及：
-    <code>x86asm
-    cli
-    push ds:[0]
-    pop es:[9*4]
-    push ds:[2]
-    pop es:[9*4+2]
-    sti</code></p>
-</li>
+    提示，注意sti和cli指令的用法。</li>
 </ol>
+<p>答案：</p>
+<div class="highlight"><pre><span></span>cli
+mov word ptr es:[9*4],offset int9
+mov word ptr es:[9*4+2],cs
+sti
+</pre></div>
+
+
+<p>以及：</p>
+<div class="highlight"><pre><span></span>cli
+push ds:[0]
+pop es:[9*4]
+push ds:[2]
+pop es:[9*4+2]
+sti
+</pre></div>
+
+
 <h2>第十六章 直接定址表</h2>
 <h3>检测点 16.1</h3>
 <p>下面的程序将code段中a处的8个数据累加，结果存储到b处的双字中，补全程序。</p>
