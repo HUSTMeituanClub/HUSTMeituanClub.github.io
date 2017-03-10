@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>汇编语言综合研究</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="研究试验1 搭建一个精简的C语言开发环境 TC进行连接需要如下的文件： C0S.OBJ CS.LIB EMU.LIB GRAPHICS.LIB MATHS.LIB 研究试验2 使用寄存器 编一个程序ur1.c {% codeblock lang:c %} main ()...">
+
+        <meta name="author" content="Zhihao Chen">
+
+        <meta name="tags" content="汇编">
+        <meta name="tags" content="实验">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/zhihao-chen.html">
+	<meta property="og:url" content="/hui-bian-yu-yan-zong-he-yan-jiu.html">
+	<meta property="og:title" content="汇编语言综合研究">
+	<meta property="article:published_time" content="2017-03-10 10:35:37+08:00">
+            <meta property="og:description" content="研究试验1 搭建一个精简的C语言开发环境 TC进行连接需要如下的文件： C0S.OBJ CS.LIB EMU.LIB GRAPHICS.LIB MATHS.LIB 研究试验2 使用寄存器 编一个程序ur1.c {% codeblock lang:c %} main ()...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/pages/about/index.html">关于</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>汇编语言综合研究</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/zhihao-chen.html">Zhihao Chen</a>
+                             on 2017年 3月10日 周五
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h2>研究试验1 搭建一个精简的C语言开发环境</h2>
+<p>TC进行连接需要如下的文件：</p>
+<ul>
+<li>C0S.OBJ</li>
+<li>CS.LIB</li>
+<li>EMU.LIB</li>
+<li>GRAPHICS.LIB</li>
+<li>MATHS.LIB</li>
+</ul>
+<h2>研究试验2 使用寄存器</h2>
+<ol>
+<li _="%" endcodeblock>编一个程序ur1.c
+    {% codeblock lang:c %}
+    main ()
+    {
+        _AX = 1;
+        _BX = 1;
+        _CX = 2;
+        _AX = _BX + _CX;
+        _AH = _BL + _CL;
+        _AL = _BH + _CH;
+    }</li>
+<li>用Debug加载ur1.exe，用u命令查看ur1.exe编译后的机器码和汇编代码。
+    思考：main函数的代码在什么段中？用Debug怎样找到ur1.exe中main函数的代码？
+    回答：main函数的代码在CS段中，需要知道main函数的偏移地址才能找到main函数的代码。</li>
+<li>用下面的方法打印出ur1.exe被加载运行时，main函数在代码段中的偏移地址。
+    {% codeblock lang:c %}
+    main ()
+    {
+        printf("%x\n", main);
+    }
+    {% endcodeblock %}
+    思考：为什么这个程序能够打印出main函数在代码段中的偏移地址？
+    回答：由学过的知识可知，C语言中用指针表示地址，这里的printf打印了main函数的入口地址，也即main函数在代码段中的偏移地址。</li>
+<li>
+<p>用Debug加载ur1.exe，根据上面打印出的main函数的偏移地址，用u命令察看main函数的汇编代码。仔细找到ur1.c中每条C语句对应的汇编代码。</p>
+<table>
+<thead>
+<tr>
+<th align="center">地址</th>
+<th align="center">汇编语句</th>
+<th align="center">C语句</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">076A:01FA</td>
+<td align="center">PUSH BP</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:01FB</td>
+<td align="center">MOV BP,SP</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:01FD</td>
+<td align="center">MOV AX,0001</td>
+<td align="center">_AX = 1</td>
+</tr>
+<tr>
+<td align="center">076A:0200</td>
+<td align="center">MOV BX,0001</td>
+<td align="center">_BX = 1</td>
+</tr>
+<tr>
+<td align="center">076A:0203</td>
+<td align="center">MOV CX,0002</td>
+<td align="center">_CX = 2</td>
+</tr>
+<tr>
+<td align="center">076A:0206</td>
+<td align="center">MOV AX,BX</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0208</td>
+<td align="center">ADD AX,CX</td>
+<td align="center">_AX = _BX + _CX</td>
+</tr>
+<tr>
+<td align="center">076A:020A</td>
+<td align="center">MOV AH,BL</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:020C</td>
+<td align="center">ADD AH,CL</td>
+<td align="center">_AH = _BL + _CL</td>
+</tr>
+<tr>
+<td align="center">076A:020E</td>
+<td align="center">MOV AL,BH</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0210</td>
+<td align="center">ADD AL,CH</td>
+<td align="center">_AL = _BH + _CH</td>
+</tr>
+<tr>
+<td align="center">076A:0212</td>
+<td align="center">POP BP</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0213</td>
+<td align="center">RET</td>
+<td align="center">----</td>
+</tr>
+</tbody>
+</table>
+<p>注意：在这里，对于main函数汇编代码开始处的“push bp mov bp,sp”和结尾处的“pop bp”，这里只了解到：这是C编译器安排的为函数中可能使用到bp寄存器而设置的，就可以了。</p>
+</li>
+<li>
+<p>通过main函数后面有ret指令，我们可以设想：C语言将函数实现为汇编语言中的子程序。研究下面程序的汇编代码，验证我们的设想。
+    {% codeblock lang:c %}
+    void f(void);</p>
+<p>main()
+{
+    _AX = 1; _BX = 1; _CX = 2;</p>
+<div class="highlight"><pre><span></span>f();
+</pre></div>
+
+
+<p>}</p>
+<p>void f(void)
+{
+    _AX = _BX + _CX;
+}
+{% endcodeblock %}
+编译、连接后用Debug查看汇编代码如下：
+{% codeblock lang:x86asm %}
+PUSH BP
+MOV BP,SP
+MOV AX,0001
+MOV BX,0001
+MOV CX,0002
+CALL 020B
+POP BP
+RET
+PUSH BP
+MOV BP,SP
+MOV AX,BX
+ADD AX,CX
+POP BP
+RET
+{% endcodeblock %}
+设想正确</p>
+</li>
+</ol>
+<h2>研究试验3 使用内存空间</h2>
+<ol>
+<li>
+<p>编一个程序um1.c：
+    {% codeblock lang:c %}
+    main()
+    {
+        <em>(char </em>)0x2000='a';
+        <em>(int </em>)0x2000=0xf;
+        <em>(char far </em>)0x20001000='a';</p>
+<div class="highlight"><pre><span></span>_AX=0x2000;
+*(char *)_AX=&#39;b&#39;;
+
+_BX=0x1000;
+*(char *)(_BX+_BX)=&#39;a&#39;;
+*(char far *)(0x20001000+_BX)=*(char *)_AX;
+</pre></div>
+
+
+<p _="%" endcodeblock>}</p>
+<p>把um1.c保存在C:\MINIC下，编译，连接生成um1.exe。然后用Debug加载um1.exe，对main函数的汇编代码进行分析，找到每条C语句对应的汇编代码；对main函数进行单步跟踪，察看相关内存单元的内容。</p>
+<table>
+<thead>
+<tr>
+<th align="center">地址</th>
+<th align="center">汇编语句</th>
+<th align="center">C语句</th>
+<th align="center">相关内存单元</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">076A:01FA</td>
+<td align="center">PUSH BP</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:01FB</td>
+<td align="center">MOV BP,SP</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:01FD</td>
+<td align="center">MOV BYTE PTR [2000],61</td>
+<td align="center">*(char *)0x2000='a'</td>
+<td align="center">07C4:2000 -&gt; 61</td>
+</tr>
+<tr>
+<td align="center">076A:0202</td>
+<td align="center">MOV WORD PTR [2000],000F</td>
+<td align="center">*(int *)0x2000=0xf</td>
+<td align="center">07C4:2000-07C4:2001 -&gt; 0F 00</td>
+</tr>
+<tr>
+<td align="center">076A:0208</td>
+<td align="center">MOV BX,2000</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:020B</td>
+<td align="center">MOV ES,BX</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:020D</td>
+<td align="center">MOV BX,1000</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0210</td>
+<td align="center">ES:</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">076A:0211</td>
+<td align="center">MOV BYTE PTR [BX],61</td>
+<td align="center">*(char far *)0x20001000='a'</td>
+<td align="center">2000:1000 -&gt; 61</td>
+</tr>
+<tr>
+<td align="center">076A:0214</td>
+<td align="center">MOV AX,2000</td>
+<td align="center">_AX=0x2000</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0217</td>
+<td align="center">MOV BX,AX</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0219</td>
+<td align="center">MOV BYTE PTR [BX],62</td>
+<td align="center">*(char *)_AX='b'</td>
+<td align="center">07C4:2000 -&gt; 62</td>
+</tr>
+<tr>
+<td align="center">076A:021C</td>
+<td align="center">MOV BX,1000</td>
+<td align="center">_BX=0x1000</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:021F</td>
+<td align="center">ADD BX,BX</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0221</td>
+<td align="center">MOV BYTE PTR [BX],61</td>
+<td align="center">*(char *)(_BX + _BX)='a'</td>
+<td align="center">07C4:2000 -&gt; 61</td>
+</tr>
+<tr>
+<td align="center">076A:0224</td>
+<td align="center">MOV BX,AX</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0226</td>
+<td align="center">MOV AL,[BX]</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0228</td>
+<td align="center">XOR CX,CX</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:022A</td>
+<td align="center">ADD BX,1000</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:022E</td>
+<td align="center">ADC CX,2000</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0232</td>
+<td align="center">MOV ES,CX</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0234</td>
+<td align="center">ES:</td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">076A:0235</td>
+<td align="center">MOV [BX],AL</td>
+<td align="center">*(char far *)(0x20001000+_BX)=*(char *)_AX</td>
+<td align="center">2000:3000 -&gt; 61</td>
+</tr>
+<tr>
+<td align="center">076A:0237</td>
+<td align="center">POP BP</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+<tr>
+<td align="center">076A:0238</td>
+<td align="center">RET</td>
+<td align="center">----</td>
+<td align="center">----</td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p _="%" endcodeblock>编一个程序，用一条C语句实现在屏幕的中间显示一个绿色的字符"a"。
+    {% codeblock lang:c %}
+    main()
+    {
+        <em>(int far </em>)0xb80007d0=0x261
+    }</p>
+</li>
+<li>
+<p>分析下面程序中所有函数的汇编代码，思考相关的问题。
+    {% codeblock lang:c %}
+    int a1, a2, a3;
+    void f(void);
+    main()
+    {
+        int b1, b2, b3;
+        a1 = 0xa1; a2 = 0xa2; a3 = 0xa3;
+        b1 = 0xb1; b2 = 0xb2; b3 = 0xb3;
+    }
+    void f(void)
+    {
+        int c1, c2, c3;
+        a1 = 0x0fa1; a2 = 0x0fa2; a3 = 0x0fa3;
+        c1 = 0xc1; c2 = 0xc2; c3 = 0xc3;
+    }
+    {% endcodeblock %}
+    问题：C语言将全局变量存放在哪里？将局部变量存放在哪里？每个函数开头的“push bp mov bp,sp”有何含义？
+    程序中main函数的汇编代码如下：
+    {% codeblock lang:x86asm %}
+    PUSH BP
+    MOV BP, SP
+    SUB SP, 6
+    MOV WORD PTR [01A6], 00A1
+    MOV WORD PTR [01A8], 00A2
+    MOV WORD PTR [01AA], 00A3
+    MOV WORD PTR [BP-6], 00B1
+    MOV WORD PTR [BP-4], 00B2
+    MOV WORD PTR [BP-2], 00B3
+    MOV SP, BP
+    POP BP
+    RET
+    {% endcodeblock %}
+    程序中f函数的汇编代码如下：
+    {% codeblock lang:x86asm %}
+    PUSH BP
+    MOV BP, SP
+    SUB SP, 6
+    MOV WORD PTR [01A6], 0FA1
+    MOV WORD PTR [01A8], 0FA2
+    MOV WORD PTR [01AA], 0FA3
+    MOV WORD PTR [BP-6], 00C1
+    MOV WORD PTR [BP-4], 00C2
+    MOV WORD PTR [BP-2], 00C3
+    MOV SP, BP
+    POP BP
+    RET
+    {% endcodeblock %}
+    答案：
+    C语言将全局变量存放在内存中，将局部变量存放在栈中，每个函数开头的push bp以及mov bp,sp是为了保护与还原现场。</p>
+</li>
+<li>
+<p>分析下面程序的汇编代码，思考相关的问题。
+    {% codeblock lang:c %}
+    int f(void);</p>
+<p>int a,b,ab;</p>
+<p>main()
+{
+    int c;
+    c = f();
+}
+int f(void)
+{
+    ab=a+b;</p>
+<div class="highlight"><pre><span></span>return ab;
+</pre></div>
+
+
+<p>}
+{% endcodeblock %}
+问题：C语言将函数的返回值存放在哪里？
+程序中main函数的汇编代码如下：
+{% codeblock lang:x86asm %}
+PUSH BP
+MOV BP, SP
+SUB SP, 2
+CALL 020A
+MOV [BP-2], AX
+MOV SP, BP
+POP BP
+RET
+{% endcodeblock %}
+程序中f函数的汇编代码如下：
+{% codeblock lang:x86asm %}
+PUSH BP
+MOV BP, SP
+MOV AX, [01A6]
+ADD AX, [01A8]
+MOV [01AA], AX
+MOV AX, [01AA]
+JMP 021C
+POP BP
+RET
+{% endcodeblock %}
+答案：
+在该情况下，C语言将返回值存放在通用寄存器AX中。</p>
+</li>
+<li>
+<p>下面的程序向安全的内存空间写入从“a”到“h”8个字符，理解程序的含义，深入理解相关的知识。（注意：请自己学习、研究malloc函数的用法）
+    {% codeblock lang:c %}
+    #define Buffer ((char <em>) * (int far </em>)0x02000000)</p>
+<p>main()
+{
+    Buffer = (char *)malloc(20);</p>
+<div class="highlight"><pre><span></span>Buffer[10] = 0;
+
+while(Buffer[10]!=8)
+{
+    Buffer[Buffer[10]]=&#39;a&#39;+Buffer[10];
+    Buffer[10]++;
+}
+</pre></div>
+
+
+<p>}
+{% endcodeblock %}
+理解：
+程序通过malloc分配大小为20字节的空间给并将其地址存入Buffer所指向的空间即0200:0000中。随后，通过一个while循环将这20个字节的空间的0-7个字节分别赋予对应的字符，并且用第10个字节计数。</p>
+</li>
+</ol>
+<h2>研究试验4 不用main函数编程</h2>
+<ol>
+<li>
+<p>把程序F.C保存在C:\MINIC下，对其进行编译，连接，思考相关的问题。
+    问题：
+    ①编译和连接哪个环节会出问题？
+    ②显示出的错误信息是什么？
+    ③这个错误信息可能和哪个文件有关？
+    答案：
+    ①连接环节出现了错误
+    ②在C0S模块中未定义的标号_main
+    ③和C0S.OBJ这个文件有关</p>
+</li>
+<li>
+<p>用学习汇编语言时使用的LINK.EXE对TC.EXE生成的F.OBJ文件进行连接，生成F.EXE。用DEBUG加载F.EXE，察看整个程序的汇编代码。思考相关的问题。
+    问题：
+    ①F.EXE的程序代码总共有多少字节？
+    ②F.EXE的程序能正确返回吗？
+    ③F函数的偏移地址是多少？
+    答案：
+    ①F.EXE的程序代码总共有1DH个字节
+    ②F.EXE的程序不能正确的返回
+    ③F函数的偏移地址为0</p>
+</li>
+<li>
+<p>写一个程序M.C。
+    {% codeblock lang:c %}
+    main ()
+    {
+        <em>(char far </em>)(0xb8000000+160<em>10+80)='a';
+        </em>(char far <em>)(0xb8000000+160</em>10+81)=2;
+    }
+    {% endcodeblock %}
+    用TC.EXE对M.C进行编译，连接，生成M.EXE，用Debug察看M.EXE整个程序的汇编代码。思考相关的问题。
+    问题：
+    ①M.EXE的程序代码总共有多少字节？
+    ②M.EXE的程序能正确返回吗？
+    ③M.EXE程序中的main函数和F.EXE中的f函数的汇编代码有何不同？
+    答案：
+    ①M.EXE的程序代码总共有5F5H个字节
+    ②M.EXE的程序能正确返回
+    ③M.EXE程序中的main函数和F.EXE中的f函数的汇编代码没有不同</p>
+</li>
+<li>
+<p>用Debug对m.exe进行跟踪：
+    ①找到对main函数进行调用的指令的地址
+    ②找到整个程序返回的指令
+    注意：使用g命令和p命令。
+    答案：
+    ①对main函数进行调用的指令的地址为076A:011A CALL 01FA
+    ②整个程序返回的指令为076A:0156 INT 21</p>
+</li>
+<li>
+<p>思考如下几个问题：
+    ①对main函数调用的指令和程序返回的指令是哪里来的？
+    ②没有main函数时，出现的错误信息里有和“C0S”相关的信息；而前面在搭建开发环境时，没有C0S.OBJ文件TC.EXE就无法对程序进行连接。是不是TC.EXE把C0S.OBJ和用户程序的.OBJ一起进行连接生成.EXE文件？
+    ③对用户程序的main函数进行调用的指令和程序返回的指令是否就来自C0S.OBJ文件？
+    ④我们如何看到C0S.OBJ文件中的程序代码呢？
+    ⑤C0S.OBJ文件里有我们设想的代码吗？
+    回答：
+    ①对main函数调用的指令和程序返回的指令是来自于其他的文件而非编译后的文件。
+    ②是的
+    ③是的
+    ④用LINK.EXE对其进行连接即可
+    ⑤有</p>
+</li>
+<li>
+<p>用LINK.EXE对C:\MINIC目录下的C0S.OBJ进行连接，生成C0S.EXE。
+    用Debug分别察看C0S.EXE和M.EXE的汇编代码。注意：从头开始察看，两个文件中的程序代码有和相同之处？
+    两个程序的代码基本相同，且都是在011A调用了CALL指令，在0156调用了INT 21中断</p>
+</li>
+<li>
+<p>用Debug找到M.EXE中调用main函数的CALL指令的偏移地址，从这个偏移地址开始向后察看10条指令；然后用Debug加载C0S.EXE，从相同的偏移地址开始向后察看10条指令，对两处的指令进行对比。
+    M.EXE和C0S.EXE在偏移地址011A之后的10条指令除了跳转指令的跳转地址有所不同外几乎完全相同。</p>
+</li>
+<li>
+<p>下面，我们用汇编语言编一个程序C0S.ASM，然后把它编译为C0S.OBJ，替代C:\MINIC目录下的C0S.OBJ。
+    程序C0S.ASM：
+    {% codeblock lang:x86asm %}
+    assume cs:code
+    data segment
+        db 128 dup (0)
+    data ends</p>
+<p>code segment
+start:  mov ax, data
+        mov ds, ax
+        mov ss, ax
+        mov sp, 108</p>
+<div class="highlight"><pre><span></span>    call s
+
+    mov ax, 4c00h
+    int 21h
+</pre></div>
+
+
+<p>s:      </p>
+<p>code ends</p>
+<p _="%" endcodeblock>end start</p>
+</li>
+<li>
+<p _="%" endcodeblock>在C:\MINIC目录下，用TC.EXE将F.C重新进行编译，连接，生成F.EXE。这次能通过连接吗？F.EXE可以正确运行吗？用Debug察看F.EXE的汇编代码。
+    能通过连接，可以正确运行，汇编代码如下：
+    {% codeblock lang:x86asm %}
+    MOV AX,076A
+    MOV DS,AX
+    MOV SS,AX
+    MOV SP,0080
+    CALL 0012
+    MOV AX,4C00
+    INT 21
+    MOV BP,SP
+    MOV BX,B800
+    MOV ES,BX
+    MOV BX,0690
+    ES:
+    MOV BYTE PTR [BX],61
+    MOV BX,B800
+    MOV ES,BX
+    MOV BX,0691
+    ES:
+    MOV BYTE PTR [BX],02
+    POP BP
+    RET
+    ...</p>
+</li>
+<li>
+<p>在新的C0S.OBJ的基础上，写一个新的F.C，向安全的内存空间写入从“a”到“h”的8个字符，分析、理解F.C。
+    程序F.C：
+    {% codeblock lang:c %}
+    #define Buffer ((char <em>) * (int far </em>)0x02000000)</p>
+<p>f()
+{
+    Buffer = 0;</p>
+<div class="highlight"><pre><span></span>Buffer[10] = 0;
+
+while(Buffer[10]!=8)
+{
+    Buffer[Buffer[10]]=&#39;a&#39;+Buffer[10];
+    Buffer[10]++;
+}
+</pre></div>
+
+
+<p _="%" endcodeblock>}
+{% endcodeblock %}
+汇编代码如下：
+{% codeblock lang:x86asm %}
+MOV AX,076A
+MOV DS,AX
+MOV SS,AX
+MOV SP,0080
+CALL 0012 ;调用f函数
+INT 21
+PUSH BP ;0012
+MOV BP,SP
+MOV BX,0200
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV WORD PTR [BX],0000 ;设置Buffer=0，即将0200:0000处的内存单元改为0
+MOV BX,0200
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV BX,[BX] ;将Buffer解引用，即将0200:0000处的内存字单元存入BX中
+MOV BYTE PTR [BX+0A],00 ;设置Buffer[10]=0 即将DS:000A处的内存单元改为0
+JMP 006D ;while 循环条件判断
+MOV BX,0200 ;0031
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV BX,[BX] ;将Buffer解引用，即将0200:0000处的内存字单元存入BX中
+MOV AL,[BX+0A] ;AL等于Buffer[10]，即将DS:000A内存字节单元的内容存入AL中
+ADD AL,61 ;为AL加上'a'
+MOV BX,0200
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV BX,[BX] ;将Buffer解引用，即将0200:0000处的内存字单元存入BX中
+PUSH AX
+PUSH BX
+MOV BX,0200
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV BX,[BX] ;将Buffer解引用，即将0200:0000处的内存字单元存入BX中
+MOV AL,[BX+0A] ;将Buffer[10]的值传入AL，即将DS:000A处的内存字节单元存入AL中
+CBW ;将AL扩展至16位
+POP BX ;取回BX
+ADD BX,AX ;BX现在值为Buffer[10]
+POP AX ;取回AX
+MOV [BX],AL ;将所要设置的数值'a'+Buffer[10]存入Buffer[Buffer[10]]中
+MOV BX,0200
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV BX,[BX] ;将Buffer解引用，即将0200:0000处的内存字单元存入BX中
+INC BYTE PTR [BX+0A] ;将Buffer[10]自增
+MOV BX,0200 ;006D
+MOV ES,BX
+XOR BX,BX
+ES:
+MOV BX,[BX]
+CMP BYTE PTR [BX+0A],08 ;判断Buffer[10]是否等于8
+JNZ 0031 ;不等于则继续
+POP BP ;等于则返回
+RET</p>
+</li>
+</ol>
+<h2>研究试验5 函数如何接受不定数量的参数</h2>
+<p>用C:\MINIC下的TC.EXE完成下面的试验。</p>
+<ol>
+<li>
+<p>写一个程序A.C：
+    {% codeblock lang:c %}
+    void showchar(char a, int b);</p>
+<p>main()
+{
+    showchar('a', 2);
+}</p>
+<p>void showchar(char a, int b)
+{
+    <em>(char far </em>)(0xb8000000+160*10+80)=a;</p>
+<div class="highlight"><pre><span></span>*(char far *)(0xb8000000+160*10+81)=b;
+</pre></div>
+
+
+<p>}
+{% endcodeblock %}
+用TC.EXE对A.C进行编译，连接，生成A.EXE。用Debug加载A.EXE，对函数的汇编代码进行分析。解答这两个问题：main函数是如何给showchar传递参数的？showchar是如何接受参数的？
+main函数的汇编代码如下：
+{% codeblock lang:x86asm %}
+PUSH BP
+MOV BP,SP
+MOV AX,0002
+PUSH AX
+MOV AL,61
+PUSH AX
+CALL 020B ;调用showchar函数
+POP CX
+POP CX
+POP BP
+RET
+{% endcodeblock %}
+showchar函数的汇编代码如下：
+{% codeblock lang:x86asm %}
+PUSH BP
+MOV BP,SP
+MOV AL,[BP+4]
+MOV BX,B800
+MOV ES,BX
+MOV BX,0690
+ES:
+MOV [BX],AL ;f函数的第1条语句
+MOV AL,[BP+6]
+MOV BX,B800
+MOV ES,BX
+MOV BX,0691
+ES:
+MOV [BX],AL ;f函数的第2条语句
+POP BP
+RET
+{% endcodeblock %}
+答案：
+main函数通过将对应的参数压栈来给showchar传递参数，并且在函数返回后通过POP操作将参数退栈。
+showchar通过SS:BP以及寻址在栈中取得对应的参数。</p>
+</li>
+<li>
+<p>写一个程序B.C：
+    {% codeblock lang:c %}
+    void showchar(int,int,...);</p>
+<p>main()
+{
+    showchar(8,2,'a','b','c','d','e','f','g','f');
+}</p>
+<p>void showchar(int n,int color,...)
+{
+    int a;</p>
+<div class="highlight"><pre><span></span>for(a=0;a!=n;a++)
+{
+    *(char far *)(0xb8000000+160*10+80+a+a)=*(int *)(_BP+8+a+a);//加8是因～为call的时候将CS、IP压栈
+
+    *(char far *)(0xb8000000+160*10+81+a+a)=color;
+}
+</pre></div>
+
+
+<p>}
+{% endcodeblock %}
+分析程序B.C，深入理解相关的知识。
+思考：showchar函数是如何知道要显示多少个字符的？printf函数是如何知道有多少个参数的？
+待显示字符的个数为showchar函数的第一个参数，showchar函数以此得知要显示的字符的个数。
+通过对printf的一个参数所指向的字符串的分析，printf函数以此得知参数的个数。</p>
+</li>
+<li>
+<p>实现一个简单的printf函数，只需支持“%c %d”即可。
+    {% codeblock lang:c %}
+    void myprintf(char *, ...);</p>
+<p>main()
+{
+    myprintf("%d %c abc %%\n", -12345, 48);
+}</p>
+<p _="%" endcodeblock>void myprintf(char * str, ...)
+{
+    int count = 0;
+    int position = 0;
+    while (<em>str != 0)
+    {
+        if (</em>str == 37)
+        {
+            str++;
+            if (<em>str == 68 || </em>str == 100)
+            {
+                int index;
+                char flag = 0;
+                int length = 0;
+                int num = <em>(int </em>)(_BP + 6 + count);
+                if (num &lt; 0) {
+                    flag = 1;
+                    num <em>= -1;
+                }
+                while (num != 0)
+                {
+                    num = num / 10;
+                    length++;
+                }
+                num = </em>(int <em>)(_BP + 6 + count);
+                if (flag == 1) num </em>= -1;
+                position += length + flag - 1;
+                for (index = 0 ; index &lt; length; ++index)
+                {
+                    <em>(char far </em>)(0xb8000000 + 1600 + position * 2) = num % 10 + 48;
+                    num = num / 10;
+                    position--;
+                }
+                if (flag == 1)
+                {
+                    <em>(char far </em>)(0xb8000000 + 1600 + position * 2) = '-';
+                    position--;
+                }
+                position += length + flag + 1;
+                count += 2;
+                str++;
+            }
+            else if (<em>str == 67 || </em>str == 99)
+            {
+                <em>(char far </em>)(0xb8000000 + 1600 + position * 2) = <em>(char </em>)(_BP + 6 + count);
+                count++;
+                position++;
+                str++;
+            }
+            else
+            {
+                <em>(char far </em>)(0xb8000000 + 1600 + position * 2) = '%';
+                position++;
+            }
+        }
+        else
+        {
+            <em>(char far </em>)(0xb8000000 + 1600 + position * 2) = *str;
+            position++;
+            str++;
+        }
+    }
+}</p>
+</li>
+</ol>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/hui-bian.html">汇编</a>, <a href="/tag/shi-yan.html">实验</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
