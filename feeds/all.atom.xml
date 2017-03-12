@@ -1,5 +1,230 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-03-10T10:35:37+08:00</updated><entry><title>汇编语言综合研究</title><link href="/hui-bian-yu-yan-zong-he-yan-jiu.html" rel="alternate"></link><published>2017-03-10T10:35:37+08:00</published><updated>2017-03-10T10:35:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-10:/hui-bian-yu-yan-zong-he-yan-jiu.html</id><summary type="html">&lt;h2&gt;研究试验1 搭建一个精简的C语言开发环境&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-03-12T14:02:47+08:00</updated><entry><title>Android View绘制之layout过程</title><link href="/android-viewhui-zhi-zhi-layoutguo-cheng.html" rel="alternate"></link><published>2017-03-12T14:02:47+08:00</published><updated>2017-03-12T14:02:47+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-12:/android-viewhui-zhi-zhi-layoutguo-cheng.html</id><summary type="html">&lt;p&gt;经过&lt;a href="http://www.viseator.xyz/2017/03/10/android_view_onMeasure/"&gt;上一篇&lt;/a&gt;介绍的&lt;code&gt;measure&lt;/code&gt;过程之后，各个&lt;code&gt;View&lt;/code&gt;的尺寸信息已经存储在了每个&lt;code&gt;View&lt;/code&gt;中，下面是&lt;code&gt;layout&lt;/code&gt;过程，&lt;code&gt;layout&lt;/code&gt;过程的目的是根据上一步中计算出的尺寸来正确设置各个&lt;code&gt;View&lt;/code&gt;及其后代的位置。这个过程首先被调用的是&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法，&lt;code&gt;layout()&lt;/code&gt;的方法签名是&lt;code&gt;public void layout(int l, int t, int r, int b)&lt;/code&gt;，四个参数分别为左边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，上边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离，右边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，下边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;changed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;isLayoutModeOptical …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;经过&lt;a href="http://www.viseator.xyz/2017/03/10/android_view_onMeasure/"&gt;上一篇&lt;/a&gt;介绍的&lt;code&gt;measure&lt;/code&gt;过程之后，各个&lt;code&gt;View&lt;/code&gt;的尺寸信息已经存储在了每个&lt;code&gt;View&lt;/code&gt;中，下面是&lt;code&gt;layout&lt;/code&gt;过程，&lt;code&gt;layout&lt;/code&gt;过程的目的是根据上一步中计算出的尺寸来正确设置各个&lt;code&gt;View&lt;/code&gt;及其后代的位置。这个过程首先被调用的是&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法，&lt;code&gt;layout()&lt;/code&gt;的方法签名是&lt;code&gt;public void layout(int l, int t, int r, int b)&lt;/code&gt;，四个参数分别为左边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，上边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离，右边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，下边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;changed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;isLayoutModeOptical&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mParent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt;
+        &lt;span class="n"&gt;setOpticalFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;l&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;setFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;l&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;changed&lt;/code&gt;是用于传递给&lt;code&gt;onLayout()&lt;/code&gt;方法的参数，它指示了布局是否被改变。&lt;/p&gt;
+&lt;p&gt;后面的表达式查看了父&lt;code&gt;View&lt;/code&gt;的布局模式是否需要显示边框，如需要，调用的是&lt;code&gt;setOpticalFrame()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="nf"&gt;setOpticalFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;Insets&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mParent&lt;/span&gt; &lt;span class="k"&gt;instanceof&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt;
+            &lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;mParent&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;getOpticalInsets&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Insets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;NONE&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;Insets&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getOpticalInsets&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;setFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;left&lt;/span&gt;   &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;left&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;top&lt;/span&gt;    &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;top&lt;/span&gt;  &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;right&lt;/span&gt;  &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;left&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;bottom&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;top&lt;/span&gt;  &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到这个方法读取了设置的边框值， 把原值加上边框值后还是调用了&lt;code&gt;setFrame()&lt;/code&gt;方法。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;setFrame()&lt;/code&gt;方法通过传入的参数确定了该&lt;code&gt;View&lt;/code&gt;最终的位置以及尺寸。&lt;/p&gt;
+&lt;p&gt;可以看到，一个&lt;code&gt;View&lt;/code&gt;最终显示在什么位置以及它的尺寸是由&lt;code&gt;layout()&lt;/code&gt;方法决定的，&lt;code&gt;onMeasure()&lt;/code&gt;方法只是将测量出的&lt;code&gt;View&lt;/code&gt;期望具有的大小储存在&lt;code&gt;View&lt;/code&gt;中。一般情况下，我们会根据储存的这个尺寸来作为设定的依据。&lt;/p&gt;
+&lt;p&gt;接下来&lt;code&gt;layout()&lt;/code&gt;方法会调用&lt;code&gt;onLayout()&lt;/code&gt;方法，（如果需要的话）我们需要重写这个方法来调用子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法。所以决定子&lt;code&gt;View&lt;/code&gt;如何显示的关键步骤就在这里，他们的位置和尺寸完全取决于这里调用它们的&lt;code&gt;layout()&lt;/code&gt;方法时传入的参数。当然一般情况下我们会根据子&lt;code&gt;View&lt;/code&gt;中的测量结果来设置这个值。这里拿&lt;code&gt;FrameLayout&lt;/code&gt;这个需要处理子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;ViewGroup&lt;/code&gt;实例来举例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onLayout&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;changed&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;layoutChildren&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt; &lt;span class="cm"&gt;/* no force left gravity */&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;直接调用了&lt;code&gt;layoutChildren()&lt;/code&gt;：（省略部分行）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;layoutChildren&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;forceLeftGravity&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getChildCount&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentLeft&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getPaddingLeftWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentRight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;getPaddingRightWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getPaddingTopWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentBottom&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;getPaddingBottomWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getChildAt&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMeasuredWidth&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMeasuredHeight&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;childLeft&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;childTop&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+            &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;verticalGravity&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Gravity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;TOP&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Gravity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;CENTER_VERTICAL&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;parentBottom&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt;
+                    &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottomMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Gravity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;BOTTOM&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentBottom&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottomMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+
+            &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;layout&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;childLeft&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;childTop&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;childLeft&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;省略了与获取布局属性相关的代码，可以看到：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;4-8行获取了父&lt;code&gt;View&lt;/code&gt;的位置数据并在18-31行用于确定最终的位置数据&lt;/li&gt;
+&lt;li&gt;10-11行遍历了所有的子&lt;code&gt;View&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;12-13行获取了子&lt;code&gt;View&lt;/code&gt;中在上一步骤的测量过程中储存的宽和高，并用于第33行中设置最终的右边界与下边界&lt;/li&gt;
+&lt;li&gt;第33行调用子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法&lt;/li&gt;
+&lt;/ul&gt;</content><category term="Android"></category><category term="View"></category></entry><entry><title>Android View绘制之measure过程</title><link href="/android-viewhui-zhi-zhi-measureguo-cheng.html" rel="alternate"></link><published>2017-03-10T18:30:16+08:00</published><updated>2017-03-10T18:30:16+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-10:/android-viewhui-zhi-zhi-measureguo-cheng.html</id><summary type="html">&lt;p&gt;&lt;a href="http://www.viseator.xyz/2017/03/09/android_view_lifeCycle/"&gt;上一篇博客&lt;/a&gt;简单地介绍了&lt;code&gt;View&lt;/code&gt;绘制的生命周期， 从这篇博客开始将会对这个周期中一些有用的过程进行一个详细一些的介绍。这篇的主角就是在构造方法之后调用的&lt;code&gt;measure&lt;/code&gt;过程。&lt;/p&gt;
+&lt;p&gt;为了演示，继承了&lt;code&gt;TextView&lt;/code&gt;来实现一个自定义的&lt;code&gt;View&lt;/code&gt;。注意这里继承的应该是&lt;code&gt;android.support.v7.widget.AppCompatTextView&lt;/code&gt;这个类。同时为了&lt;code&gt;xml&lt;/code&gt;文件的正常解析，我们需要实现&lt;code&gt;View&lt;/code&gt;的三个构造方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;&lt;a href="http://www.viseator.xyz/2017/03/09/android_view_lifeCycle/"&gt;上一篇博客&lt;/a&gt;简单地介绍了&lt;code&gt;View&lt;/code&gt;绘制的生命周期， 从这篇博客开始将会对这个周期中一些有用的过程进行一个详细一些的介绍。这篇的主角就是在构造方法之后调用的&lt;code&gt;measure&lt;/code&gt;过程。&lt;/p&gt;
+&lt;p&gt;为了演示，继承了&lt;code&gt;TextView&lt;/code&gt;来实现一个自定义的&lt;code&gt;View&lt;/code&gt;。注意这里继承的应该是&lt;code&gt;android.support.v7.widget.AppCompatTextView&lt;/code&gt;这个类。同时为了&lt;code&gt;xml&lt;/code&gt;文件的正常解析，我们需要实现&lt;code&gt;View&lt;/code&gt;的三个构造方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;再通过完整包名的方法在&lt;code&gt;xml&lt;/code&gt;布局文件中创建我们的&lt;code&gt;View&lt;/code&gt;就可以直接显示了。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;com.viseator.viewtest.VView&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;100dp&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;100dp&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;@color/Gray&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里给了&lt;code&gt;TextView&lt;/code&gt;一个背景颜色便于后面的观察。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;下面就开始分析&lt;code&gt;measure&lt;/code&gt;过程。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;measure&lt;/code&gt;是一个自顶向下的过程，即父&lt;code&gt;View&lt;/code&gt;会依次调用它的子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;measure()&lt;/code&gt;方法来对它的子&lt;code&gt;View&lt;/code&gt;进行测量。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;measure()&lt;/code&gt;方法最终会调用&lt;code&gt;onMeasure()&lt;/code&gt;，真正的尺寸信息就是在&lt;code&gt;onMeasure()&lt;/code&gt;方法中最终确定的。所以我们需要做的就是在自定义&lt;code&gt;View&lt;/code&gt;中重写&lt;code&gt;onMeasure()&lt;/code&gt;方法。&lt;/p&gt;
+&lt;p&gt;那么子&lt;code&gt;View&lt;/code&gt;根据什么来确定自己应该具有的尺寸呢？当然不可能让子&lt;code&gt;View&lt;/code&gt;自由地决定自己的大小，父&lt;code&gt;View&lt;/code&gt;必然需要向子&lt;code&gt;View&lt;/code&gt;传递信息来帮助子&lt;code&gt;View&lt;/code&gt;来确定尺寸，而子&lt;code&gt;View&lt;/code&gt;则必须满足父&lt;code&gt;View&lt;/code&gt;的要求。查看&lt;code&gt;measure()&lt;/code&gt;的方法签名：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;measure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的&lt;code&gt;widthMeasureSpec&lt;/code&gt;与&lt;code&gt;heightMeasureSpec&lt;/code&gt;就是存储这一信息的参数。它们的类型是&lt;code&gt;int&lt;/code&gt;，内部以高两位来存储测量的模式，低三十位为测量的大小，计算中使用了位运算来提高并优化效率。当然我们不必使用位运算来获得对应的数值，&lt;code&gt;View.MeasureSpec&lt;/code&gt;为我们提供了对应的方法。&lt;/p&gt;
+&lt;p&gt;测量模式有三种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;EXACTLY&lt;/code&gt;：精确值模式，即子&lt;code&gt;View&lt;/code&gt;必须使用这一尺寸，并且保证它们的所有后代都在这个范围之内。当我们将控件的&lt;code&gt;layout_width&lt;/code&gt;、&lt;code&gt;layout_height&lt;/code&gt;属性指定为具体数值或&lt;code&gt;match_parent&lt;/code&gt;时，系统使用这一模式。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;UNSPECIFIED&lt;/code&gt;：无限制模式，不对子&lt;code&gt;View&lt;/code&gt;施加任何限制，完全由子&lt;code&gt;View&lt;/code&gt;决定自己的大小。可以用于查看子&lt;code&gt;View&lt;/code&gt;想要的尺寸，比如可以把子&lt;code&gt;View&lt;/code&gt;的长度使用&lt;code&gt;EXACTLY&lt;/code&gt;模式限制在100，不限制宽度来查看子&lt;code&gt;View&lt;/code&gt;在长度为100情况想要的宽度。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;AT_MOST&lt;/code&gt;：最大值模式，只限制子&lt;code&gt;View&lt;/code&gt;能具有的最大尺寸，子&lt;code&gt;View&lt;/code&gt;必须保证它和它的后代们都在这一范围之内。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;了解这些，我们就可以通过重写&lt;code&gt;onMeasure()&lt;/code&gt;来确定一个&lt;code&gt;View&lt;/code&gt;的尺寸。&lt;/p&gt;
+&lt;p&gt;但在重写方法时要注意：必须调用&lt;code&gt;setMeasuredDimension()&lt;/code&gt; 来将最终尺寸存储在&lt;code&gt;View&lt;/code&gt;中，否则会抛出一个&lt;code&gt;IllegalStateException&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;xml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;com.viseator.viewtest.VView&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;wrap_content&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;100dp&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;@color/Gray&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;VView&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;widthMode: &amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;widthMode&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;heightMode: &amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;heightMode&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;width :&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;height :&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;log:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="output" src="/images/onMeasureOutput1.png"&gt;&lt;/p&gt;
+&lt;p&gt;这段简单的代码验证了之前的说法，分别对宽高设置了&lt;code&gt;wrap_content&lt;/code&gt;和固定值，可以发现模式分别为&lt;code&gt;AT_MOST&lt;/code&gt;与&lt;code&gt;EXACTLY&lt;/code&gt;（以数值表示）。&lt;/p&gt;
+&lt;p&gt;这里输出的宽高值是以像素为单位的，可以看到高度的期望值就是设置的大小，但&lt;code&gt;wrap_content&lt;/code&gt;期望的宽度值为1080（屏幕宽度），默认即为屏幕宽度，但最终计算得出的宽度值由于里面没有文字所以为0。&lt;/p&gt;
+&lt;p&gt;同样地，&lt;code&gt;UNSPECIFIED&lt;/code&gt;模式给出的默认尺寸也是屏幕的宽/高。&lt;/p&gt;
+&lt;p&gt;所以我们可以看到如果想要实现&lt;code&gt;wrap_content&lt;/code&gt;的效果，我们必须在&lt;code&gt;onMeasure&lt;/code&gt;中对&lt;code&gt;AT_MOST&lt;/code&gt;模式计算其内容宽/高并作为最终的宽/高，否则将以屏幕的宽/高进行填充。以&lt;code&gt;LinearLayout&lt;/code&gt;的源码为例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;useLargestChild&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+        &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMode&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;AT_MOST&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;heightMode&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;UNSPECIFIED&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getVirtualChildAt&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;measureNullChild&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;continue&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getVisibility&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;GONE&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;getChildrenSkipCount&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;continue&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;LinearLayout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;LinearLayout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getLayoutParams&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="c1"&gt;// Account for negative margins&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;totalLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mTotalLength&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Math&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;max&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;totalLength&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;totalLength&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;largestChildHeight&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt;
+                &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottomMargin&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;getNextLocationOffset&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="c1"&gt;// Add in our padding&lt;/span&gt;
+&lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;mPaddingTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;mPaddingBottom&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightSize&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mTotalLength&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这部分代码向我们展示了&lt;code&gt;LinearLayout&lt;/code&gt;处理子&lt;code&gt;View&lt;/code&gt;并计算所有的高度的情况。&lt;/p&gt;
+&lt;p&gt;知道了这个调用过程，我们就可以真正地进行&lt;code&gt;onMeasure()&lt;/code&gt;的重写了。&lt;/p&gt;
+&lt;p&gt;例如可以暴力指定&lt;code&gt;View&lt;/code&gt;尺寸：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;setMeasuredDimension&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;600&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以为&lt;code&gt;AT_MOST&lt;/code&gt;与&lt;code&gt;UNSPECIFIED&lt;/code&gt;模式指定一个默认大小：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;setMeasuredDimension&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;measureSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;measureSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;mode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mode&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;EXACTLY&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;300&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;//Default size&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Math&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;min&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;至于更复杂的计算逻辑由于本人能力有限就不写demo了，如果以后实际中遇到需要的时候再作补充。&lt;/p&gt;</content><category term="Android"></category><category term="View"></category></entry><entry><title>汇编语言综合研究</title><link href="/hui-bian-yu-yan-zong-he-yan-jiu.html" rel="alternate"></link><published>2017-03-10T10:35:37+08:00</published><updated>2017-03-10T10:35:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-10:/hui-bian-yu-yan-zong-he-yan-jiu.html</id><summary type="html">&lt;h2&gt;研究试验1 搭建一个精简的C语言开发环境&lt;/h2&gt;
 &lt;p&gt;TC进行连接需要如下的文件：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;C0S.OBJ&lt;/li&gt;
@@ -854,7 +1079,64 @@ showchar通过SS:BP以及寻址在栈中取得对应的参数。&lt;/p&gt;
     }
 }&lt;/p&gt;
 &lt;/li&gt;
-&lt;/ol&gt;</content><category term="汇编"></category><category term="实验"></category></entry><entry><title>王爽汇编语言第三版实验</title><link href="/wang-shuang-hui-bian-yu-yan-di-san-ban-shi-yan.html" rel="alternate"></link><published>2017-03-09T11:42:37+08:00</published><updated>2017-03-09T11:42:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-09:/wang-shuang-hui-bian-yu-yan-di-san-ban-shi-yan.html</id><summary type="html">&lt;blockquote&gt;
+&lt;/ol&gt;</content><category term="汇编"></category><category term="实验"></category></entry><entry><title>Android View绘制生命周期总览</title><link href="/android-viewhui-zhi-sheng-ming-zhou-qi-zong-lan.html" rel="alternate"></link><published>2017-03-09T17:22:41+08:00</published><updated>2017-03-09T17:22:41+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-09:/android-viewhui-zhi-sheng-ming-zhou-qi-zong-lan.html</id><summary type="html">&lt;p&gt;为了直观表示整个过程，我制作了一张流程图。注意以下只是整个生命周期中比较常用的方法，并不代表所有的过程。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="viewLifeCircle" src="/images/viewLifeCircle.png"&gt;&lt;/p&gt;
+&lt;p&gt;当一个&lt;code&gt;Activity&lt;/code&gt;收到焦点即将要处于激活状态时，将会被要求绘制它的布局，绘制布局之前的过程在这里不涉及，我们从绘制&lt;code&gt;View&lt;/code&gt;开始分析。&lt;/p&gt;
+&lt;p&gt;每个&lt;code&gt;Activity&lt;/code&gt;被要求提供一个&lt;code&gt;ViewGroup&lt;/code&gt;作为View树的根，也就是我们熟悉的&lt;code&gt;setContentView&lt;/code&gt;方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nd"&gt;@LayoutRes&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ViewGroup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;为了直观表示整个过程，我制作了一张流程图。注意以下只是整个生命周期中比较常用的方法，并不代表所有的过程。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="viewLifeCircle" src="/images/viewLifeCircle.png"&gt;&lt;/p&gt;
+&lt;p&gt;当一个&lt;code&gt;Activity&lt;/code&gt;收到焦点即将要处于激活状态时，将会被要求绘制它的布局，绘制布局之前的过程在这里不涉及，我们从绘制&lt;code&gt;View&lt;/code&gt;开始分析。&lt;/p&gt;
+&lt;p&gt;每个&lt;code&gt;Activity&lt;/code&gt;被要求提供一个&lt;code&gt;ViewGroup&lt;/code&gt;作为View树的根，也就是我们熟悉的&lt;code&gt;setContentView&lt;/code&gt;方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nd"&gt;@LayoutRes&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ViewGroup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到&lt;code&gt;setContentView&lt;/code&gt;拥有三种形式，可以直接传入&lt;code&gt;View&lt;/code&gt;、传入一个&lt;code&gt;layout&lt;/code&gt;资源文件，或传入一个&lt;code&gt;View&lt;/code&gt;文件和一个用于提供参数的&lt;code&gt;LayoutParams&lt;/code&gt;对象。&lt;/p&gt;
+&lt;p&gt;整个过程将从这个根&lt;code&gt;View&lt;/code&gt;开始，并遍历它的子&lt;code&gt;View&lt;/code&gt;来逐一绘制，每个&lt;code&gt;ViewGroup&lt;/code&gt;承担了要求它的子&lt;code&gt;View&lt;/code&gt;进行绘制的责任，每个&lt;code&gt;View&lt;/code&gt;承担了绘制自身的责任。并且父&lt;code&gt;View&lt;/code&gt;会在子&lt;code&gt;View&lt;/code&gt;完成绘制之前进行绘制，同级的&lt;code&gt;View&lt;/code&gt;将以它们出现在树中的顺序进行绘制。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;首先调用的当然是&lt;code&gt;View&lt;/code&gt;的构造函数，构造函数分为两种，一种供代码创建的&lt;code&gt;View&lt;/code&gt;使用，另一种是由&lt;code&gt;layout&lt;/code&gt;文件生成的&lt;code&gt;View&lt;/code&gt;使用，区别在于后者会从&lt;code&gt;layout&lt;/code&gt;文件中读入所有的属性，前者的属性则需要在代码中设置。&lt;/p&gt;
+&lt;p&gt;另外后者在所有的子&lt;code&gt;View&lt;/code&gt;都生成完毕之后会回调&lt;code&gt;onFinishInflate&lt;/code&gt;方法。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;在正式绘制之前要进行两个过程（布局机制[layout mechanism]）：&lt;/p&gt;
+&lt;p&gt;首先是&lt;code&gt;measure&lt;/code&gt;过程。这是一个自顶向下的过程，父&lt;code&gt;View&lt;/code&gt;将期望尺寸传递给子&lt;code&gt;View&lt;/code&gt;，子&lt;code&gt;View&lt;/code&gt;需要根据这一信息确定自己的尺寸，并且保证这一尺寸满足父&lt;code&gt;View&lt;/code&gt;对其的要求，在子&lt;code&gt;View&lt;/code&gt;确定自己尺寸的过程中也要向它的子&lt;code&gt;View&lt;/code&gt;传递信息，就这样递归地确定自己的尺寸信息并储存在自身中，保证在&lt;code&gt;measure&lt;/code&gt;方法返回时，自身的尺寸信息已经确定。所以在根&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;measure&lt;/code&gt;方法返回时，所有子&lt;code&gt;View&lt;/code&gt;的尺寸信息已经全部确定了。&lt;/p&gt;
+&lt;p&gt;这个过程需要注意一个&lt;code&gt;View&lt;/code&gt;可能不止一次地调用&lt;code&gt;measure&lt;/code&gt;方法来对子&lt;code&gt;View&lt;/code&gt;进行测量。比如，可能要先传递一个无限制的信息来获取子&lt;code&gt;View&lt;/code&gt;想要的尺寸，当子&lt;code&gt;View&lt;/code&gt;希望的尺寸过大或过小时，父&lt;code&gt;View&lt;/code&gt;需要再次调用&lt;code&gt;measure&lt;/code&gt;方法来给予子&lt;code&gt;View&lt;/code&gt;一些限制。&lt;/p&gt;
+&lt;p&gt;第二个是&lt;code&gt;layout&lt;/code&gt;过程，这也是一个自顶向下的遍历过程，在这个过程中父&lt;code&gt;View&lt;/code&gt;负责按照上一个过程中计算并储存在&lt;code&gt;View&lt;/code&gt;中的尺寸信息来正确地放置子&lt;code&gt;View&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;同时这个过程可以通过调用&lt;code&gt;requestLayout()&lt;/code&gt;来重新进行，并且会引起后面步骤的执行，相当于对以这个&lt;code&gt;View&lt;/code&gt;为根的&lt;code&gt;View&lt;/code&gt;树进行重新布局。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;下面就是真正的绘制过程了，也就是&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;draw()&lt;/code&gt;方法，在&lt;code&gt;draw()&lt;/code&gt;方法中，（如果需要）会&lt;strong&gt;依次&lt;/strong&gt;调用如下方法：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;drawBackground()&lt;/code&gt;：在画布上绘制特定的背景&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;onDraw()&lt;/code&gt;：重写&lt;code&gt;View&lt;/code&gt;几乎必重写的一个方法，用于绘制图形&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dispatchDraw()&lt;/code&gt;：&lt;code&gt;ViewGroup&lt;/code&gt;会重写这个方法，用于对所有的子&lt;code&gt;View&lt;/code&gt;调用&lt;code&gt;draw()&lt;/code&gt;方法进行绘制&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;onDrawForeground()&lt;/code&gt;：用于绘制前景（如果需要）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;可以看到如果需要调用上述的方法必定会按照这个顺序进行，也就是说，子&lt;code&gt;View&lt;/code&gt;的绘制是在父&lt;code&gt;View&lt;/code&gt;绘制之后进行的，而同级&lt;code&gt;View&lt;/code&gt;的绘制是根据&lt;code&gt;View&lt;/code&gt;在父&lt;code&gt;View&lt;/code&gt;中的顺序进行绘制的。&lt;/p&gt;
+&lt;p&gt;同时这个过程可以通过调用&lt;code&gt;invalidate()&lt;/code&gt;来重新进行，相当于进行某个&lt;code&gt;View&lt;/code&gt;的重绘。&lt;/p&gt;</content><category term="Android"></category><category term="View"></category><category term="LifeCycle"></category></entry><entry><title>王爽汇编语言第三版实验</title><link href="/wang-shuang-hui-bian-yu-yan-di-san-ban-shi-yan.html" rel="alternate"></link><published>2017-03-09T11:42:37+08:00</published><updated>2017-03-09T11:42:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-09:/wang-shuang-hui-bian-yu-yan-di-san-ban-shi-yan.html</id><summary type="html">&lt;blockquote&gt;
 &lt;p&gt;开学三周，王爽的《汇编语言》（第三版）总算是基本上看完了，本文是总结的第二部分，包括了书本上的实验&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h2&gt;实验1 查看CPU和内存，用机器指令和汇编指令编程&lt;/h2&gt;
