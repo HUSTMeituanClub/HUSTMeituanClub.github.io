@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>设计模式——创建型模式</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="Abstract Factory（抽象工厂） 目标 提供一个无需指定的类而可以创建一系列相关的对象的接口。 结构 由一个Abstract Factory类派生出多个子类工厂，子类工厂将会提供相应的创建产品的方法。对于客户来说，只需要获得Abstract...">
+
+        <meta name="author" content="Yifeng Tang">
+
+        <meta name="tags" content="Design Patterns">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/yifeng-tang.html">
+	<meta property="og:url" content="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html">
+	<meta property="og:title" content="设计模式——创建型模式">
+	<meta property="article:published_time" content="2017-03-25 12:56:00+08:00">
+            <meta property="og:description" content="Abstract Factory（抽象工厂） 目标 提供一个无需指定的类而可以创建一系列相关的对象的接口。 结构 由一个Abstract Factory类派生出多个子类工厂，子类工厂将会提供相应的创建产品的方法。对于客户来说，只需要获得Abstract...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/pages/about/index.html">关于</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>设计模式——创建型模式</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/yifeng-tang.html">Yifeng Tang</a>
+                             on 2017年 3月25日 周六
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h1>Abstract Factory（抽象工厂）</h1>
+<h2>目标</h2>
+<p>提供一个无需指定的类而可以创建一系列相关的对象的接口。</p>
+<h2>结构</h2>
+<p><img alt="抽象工厂" src="/images/2017_3_7_1.jpeg"></p>
+<p>由一个Abstract Factory类派生出多个子类工厂，子类工厂将会提供相应的创建产品的方法。对于客户来说，只需要获得Abstract Factory类中的接口就可以实现各类产品的创建。（与工厂方法有一点区别在抽象工厂一般是生成一系列相互有关系的产品，工厂模式方法一般就是生成某一个产品）</p>
+<h2>使用情形</h2>
+<ol>
+<li>
+<p>一个系统要独立于它的产品的创建、组合和表示时；</p>
+</li>
+<li>
+<p>一个系统要由多个产品系列的一个来配置时；</p>
+</li>
+<li>
+<p>当你强调一系列相关产品对象的设计以便联合使用的时候；</p>
+</li>
+<li>
+<p>当你提供一个产品类库，而只想显示他们的接口而不是实现。</p>
+</li>
+</ol>
+<h2>参与成员</h2>
+<ul>
+<li>
+<p>AbstractFactory</p>
+<p>声明创建抽象产品对象的操作接口。</p>
+</li>
+<li>
+<p>ConcreteFactory</p>
+<p>实现创建具体产品对象的操作。</p>
+</li>
+<li>
+<p>AbstractProduct</p>
+<p>为一类产品对象声明一个接口。</p>
+</li>
+<li>
+<p>ConcreteProduct</p>
+<p>将被具体工厂实现的具体产品对象。</p>
+</li>
+<li>
+<p>Client</p>
+<p>使用Abstract接口的接口。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>分离了具体的类，提高解耦度。</p>
+<p>它将客户与类的实现分离开，客户通过手中有的抽象工厂接口操纵。产品的类名也在具体工厂的实现中分离，不会出现在客户代码中。客户不必知道自己到底获得了怎样实现的一个类。</p>
+</li>
+<li>
+<p>易于改变产品的系列。</p>
+<p>由于具体的工厂方法只会在初始化的时候出现一次，所以想要改变产品的系列只需要转换到相应的工厂对象，就可以重新创建一系列的产品。</p>
+</li>
+<li>
+<p>有利于产品的一致性。</p>
+<p>当一个系列的产品对象被设计成一起工作或者一个应用只能使用一个系列的产品的时候，抽象工厂就可以很轻易地实现这一个功能。</p>
+</li>
+<li>
+<p>难以支持新的产品（或者说功能？）</p>
+</li>
+</ol>
+<h2>代码实例</h2>
+<div class="highlight"><pre><span></span><span class="kd">interface</span> <span class="nc">AbstractFactory</span><span class="o">{</span>
+    <span class="n">Car</span> <span class="nf">makeCar</span><span class="o">();</span>
+    <span class="n">Cushion</span> <span class="nf">makeCushion</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">BenzFactory</span> <span class="kd">implements</span> <span class="n">AbstractFactory</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="n">Benz</span> <span class="nf">makeCar</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="nd">@Override</span>
+    <span class="n">BenzCushion</span> <span class="nf">makeCushion</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">AudiFactory</span> <span class="kd">implements</span> <span class="n">AbstractFactory</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="n">Audi</span> <span class="nf">makeCar</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="nd">@Override</span>
+    <span class="n">AudiCushion</span> <span class="nf">makeCushion</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="kd">static</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+        <span class="n">AbstractFactory</span> <span class="n">factoryA</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BenzFactory</span><span class="o">();</span>
+        <span class="n">AbstractFactory</span> <span class="n">factoryB</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AudiFactory</span><span class="o">();</span>
+        <span class="n">Car</span> <span class="n">a</span> <span class="o">=</span> <span class="n">factoryA</span><span class="o">.</span><span class="na">makeCar</span><span class="o">();</span>
+        <span class="n">Cushion</span> <span class="n">cushionA</span> <span class="o">=</span> <span class="n">factoryA</span><span class="o">.</span><span class="na">makeCushion</span><span class="o">();</span>
+        <span class="n">Car</span> <span class="n">b</span> <span class="o">=</span> <span class="n">factoryB</span><span class="o">.</span><span class="na">makeCar</span><span class="o">();</span>
+        <span class="n">Cushion</span> <span class="n">cushionB</span> <span class="o">=</span> <span class="n">factoryB</span><span class="o">.</span><span class="na">makeCushion</span><span class="o">();</span>
+        <span class="n">a</span><span class="o">.</span><span class="na">addCushion</span><span class="o">(</span><span class="n">cushionA</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+        <span class="n">b</span><span class="o">.</span><span class="na">addCushion</span><span class="o">(</span><span class="n">cushionB</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Factory Method（工厂方法）</h1>
+<h2>目标</h2>
+<p>定义一个用于创建对象的接口，让子类决定实例化哪一个类。将实例化延迟到其子类。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_3_9_1.jpg"></p>
+<p>工厂方法被自己的子类所重定义以决定创建哪一个产品对象。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_9_2.jpg"></p>
+<ol>
+<li>
+<p>用户创建一个工厂；</p>
+</li>
+<li>
+<p>工厂生产一个产品；</p>
+</li>
+<li>
+<p>用户直接使用或者调用产品的方法。</p>
+</li>
+</ol>
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>当一个类不知道它所必需创建的对象的类的时候；</p>
+</li>
+<li>
+<p>当一个类希望由它的子类来制定它所创建的对象的时候；</p>
+</li>
+<li>
+<p>当类创建对象的职责委托给多个子类中的一个，并且你希望选择某个子类使得具体产品明确化的时候。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Product</p>
+<p>定义工厂方法所创建的对象的接口；</p>
+</li>
+<li>
+<p>ConcreteProduct</p>
+<p>实现Product的接口；</p>
+</li>
+<li>
+<p>Creator</p>
+<p>声明工厂方法，定义一个具体工厂来生产产品，并且调用工厂方法以返回一个Product；</p>
+</li>
+<li>
+<p>ConcreteCreator</p>
+<p>重定义一个具体的工厂方法。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>将与特定相关产品的代码与你的代码分离，你只需要关心product而不是用户可能会实现出来的各种concreteProduct；</p>
+</li>
+<li>
+<p>为子类提供了一个hook，这个hook可以帮助提供对象的扩展版本。例如，有一个汽车工厂，该工厂可以生产小汽车，后来这个工厂老板又去开了一家高级汽车厂。这时候，这个汽车厂既可以用原来的方法生产普通汽车，也可以继承之后生产生产高级汽车，此时父类工厂方法已不是一个抽象的方法，而是一个default方法。</p>
+</li>
+<li>
+<p>连接平行的类层次。当一个类将自己的某些功能委托给另一个独立的类的时候，便产生了平行的类层次。例如，有一个类用于判定学生的试卷得分多少，但是最后这个分数将不会存储在自己身上，而是在另一个类之中。此时，这个分数就是从判定分数的类中的工厂方法中生产的，这样就实现了平行的分层。</p>
+</li>
+</ol>
+<h2>与抽象工厂模式的异同</h2>
+<ul>
+<li>
+<p>异：</p>
+<p>对于一个抽象工厂模式，它更加倾向于强调一系列产品的生产以及调整改变产品系列；对于工厂方法，仅是为了某一个产品的生产。</p>
+</li>
+<li>
+<p>同</p>
+<p>实际上在某种方面来说，抽象工厂模式囊括了工厂方法。也就是说抽象工厂方法可以用工厂方法来实现。</p>
+</li>
+</ul>
+<h2>代码实例</h2>
+<div class="highlight"><pre><span></span><span class="kd">interface</span> <span class="nc">AbstractFactory</span><span class="o">{</span>
+    <span class="n">Car</span> <span class="nf">makeCar</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">BenzFactory</span> <span class="kd">implements</span> <span class="n">AbstractFactory</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="n">Benz</span> <span class="nf">makeCar</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">AudiFactory</span> <span class="kd">implements</span> <span class="n">AbstractFactory</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="n">Audi</span> <span class="nf">makeCar</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="kd">static</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+        <span class="n">AbstractFactory</span> <span class="n">factoryA</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BenzFactory</span><span class="o">();</span>
+        <span class="n">AbstractFactory</span> <span class="n">factoryB</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AudiFactory</span><span class="o">();</span>
+        <span class="n">Car</span> <span class="n">a</span> <span class="o">=</span> <span class="n">factoryA</span><span class="o">.</span><span class="na">makeCar</span><span class="o">();</span>
+        <span class="n">Car</span> <span class="n">b</span> <span class="o">=</span> <span class="n">factoryB</span><span class="o">.</span><span class="na">makeCar</span><span class="o">();</span>
+        <span class="n">a</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+        <span class="n">b</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Singletion（单例模式）</h1>
+<h2>目标</h2>
+<p>保证一个类只有一个实例，并且提供一个访问它的全局访问点。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_3_20_1.jpg"></p>
+<p>图中反映的是所谓懒汉式单例模式——但需要这样一个对象的时候才开始创建这样的一个对象。相反，还有一种勤劳单例模式，当这个类被加载的时候就会创建这样一个单例对象。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_20_2.jpg"></p>
+<ol>
+<li>
+<p>当用户需要的时候，向类请求一个对象；</p>
+</li>
+<li>
+<p>类如果没有创建这个单例对象，就会创建这个对象并且传递回来，如果类已经创建了这个对象，那么就直接简单地将对象传递回来即可。</p>
+</li>
+</ol>
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>当类只能有一个实例并且用户将会从一个众所周知的访问点访问它；</p>
+</li>
+<li>
+<p>当这个唯一实例是通过子类化可扩展的，并且客户应该无须更改代码就能使用一个扩展的实例时。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Singleton</p>
+<p>定义一个Instance操作，并且维护一个自己的唯一实例。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>对唯一实例的受控访问；</p>
+</li>
+<li>
+<p>缩小名空间（对于java来说不存在命名空间）；</p>
+<p>避免了过多的全部变量的出现，使得命名空间更加精简。</p>
+</li>
+<li>
+<p>允许对操作和表示的精化；</p>
+<p>？？？不是很懂书上在说啥（</p>
+</li>
+<li>
+<p>可以改变成多个可控数目的实例。</p>
+</li>
+</ol>
+<h2>Tips</h2>
+<ol>
+<li>
+<p>使用单例注册表来进行单例的子类的创建。</p>
+<p>Singleton可以将自己的众多子类存放在某个映射表中，然后以某一个字符串或者其他来进行访问注册。（注册过程可以随意地方实现）</p>
+</li>
+</ol>
+<h2>代码实例</h2>
+<div class="highlight"><pre><span></span><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">AbstractFactory</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">String</span><span class="o">,</span> <span class="n">AbstractFactory</span><span class="o">&gt;</span> <span class="n">registerMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;&gt;();</span>
+
+    <span class="kd">protected</span> <span class="nf">AbstractFactory</span><span class="o">()</span> <span class="o">{}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">AbstractFactory</span> <span class="nf">instance</span><span class="o">(</span><span class="n">String</span> <span class="n">brand</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span><span class="o">(!</span><span class="n">registerMap</span><span class="o">.</span><span class="na">containsKey</span><span class="o">(</span><span class="n">brand</span><span class="o">))</span> <span class="o">{</span>
+            <span class="k">switch</span><span class="o">(</span><span class="n">brand</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">case</span> <span class="s">&quot;benz&quot;</span><span class="o">:</span> <span class="o">{</span>
+                    <span class="n">registerMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">brand</span><span class="o">,</span> <span class="n">BenzFactory</span><span class="o">.</span><span class="na">instance</span><span class="o">());</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="o">}</span>
+                <span class="k">case</span> <span class="s">&quot;Audi&quot;</span><span class="o">:</span> <span class="o">{</span>
+                    <span class="n">registerMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">brand</span><span class="o">,</span> <span class="n">AudiFactory</span><span class="o">.</span><span class="na">instance</span><span class="o">());</span>
+                    <span class="k">break</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">registerMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">brand</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="kd">abstract</span> <span class="n">Car</span> <span class="nf">makeCar</span><span class="o">();</span>
+    <span class="kd">abstract</span> <span class="n">Cushion</span> <span class="nf">makeCushion</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">BenzFactory</span> <span class="kd">extends</span> <span class="n">AbstractFactory</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">BenzFactory</span> <span class="n">factory</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nf">BenzFactory</span><span class="o">()</span> <span class="o">{</span><span class="kd">super</span><span class="o">();}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">BenzFactory</span> <span class="nf">instance</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">factory</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BenzFactory</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">factory</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="n">Benz</span> <span class="nf">makeCar</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="nd">@Override</span>
+    <span class="n">BenzCushion</span> <span class="nf">makeCushion</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">AudiFactory</span> <span class="kd">extends</span> <span class="n">AbstractFactory</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">AudiFactory</span> <span class="n">factory</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nf">AudiFactory</span><span class="o">()</span> <span class="o">{</span><span class="kd">super</span><span class="o">();}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">AudiFactory</span> <span class="nf">instance</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">factory</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AudiFactory</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">factory</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="nd">@Override</span>
+    <span class="n">Audi</span> <span class="nf">makeCar</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="nd">@Override</span>
+    <span class="n">AudiCushion</span> <span class="nf">makeCushion</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="kd">static</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">){</span>
+        <span class="n">AbstractFactory</span> <span class="n">factoryA</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BenzFactory</span><span class="o">();</span>
+        <span class="n">AbstractFactory</span> <span class="n">factoryB</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AudiFactory</span><span class="o">();</span>
+        <span class="n">Car</span> <span class="n">a</span> <span class="o">=</span> <span class="n">factoryA</span><span class="o">.</span><span class="na">makeCar</span><span class="o">();</span>
+        <span class="n">Cushion</span> <span class="n">cushionA</span> <span class="o">=</span> <span class="n">factoryA</span><span class="o">.</span><span class="na">makeCushion</span><span class="o">();</span>
+        <span class="n">Car</span> <span class="n">b</span> <span class="o">=</span> <span class="n">factoryB</span><span class="o">.</span><span class="na">makeCar</span><span class="o">();</span>
+        <span class="n">Cushion</span> <span class="n">cushionB</span> <span class="o">=</span> <span class="n">factoryB</span><span class="o">.</span><span class="na">makeCushion</span><span class="o">();</span>
+        <span class="n">a</span><span class="o">.</span><span class="na">addCushion</span><span class="o">(</span><span class="n">cushionA</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+        <span class="n">b</span><span class="o">.</span><span class="na">addCushion</span><span class="o">(</span><span class="n">cushionB</span><span class="o">).</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Builder（生成器）</h1>
+<h2>目标</h2>
+<p>将一个较为复杂的对象的构建与表示分离，并且能够在多个构建过程之后构建出不同的表示。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_3_7_2.jpg"></p>
+<p>对于一个Builder它将会把生产过程中的产物放在自己这里，按照Director的调用方法的顺序来执行生产，最后有一个返回产物的方法。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_7_3.jpg"></p>
+<ol>
+<li>
+<p>客户创建一个Director对象，并且配置相应的Builder；</p>
+</li>
+<li>
+<p>Builder处理Director的请求，将部件添加到产品中；</p>
+</li>
+<li>
+<p>客户从Builder中检索获得产品。</p>
+</li>
+</ol>
+<h2>使用情形</h2>
+<ol>
+<li>
+<p>当创建复杂对象的算法应该独立于该对象的组成部分以及他们的装配方式时；</p>
+</li>
+<li>
+<p>当构造过程必须允许被构造的对象有不同的表示时。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Builder</p>
+<p>为创建一个Product对象的各个部件制定抽象接口。</p>
+</li>
+<li>
+<p>ConcreteBuilder</p>
+<p>实现Builder的接口并且定义明确他所创建的表示，再提供一个检索产品的接口。</p>
+</li>
+<li>
+<p>Director</p>
+<p>一个使用Builder，指导整个生产过程的一个对象。</p>
+</li>
+<li>
+<p>Product</p>
+<p>表示被生产的具体产品。（可以不使用一个抽象类来完成构造）</p>
+</li>
+</ul>
+<h2>实例代码</h2>
+<div class="highlight"><pre><span></span><span class="kd">interface</span> <span class="nc">Builder</span><span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">addWheel</span><span class="o">();</span>
+    <span class="kt">void</span> <span class="nf">addEngine</span><span class="o">();</span>
+    <span class="n">Car</span> <span class="nf">getCar</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">BenzBuilder</span> <span class="kd">implements</span> <span class="n">Builder</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kt">void</span> <span class="nf">addWheel</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="nd">@Override</span>
+    <span class="kt">void</span> <span class="nf">addEngine</span><span class="o">()</span> <span class="o">{}</span>
+    <span class="nd">@Override</span>
+    <span class="n">Benz</span> <span class="nf">getCar</span><span class="o">()</span> <span class="o">{</span><span class="k">return</span> <span class="k">new</span> <span class="n">Benz</span><span class="o">();}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Director</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Builder</span> <span class="n">builder</span>
+
+    <span class="kd">public</span> <span class="nf">Director</span><span class="o">(</span><span class="n">Builder</span> <span class="n">builder</span><span class="o">){</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">builder</span> <span class="o">=</span> <span class="n">builder</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">Car</span> <span class="nf">construct</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">builder</span><span class="o">.</span><span class="na">addWheel</span><span class="o">();</span>
+        <span class="n">builder</span><span class="o">.</span><span class="na">addEngine</span><span class="o">();</span>
+        <span class="k">return</span> <span class="n">builder</span><span class="o">.</span><span class="na">getCar</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">BenzBuilder</span> <span class="n">builder</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BenzBuilder</span><span class="o">();</span>
+        <span class="n">Director</span> <span class="n">director</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Director</span><span class="o">(</span><span class="n">builder</span><span class="o">);</span>
+        <span class="n">Car</span> <span class="n">c</span> <span class="o">=</span> <span class="n">director</span><span class="o">.</span><span class="na">construct</span><span class="o">();</span>
+        <span class="n">c</span><span class="o">.</span><span class="na">run</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/design-patterns.html">Design Patterns</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
