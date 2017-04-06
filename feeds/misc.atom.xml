@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2017-03-25T12:56:00+08:00</updated><entry><title>设计模式——创建型模式</title><link href="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html" rel="alternate"></link><published>2017-03-25T12:56:00+08:00</published><updated>2017-03-25T12:56:00+08:00</updated><author><name>Yifeng Tang</name></author><id>tag:None,2017-03-25:/she-ji-mo-shi-chuang-jian-xing-mo-shi.html</id><summary type="html">&lt;h1&gt;Abstract Factory（抽象工厂）&lt;/h1&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2017-03-20T12:56:00+08:00</updated><entry><title>设计模式——创建型模式</title><link href="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html" rel="alternate"></link><published>2017-03-20T12:56:00+08:00</published><updated>2017-03-20T12:56:00+08:00</updated><author><name>Yifeng Tang</name></author><id>tag:None,2017-03-20:/she-ji-mo-shi-chuang-jian-xing-mo-shi.html</id><summary type="html">&lt;h1&gt;Abstract Factory（抽象工厂）&lt;/h1&gt;
 &lt;h2&gt;目标&lt;/h2&gt;
 &lt;p&gt;提供一个无需指定的类而可以创建一系列相关的对象的接口。&lt;/p&gt;
 &lt;h2&gt;结构&lt;/h2&gt;
