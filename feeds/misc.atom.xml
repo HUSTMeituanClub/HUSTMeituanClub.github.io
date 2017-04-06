@@ -1,5 +1,520 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2017-03-20T12:56:00+08:00</updated><entry><title>设计模式——创建型模式</title><link href="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html" rel="alternate"></link><published>2017-03-20T12:56:00+08:00</published><updated>2017-03-20T12:56:00+08:00</updated><author><name>Yifeng Tang</name></author><id>tag:None,2017-03-20:/she-ji-mo-shi-chuang-jian-xing-mo-shi.html</id><summary type="html">&lt;h1&gt;Abstract Factory（抽象工厂）&lt;/h1&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - misc</title><link href="/" rel="alternate"></link><link href="/feeds/misc.atom.xml" rel="self"></link><id>/</id><updated>2017-04-04T16:50:20+08:00</updated><entry><title>深入理解计算机系统DataLab实验报告</title><link href="/shen-ru-li-jie-ji-suan-ji-xi-tong-datalabshi-yan-bao-gao.html" rel="alternate"></link><published>2017-04-04T16:50:20+08:00</published><updated>2017-04-04T16:50:20+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-04-04:/shen-ru-li-jie-ji-suan-ji-xi-tong-datalabshi-yan-bao-gao.html</id><summary type="html">&lt;p&gt;实验答案托管在我的&lt;a href="https://github.com/BlackDragonF/CSAPPLabs/tree/master/DataLab"&gt;GitHub&lt;/a&gt;上&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;总共花了五天时间完成了《深入理解计算机系统》(Computer Science A Programmer's Perspective)的第一个Lab - Data Lab，深感这次实验的效率低下。一方面是由于清明假期自己有所惰怠，另一方面也是由于在做题的时候采取了不正确的方法，在已经明知不会的情况下我还继续投入大量无意义的时间，没有取得很好的学习效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;实验简介&lt;/h2&gt;
+&lt;p&gt;Data Lab - Manipulating Bits主要是关于位操作的实验，对应于书本的第2章：信息的表示和处理。&lt;/p&gt;
+&lt;p&gt;在该实验中，学生主要需要在一个严格限制的C子集（使用优先的位运算符以及顺序结构的代码）中实现简单的逻辑，补码以及浮点数相关的函数。本实验的目的是为了让学生熟悉整数和浮点数的位级表示。&lt;/p&gt;
+&lt;p&gt;本实验的核心在于在各种受限制的条件下完成给出的15个谜题。其中包括5个位操作的谜题，7个补码运算的谜题，以及3个浮点数操作的谜题。其中每完成一个谜题都能得到一定的分数，如果使用的运算符数目小于给定的数目，还能获得加分。本实验的满分是71分。可以通过讲义中的driver.pl脚本直接计算出总分数。&lt;/p&gt;
+&lt;p&gt;关于本实验具体的介绍详见&lt;a href="http://csapp.cs.cmu.edu/3e/datalab-handout.tar"&gt;实验讲义&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;测试程序btest make失败及解决办法&lt;/h2&gt;
+&lt;p&gt;在完成实验的功能中需要用到&lt;code&gt;make &amp;amp;&amp;amp; ./btest&lt;/code&gt;命令进行答案正确性的检查，结果系统返回了 …&lt;/p&gt;</summary><content type="html">&lt;p&gt;实验答案托管在我的&lt;a href="https://github.com/BlackDragonF/CSAPPLabs/tree/master/DataLab"&gt;GitHub&lt;/a&gt;上&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;总共花了五天时间完成了《深入理解计算机系统》(Computer Science A Programmer's Perspective)的第一个Lab - Data Lab，深感这次实验的效率低下。一方面是由于清明假期自己有所惰怠，另一方面也是由于在做题的时候采取了不正确的方法，在已经明知不会的情况下我还继续投入大量无意义的时间，没有取得很好的学习效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;实验简介&lt;/h2&gt;
+&lt;p&gt;Data Lab - Manipulating Bits主要是关于位操作的实验，对应于书本的第2章：信息的表示和处理。&lt;/p&gt;
+&lt;p&gt;在该实验中，学生主要需要在一个严格限制的C子集（使用优先的位运算符以及顺序结构的代码）中实现简单的逻辑，补码以及浮点数相关的函数。本实验的目的是为了让学生熟悉整数和浮点数的位级表示。&lt;/p&gt;
+&lt;p&gt;本实验的核心在于在各种受限制的条件下完成给出的15个谜题。其中包括5个位操作的谜题，7个补码运算的谜题，以及3个浮点数操作的谜题。其中每完成一个谜题都能得到一定的分数，如果使用的运算符数目小于给定的数目，还能获得加分。本实验的满分是71分。可以通过讲义中的driver.pl脚本直接计算出总分数。&lt;/p&gt;
+&lt;p&gt;关于本实验具体的介绍详见&lt;a href="http://csapp.cs.cmu.edu/3e/datalab-handout.tar"&gt;实验讲义&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;测试程序btest make失败及解决办法&lt;/h2&gt;
+&lt;p&gt;在完成实验的功能中需要用到&lt;code&gt;make &amp;amp;&amp;amp; ./btest&lt;/code&gt;命令进行答案正确性的检查，结果系统返回了&lt;code&gt;fetal error: gnu/stubs-32.h:No such file or directory&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;经过检查发现是系统是Archlinux 64位，而Makefile中包含了-m32的编译参数导致的。&lt;/p&gt;
+&lt;p&gt;通过启用multilib仓库使得可以在64位的ArchLinux系统上编译和运行32位的程序，问题得以解决。&lt;/p&gt;
+&lt;p&gt;编辑/etc/pacman.conf，取消下面内容的注释：&lt;/p&gt;
+&lt;p _="%" endcodeblock&gt;{% codeblock lang:vim %}
+[multilib]
+include = /etc/pacman.d/mirrorlist&lt;/p&gt;
+&lt;p&gt;更新软件包列表并升级系统&lt;code&gt;pacman -Syu&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;然后安装gcc-multilib并重新执行&lt;code&gt;make &amp;amp;&amp;amp; ./btest&lt;/code&gt;，问题解决。&lt;/p&gt;
+&lt;h2&gt;实验限制&lt;/h2&gt;
+&lt;h3&gt;整数代码规则&lt;/h3&gt;
+&lt;p _="%" endcodeblock&gt;整数代码应遵循如下的基本结构：
+{% codeblock lang:c %}
+int Funct(arg1, arg2, ...) {
+    /&lt;em&gt; brief description of how your implementation works &lt;/em&gt;/
+    int var1 = Expr1;
+    ...
+    int varM = ExprM;
+    varJ = ExprJ;
+    ...
+    varN = ExprN;
+    return ExprR;
+}&lt;/p&gt;
+&lt;p&gt;每一个表达式只能使用：
+1. 0～255之间的常量（包括0和255）
+2. 函数的参数和局部变量
+3. 单目运算符 ! ~
+4. 双目运算符 &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;&lt;/p&gt;
+&lt;p&gt;注意，部分题目对于运算符有着更加严格的限制，但是你可以在一行代码中使用多个运算符。&lt;/p&gt;
+&lt;p&gt;你将会被禁止：
+1. 使用任何的分支或者循环结构
+2. 定义或者使用任何的宏
+3. 在文件中定义任何额外函数
+4. 调用任何函数
+5. 使用任何其他的运算符
+6. 使用任何形式的类型转换
+7. 使用除了int意外的其他数据类型，这意味着你不能使用数组，结构或联合&lt;/p&gt;
+&lt;p&gt;你可以假设你的机器：
+1. 使用32位补码表示整数
+2. 使用算术右移
+3. 对整数进行的位移运算的位数超越了字长是未定义的行为&lt;/p&gt;
+&lt;h3&gt;浮点代码规则&lt;/h3&gt;
+&lt;p&gt;浮点运算的规则相对较为宽松，你可以使用循环或者是分支结构，你被允许同时使用int和unsigned，此外，你还可以使用任意的常量。&lt;/p&gt;
+&lt;p&gt;你将会被禁止：
+1. 定义或者使用任何的宏
+2. 在文件中定义任何额外函数
+3. 调用任何函数
+4. 使用任何形式的类型转换
+5. 使用除了int和unsigned以外的任何数据类型，这意味着你不能使用数组，结构或者联合
+6. 使用任何浮点数的数据类型，操作或者是常量&lt;/p&gt;
+&lt;h2&gt;实验答案及分析&lt;/h2&gt;
+&lt;h3&gt;第一部分 位操作&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;bitAnd
+    问题：要求使用~和|以及不超过8个操作符实现x&amp;amp;y
+    分析：使用De Morgan定律即可
+    答案：
+    {% codeblock lang:c %}
+    int bitAnd(int x, int y) {
+    /&lt;em&gt; x&amp;amp;y = ~(~(x&amp;amp;y)) = ~(~x|~y) &lt;/em&gt;/
+        return ~(~x | ~y);
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;getByte
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过6个操作符返回x中的第n个字节(0(LSB)&amp;lt;=n&amp;lt;=3(MSB))。
+    分析：根据不同的n值将x右移不同的位数，然后使用掩码0xFF取得最低位数的字节即可。先左移再右移会导致算术右移，需要小心。
+    答案：
+    {% codeblock lang:c %}
+    int getByte(int x, int n) {
+    /&lt;em&gt; right shift in order to avoid boring arithmatic shift and try to get specific byte using bitAnd and mask. &lt;/em&gt;/
+        return ((x &amp;gt;&amp;gt; (n &amp;lt;&amp;lt; 3)) &amp;amp; 0xFF);      &lt;br&gt;
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;logicalShift
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过20个操作符实现将int值x的逻辑右移n位。
+    分析：通过将一个全1的数通过算术右移的方式构造掩码，然后与算术右移的掩码求按位与即可。
+    注意，直接右移32位的结果是未定义的，需要额外处理这种情况。
+    答案：
+    {% codeblock lang:c %}
+    int logicalShift(int x, int n) {
+    /&lt;em&gt; try to implement logical right shift by mask and logical right shift &lt;/em&gt;/
+        int mask = ((~0) &amp;lt;&amp;lt; (31 + (~n + 1))) &amp;lt;&amp;lt; 1;
+        return (x &amp;gt;&amp;gt; n) &amp;amp; (~mask);
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;bitCount
+     问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过40个操作符计算一个数字x中有多少为1的位。
+     分析：
+     本题参考&lt;a href="http://stackoverflow.com/questions/3815165/how-to-implement-bitcount-using-only-bitwise-operators"&gt;stackoverflow&lt;/a&gt;上的回答，并结合题目要求做了一些改动。
+     核心的思想是分治法，通过将原数字x中的位按每1,2,4...个位分组，按相邻组进行累加，最后求出结果。
+     举例来说，假如现在有一个数395，它的二进制表示是0000000110001011(16位)，首先我们将这个数按1位分组，得到：
+     0 0 0 0 0 0 0 1 1 0 0 0 1 0 1 1
+     然后我们将相邻的组累加，得到：
+     0+0 0+0 0+0 0+1 1+0 0+0 1+0 1+1
+     00 00 00 01 01 00 01 10
+     然后我们继续将相邻的组累加，得到：
+     00+00 00+01 01+00 01+10
+     0000 0001 0001 0011
+     然后我们继续将相邻的组累加，得到：
+     0000+0001 0001+0011
+     00000001 00000100
+     最后，我们最后的两个组累加，得到：
+     00000001+0000100=00000101
+     结果是5，为正确答案。
+     答案：
+     {% codeblock lang:c %}
+     int bitCount(int x) {
+    /&lt;em&gt; Divide and Conquer &lt;/em&gt;/
+        int mask = 0x55 + (0x55 &amp;lt;&amp;lt; 8) + (0x55 &amp;lt;&amp;lt; 16) + (0x55 &amp;lt;&amp;lt; 24);
+        x = (x &amp;amp; mask) + ((x &amp;gt;&amp;gt; 1) &amp;amp; mask);
+        mask = 0x33 + (0x33 &amp;lt;&amp;lt; 8) + (0x33 &amp;lt;&amp;lt; 16) + (0x33 &amp;lt;&amp;lt; 24);
+        x = (x &amp;amp; mask) + ((x &amp;gt;&amp;gt; 2) &amp;amp; mask);
+        mask = 0xF + (0xF &amp;lt;&amp;lt; 8) + (0xF &amp;lt;&amp;lt; 16) + (0xF &amp;lt;&amp;lt; 24);
+        x = (x &amp;amp; mask) + ((x &amp;gt;&amp;gt; 4) &amp;amp; mask);
+        return (x + (x &amp;gt;&amp;gt; 8) + (x &amp;gt;&amp;gt; 16) + (x &amp;gt;&amp;gt; 24)) &amp;amp; 0xFF;
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;bang
+    问题：要求使用~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过12个操作数计算x的逻辑非。
+    分析：
+    逻辑非要求将0变成1，将非0的数变成0。生成0或1可以通过与掩码0x1求按位与实现，重点在于如何构造一个表达式使得0和非0的数产生不同的结果。
+    可以考虑对于任意一个非0的数，它的负数都是从最高位到其最低位的1为止(不包括最低位的1)全部取反的结果。
+    例如，14是00001110(8位)，而-14是11110010(8位)，为14从最高位到最低位的1(不包括这个1)，也就是000011取反，而最低位的10不变的结果。
+    而0的负数永远是0。
+    从这里我们可以看出，对于一个非0的数，它与它的负数按位或的结果的最高位一定会是1，而0与非0的按位或的结果的最高位永远是0。我们可以以此实现逻辑非。
+    答案：
+    {% codeblock lang:c %}
+    int bang(int x) {
+    /&lt;em&gt; for x != 0, the highest bit of x | (-x) will always become 1 while when x == 0, the result is the opposite &lt;/em&gt;/
+        return (~((x | (~x + 1)) &amp;gt;&amp;gt; 31) &amp;amp; 1);
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;第二部分 补码运算&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;tmin
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过4个运算符返回以补码表示的最小的整数。
+    分析：根据补码到整数的公式，最小的整数的补码表示为10000...
+    答案：
+    {% codeblock lang:c %}
+    int tmin(void) {
+        /&lt;em&gt; TMin = 10000.... &lt;/em&gt;/
+        return (1 &amp;lt;&amp;lt; 31);
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;fitsBits
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过15个操作符判断x是否能表示成n位的补码，如果是，则返回1，反之则返回0。
+    分析：
+    这个问题需要分正数和负数两种情况讨论，对于正数来说，如果一个数x能表示成n位的补码，那么它从最高位直到第n位一定全部为0，它的第n位一定不能为1，否则它就会变成一个负数。对于一个负数来说，如果一个数x能表示成n位的补码，那么它只需从最高位到第n位全部为1即可。
+    因此，我们可以先将x右移n-1位，对于满足条件的正数和负数，这将产生一个全0的数或是一个全1的数。然后我们可以根据x的符号构造一个全0或者是全1的掩码。通过将这两个数按位异或并且取逻辑非，就能得到正确的结果。
+    答案：
+    {% codeblock lang:c %}
+    int fitsBits(int x, int n) {
+    /* if fitsBits then from highest bit to n bit will all become 1 - negative number or 0 - positive number&lt;/p&gt;
+&lt;ul&gt;
+&lt;li _="%" endcodeblock&gt;then can construct a mask to implement fitsBits with the help of ^ and !
+ */
+    return !((x &amp;gt;&amp;gt; (n + (~1) + 1)) ^ (((1 &amp;lt;&amp;lt; 31) &amp;amp; x) &amp;gt;&amp;gt; 31));
+}&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;divpwr2
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过15个操作符求出x/(2^n)的结果，其中0&amp;lt;=n&amp;lt;=30。
+    分析：对于正数，直接使用算术右移即可；对于负数，需要加上适当的偏移量以实现向上舍入，这可以用根据符号位生成1个全0或者全1的掩码来控制。
+    答案：
+    {% codeblock lang:c %}
+    int divpwr2(int x, int n) {
+    /&lt;em&gt; add bias when x is negative, which is controlled by a sign-related mask &lt;/em&gt;/
+        int mask = x &amp;gt;&amp;gt; 31;
+        int add = ((1 &amp;lt;&amp;lt; n) + (~1) + 1) &amp;amp; mask;
+        return (x + add) &amp;gt;&amp;gt; n;
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;negate
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过5个操作符求出x的负数。
+    分析：-x = (~x + 1)
+    答案：
+    {% codeblock lang:c %}
+    int isPositive(int x) {
+    ／&lt;em&gt; -x = (~x) + 1 &lt;/em&gt;／
+        return (!(x &amp;gt;&amp;gt; 31)) ^ (!(x ^ 0));
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;isPositive
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过8个操作符判断x是否为正数。
+    分析：对于正数，它的最高位一定是0，同时还要排除0的影响。
+    答案：
+    {% codeblock lang:c %}
+    int isPositive(int x) {
+    /&lt;em&gt; ensure the highest bit is 0 and x != 0 &lt;/em&gt;/
+        return (!(x &amp;gt;&amp;gt; 31)) ^ (!(x ^ 0));
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;isLessOrEqual
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过24个操作符判断x是否小于或等于y。
+    分析：
+    对于这个问题，我们需要按照是否溢出，以及x与y的符号分别讨论。
+    最基本的思路是，做y-x，若结果的符号位为1，则返回0，反之返回1。但这样就忽略了溢出可能导致的问题，现在我们做如下考虑。
+    若x，y均为正数，或x，y均为负数，则y-x绝不可能溢出，因此可直接用差的符号位判断大小。
+    若x为正数，y为负数，可以直接返回0。
+    若x为负数，y为正数，可以直接返回1。
+    我们可以生成两种条件变量，一种为x，y同号时返回正确结果的条件变量，另一种为x，y异号时返回正确结果的条件变量。
+    对于x，y同号和异号这两种不同的情况，我们可以用!((x ^ y) &amp;gt;&amp;gt; 31)生成掩码使得在任意的情况下，只有正确的条件变量生效。
+    答案：
+    {% codeblock lang:c %}
+    int isLessOrEqual(int x, int y) {
+    /&lt;em&gt; different processing ways when x and y have the same signs or different signs &lt;/em&gt;/
+        int diff = y + (~x) + 1;
+        int not_diff_sign = !(diff &amp;gt;&amp;gt; 31);
+        int mask = !((x ^ y) &amp;gt;&amp;gt; 31);
+        int result_not_overflow = mask &amp;amp; not_diff_sign;
+        int result_overflow = (!mask) &amp;amp; (x &amp;gt;&amp;gt; 31);
+        return result_overflow | result_not_overflow;
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;ilog2
+    问题：要求使用! ~ &amp;amp; ^ | + &amp;lt;&amp;lt; &amp;gt;&amp;gt;以及不超过90个操作数求出x以2为底的对数（向下舍入），保证x&amp;gt;0。
+    分析：
+    这道题参考了网上的答案。核心的思想是二分查找。
+    首先将x右移16位，如果x&amp;gt;0，则表明结果的第5位为1，将该位置为1。
+    然后根据结果将x右移8位（第5位为0）或者将x右移24位（第5位为1），如果x&amp;gt;0，则表明结果的第4位为1，将该位置为1。
+    以此类推，直到得出结果。
+    答案：
+    {% codeblock lang:c %}
+    int ilog2(int x) {
+        /&lt;em&gt; Binary Search &lt;/em&gt;/
+        int result = (!!(x &amp;gt;&amp;gt; 16) &amp;lt;&amp;lt; 4);
+        result = result + ((!!(x &amp;gt;&amp;gt; (result + 8))) &amp;lt;&amp;lt; 3);
+        result = result + ((!!(x &amp;gt;&amp;gt; (result + 4))) &amp;lt;&amp;lt; 2);
+        result = result + ((!!(x &amp;gt;&amp;gt; (result + 2))) &amp;lt;&amp;lt; 1);
+        result = result + (!!(x &amp;gt;&amp;gt; (result + 1)));
+        return result;
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3&gt;第三部分 浮点数操作&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;float_neg
+    问题：返回对于浮点数参数f，-f的等价的位级表示。当参数位NAN时，返回NAN。函数的参数和返回值均为unsigned，但它们实际上都是浮点数的位表示。最多允许使用10个操作符。
+    分析：首先要判断参数是否是NAN，如果是则直接返回，否的话直接将参数的最高位取反即可。
+    NAN的阶码全为1，尾码不全为0。
+    答案：
+    {% codeblock lang:c %}
+    unsigned float_neg(unsigned uf) {
+    /&lt;em&gt; m_flag - if m != 0 e_flag - if e == 0xff &lt;/em&gt;/
+        unsigned m_flag = 0x007fffff &amp;amp; uf;
+        unsigned e_flag = !(0x7f800000 &amp;amp; (~uf));
+        if (e_flag &amp;amp;&amp;amp; m_flag) {
+            return uf;
+        } else {
+            return 0x80000000 ^ uf;
+        }
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;float_i2f
+    问题：返回(float)x的位级的等价表示。结果被作为unsigned int返回，但它实际上是单精度浮点数的位表示。最多允许使用30个操作符。
+    分析：
+    首先考虑到整数中只有0会被转换为非规格化浮点数，而其他整数会被转化为规格化浮点数。因此对于0需要做额外的处理。
+    其次，对于负数，我们需要将其转化为正数再做处理，这就要求我们需要将x的符号保存下来，并且从补码转化为无符号表示。
+    然后，我们需要根据转换成无符号数的x算出阶码e和尾码m。
+    最后，我们将尾码舍入后再和阶码符号一起，生成最终的结果即可。
+    这里我有一个比较大的误区，舍入的时候看的不仅仅是带舍入位的下一位，而是待舍入位之后的所有位。
+    答案：
+    {% codeblock lang:c %}
+    unsigned float_i2f(int x) {
+    /&lt;em&gt; 1.process 0 individually 2.process negative number and store the sign 3.get the e number 4.get the m number and round it 5.construct the result &lt;/em&gt;/
+        unsigned count = 0;
+        unsigned mask = 0x80000000;
+        unsigned sign = x &amp;amp; mask;
+        unsigned c = 0, absx = x;
+        if (x == 0) {
+            return 0;
+        } else {
+            if (x &amp;lt; 0) {
+                absx = -x;
+            }
+            while (!(mask &amp;amp; absx)) {
+                count = count + 1;
+                mask = mask &amp;gt;&amp;gt; 1;
+            }
+            absx = absx &amp;lt;&amp;lt; (count + 1);
+            if (((absx &amp;amp; 0x1ff) &amp;gt; 0x100) || ((absx &amp;amp; 0x3ff) &amp;gt;= 0x300)) {
+                c = 1;
+            }
+            return sign + ((158 - count) &amp;lt;&amp;lt; 23) + (absx &amp;gt;&amp;gt; 9)+ c;
+        }
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p _="%" endcodeblock&gt;float_twice
+    问题：返回对于浮点数参数f，2&lt;em&gt;f的等价的位级表示。参数和结果都为unsigned int，但它们实际上是浮点数的位表示。当参数是NAN时，返回NAN。最多允许使用30个操作符。
+    分析：
+    对于非规格化浮点数，只要在保留符号位的情况下将尾码m右移一位即可，这样同时解决了尾码乘以二和进位的情况。
+    对于规格化浮点数，只要将其阶码e加1即可。
+    答案：
+    {% codeblock lang:c %}
+    unsigned float_twice(unsigned uf) {
+    /&lt;/em&gt; denormailized number - m = m &amp;lt;&amp;lt; 1 normalized number - e = e + 1 */
+        unsigned result = uf;
+        if ((uf &amp;amp; 0x7f800000) == 0) {
+            result = ((uf &amp;amp; 0x007fffff) &amp;lt;&amp;lt; 1) | (uf &amp;amp; 0x80000000);
+        } else if ((uf &amp;amp; 0x7f800000) != 0x7f800000) {
+            result = uf + 0x00800000;
+        }
+        return result;
+    }&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;</content><category term="计算机系统"></category><category term="实验"></category></entry><entry><title>Android PropertyAnimation 属性动画（二）弹跳小球实例</title><link href="/android-propertyanimation-shu-xing-dong-hua-er-dan-tiao-xiao-qiu-shi-li.html" rel="alternate"></link><published>2017-04-02T10:08:31+08:00</published><updated>2017-04-02T10:08:31+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-04-02:/android-propertyanimation-shu-xing-dong-hua-er-dan-tiao-xiao-qiu-shi-li.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/viseator/AndroidAnimatorBounceBallDemo"&gt;GitHub完整代码&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.viseator.com/2017/03/26/android_property_animation_1/"&gt;上篇博客&lt;/a&gt;简单介绍了属性动画的原理，这篇博客将会以一个简单的实例来运用上之前讲的内容，并对&lt;code&gt;Animator&lt;/code&gt;的几个回调方法进行讲解。&lt;/p&gt;
+&lt;p&gt;目标是自定义一个&lt;code&gt;View&lt;/code&gt;，在画布上绘制一个小球，点击屏幕后小球从顶部自由下落，落到底边后反弹，反弹损失一半的能量，也就是说小球只能上升到下落时一半的高度，再重复这个过程直到退出程序。如图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/android_animator.gif"&gt;&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;h2&gt;创建自定义View&lt;/h2&gt;
+&lt;p&gt;首先我们要创建一个自定义&lt;code&gt;View&lt;/code&gt;，这里我就采用继承&lt;code&gt;LinearLayout&lt;/code&gt;的方式来创建这个&lt;code&gt;View&lt;/code&gt;，但要注意&lt;code&gt;LinearLayout&lt;/code&gt;默认是不绘制自身的，需要在&lt;code&gt;onDraw()&lt;/code&gt;方法之前适当的时候调用&lt;code&gt;setWillNotDraw(false);&lt;/code&gt;令其进行绘制。&lt;/p&gt;
+&lt;p&gt;在继承&lt;code&gt;LinearLayout&lt;/code&gt;的同时我们要实现全部三个构造方法，否则xml文件的预览解析会出现问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/viseator/AndroidAnimatorBounceBallDemo"&gt;GitHub完整代码&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.viseator.com/2017/03/26/android_property_animation_1/"&gt;上篇博客&lt;/a&gt;简单介绍了属性动画的原理，这篇博客将会以一个简单的实例来运用上之前讲的内容，并对&lt;code&gt;Animator&lt;/code&gt;的几个回调方法进行讲解。&lt;/p&gt;
+&lt;p&gt;目标是自定义一个&lt;code&gt;View&lt;/code&gt;，在画布上绘制一个小球，点击屏幕后小球从顶部自由下落，落到底边后反弹，反弹损失一半的能量，也就是说小球只能上升到下落时一半的高度，再重复这个过程直到退出程序。如图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/android_animator.gif"&gt;&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;h2&gt;创建自定义View&lt;/h2&gt;
+&lt;p&gt;首先我们要创建一个自定义&lt;code&gt;View&lt;/code&gt;，这里我就采用继承&lt;code&gt;LinearLayout&lt;/code&gt;的方式来创建这个&lt;code&gt;View&lt;/code&gt;，但要注意&lt;code&gt;LinearLayout&lt;/code&gt;默认是不绘制自身的，需要在&lt;code&gt;onDraw()&lt;/code&gt;方法之前适当的时候调用&lt;code&gt;setWillNotDraw(false);&lt;/code&gt;令其进行绘制。&lt;/p&gt;
+&lt;p&gt;在继承&lt;code&gt;LinearLayout&lt;/code&gt;的同时我们要实现全部三个构造方法，否则xml文件的预览解析会出现问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;创建好自定义&lt;code&gt;View&lt;/code&gt;后，我们就可以在对应的layout xml布局文件中用完整包名+类名的方式使用我们的自定义&lt;code&gt;View&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;com.viseator.viewtest.VView&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;match_parent&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;match_parent&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同时，我们在绘制之前的&lt;code&gt;onMeasure()&lt;/code&gt;方法中调用&lt;code&gt;setWillNotDraw(false);&lt;/code&gt;使自定义&lt;code&gt;View&lt;/code&gt;可以绘制：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;setWillNotDraw&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;setOnClickListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里也调用了&lt;code&gt;setOnClickListener()&lt;/code&gt;注册之后的点击事件。&lt;/p&gt;
+&lt;h2&gt;绘制&lt;/h2&gt;
+&lt;h3&gt;小球的绘制&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;xPos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;yPos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;Paint&lt;/span&gt; &lt;span class="n"&gt;paint&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Paint&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onDraw&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Canvas&lt;/span&gt; &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onDraw&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;animator&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getHeight&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;         
+        &lt;span class="n"&gt;paint&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setColor&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;getResources&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getColor&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;color&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;Gray&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+        &lt;span class="n"&gt;paint&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setAntiAlias&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;drawCircle&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;drawCircle&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Canvas&lt;/span&gt; &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;drawCircle&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;xPos&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;yPos&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;paint&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里第10行对是否是第一次绘制进行判断并将画布大小保存到&lt;code&gt;canvasHeight&lt;/code&gt;供之后的绘制使用（之后的绘制的坐标需要相对于画布的坐标）并设置&lt;code&gt;paint&lt;/code&gt;的属性。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;drawCircle()&lt;/code&gt;方法也非常简单，只是调用&lt;code&gt;canvas&lt;/code&gt;提供的&lt;code&gt;drawCircle()&lt;/code&gt;方法指定位置与半径和之前设置的&lt;code&gt;paint&lt;/code&gt;，调用后就会在屏幕上的对应位置绘制一个小球。&lt;/p&gt;
+&lt;h3&gt;下落动画的绘制&lt;/h3&gt;
+&lt;p&gt;下面就要让小球“动”起来，其实并不是小球发生了移动，只是我们不停地改变小球绘制的位置，当绘制的速率（帧率）大于24帧时的，就在视觉上变成了流畅的动画。也就是说，我们需要使用&lt;code&gt;Animator&lt;/code&gt;连续地改变小球的位置，为了实现加速的效果，位置的改变速率应该随时间增加，也就是需要我们上一篇博客提到的&lt;code&gt;Evaluator&lt;/code&gt;来实现。&lt;/p&gt;
+&lt;h4&gt;animator的初始化&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;init&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;end&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ofInt&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;end&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setDuration&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setRepeatCount&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;INFINITE&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setRepeatMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;RESTART&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;AccelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rate&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addUpdateListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;写成一个初始化方法便于重新初始化。&lt;/p&gt;
+&lt;p&gt;第2行将传入的值区间的开始与结束值作为参数获得了一个值为&lt;code&gt;int&lt;/code&gt;的&lt;code&gt;ValueAnimator&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;第3行设置了动画的时间为1秒。&lt;/p&gt;
+&lt;p&gt;第4、5行分别设置了动画的重复次数为无限次，重复模式为重新开始，顾名思义，动画可以重复进行，重新开始的重复模式意味着一次动画结束之后数值重新从&lt;code&gt;start&lt;/code&gt;到&lt;code&gt;end&lt;/code&gt;进行改变，也可以设置重复的模式为反向，即一次动画结束之后数值从&lt;code&gt;end&lt;/code&gt;到&lt;code&gt;start&lt;/code&gt;变化。&lt;/p&gt;
+&lt;p&gt;第六行为&lt;code&gt;animator&lt;/code&gt;设置了一个库中提供的&lt;code&gt;AccelerateInterpolator&lt;/code&gt;即加速插值器，这就是我们实现加速效果的关键，上篇之中已经看过它的源码，默认时返回的最终动画进行百分比是时间百分比的平方，达到了位置随着时间的平方变化，也就是实现了加速下落的效果。&lt;/p&gt;
+&lt;p&gt;第7、8两行分别为&lt;code&gt;animator&lt;/code&gt;设置了一个&lt;code&gt;UpdateListener&lt;/code&gt;用于监听数值变化，一个&lt;code&gt;Listener&lt;/code&gt;用于监听&lt;code&gt;animator&lt;/code&gt;本身开始、停止、重复。&lt;/p&gt;
+&lt;h4&gt;完成下落动画&lt;/h4&gt;
+&lt;p&gt;创建好了&lt;code&gt;ValueAnimator&lt;/code&gt;，下一步就是在适合的时候在画布上重新绘制位置参数被&lt;code&gt;animator&lt;/code&gt;改变后的小球。注意到我们之前小球的y坐标存储在&lt;code&gt;yPos&lt;/code&gt;变量中，我们只要适时令&lt;code&gt;yPos&lt;/code&gt;等于改变后的值再通过&lt;code&gt;invalidate()&lt;/code&gt;方法进入&lt;code&gt;onDraw()&lt;/code&gt;方法让&lt;code&gt;View&lt;/code&gt;按小球的参数重新进行绘制就可以了。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;animator&lt;/code&gt;的&lt;code&gt;ValueAnimator.AnimatorUpdateListener&lt;/code&gt;为我们提供了一个及时刷新&lt;code&gt;View&lt;/code&gt;的时机，之前为&lt;code&gt;animator&lt;/code&gt;注册一个&lt;code&gt;UpdateListener&lt;/code&gt;之后，每当&lt;code&gt;animator&lt;/code&gt;的值发生改变时，&lt;code&gt;onAniamtionUpdate()&lt;/code&gt;就会被回调。&lt;/p&gt;
+&lt;p&gt;那我们就可以在这个回调方法中为&lt;code&gt;yPos&lt;/code&gt;设置新的值并令&lt;code&gt;View&lt;/code&gt;重新绘制：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onAnimationUpdate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;yPos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getAnimatedValue&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;invalidate&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;   
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样，我们只要启动&lt;code&gt;animator&lt;/code&gt;令它的值开始变化，就会不断地调用&lt;code&gt;onAnimationUpdate()&lt;/code&gt;重绘&lt;code&gt;View&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onClick&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;init&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;start()&lt;/code&gt;方法令&lt;code&gt;animator&lt;/code&gt;开始。&lt;/p&gt;
+&lt;p&gt;到这里，我们已经可以看到点击屏幕后小球下落到底部并停止的效果。&lt;/p&gt;
+&lt;h3&gt;回弹效果实现&lt;/h3&gt;
+&lt;p&gt;我们之前已经为&lt;code&gt;animator&lt;/code&gt;设置了无限重复，并且模式为重新开始，那么要做到回弹的效果，就要在小球落到底边（动画完成）之后，为小球设置新的初始值与最终值，让小球从最低点回到落下时一半的高度。高度数据我们在&lt;code&gt;onClick()&lt;/code&gt;中的第4行（上面代码）已经初始化为了相对于画布的高度，之后再使用时只需把它除2就可以表示圆心距底边的高度了。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Animator.AnimatorListener&lt;/code&gt;为我们提供了一系列方法用于监听&lt;code&gt;animator&lt;/code&gt;状态的变化（而不是数值）：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/AnimatorListener.jpg"&gt;&lt;/p&gt;
+&lt;p&gt;（除金色为Android 8新增外），依次为动画取消，动画结束，动画开始重复，动画开始。&lt;/p&gt;
+&lt;p&gt;这里我们就需要在&lt;code&gt;onAnimationReapt()&lt;/code&gt;回调中为动画设置新的初值与结束数值：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onAnimationRepeat&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Animator&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="n"&gt;vAnimation&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;isDown&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;isDown&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;isDown&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;isDown&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setIntValues&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;animationHeight&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;AccelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setIntValues&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;animationHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;DecelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;回调参数中的&lt;code&gt;animation&lt;/code&gt;就是回调这个函数的&lt;code&gt;animator&lt;/code&gt;，第3行对其进行一个类型转换。&lt;/p&gt;
+&lt;p&gt;这里我们使用了一个&lt;code&gt;isDown&lt;/code&gt;参数来判断是否是下落过程，如果上个动画是下落过程，就将&lt;code&gt;animationHeight&lt;/code&gt;减半。&lt;/p&gt;
+&lt;p&gt;第7行把&lt;code&gt;isDown&lt;/code&gt;置反，再根据&lt;code&gt;isDown&lt;/code&gt;的判断使用&lt;code&gt;setIntValues()&lt;/code&gt;方法为&lt;code&gt;animator&lt;/code&gt;设置新的范围，使用&lt;code&gt;setInterpolator()&lt;/code&gt;方法设置新的插值器，注意上升时使用的应该是&lt;code&gt;DecelerateInterpolater&lt;/code&gt;减速上升。&lt;/p&gt;
+&lt;p&gt;这样在新的动画开始时属性改变的范围就得到了改变，也就使得小球可以反弹了。&lt;/p&gt;
+&lt;p&gt;为了让每一次点击时动画都可以重新开始，在&lt;code&gt;onClick()&lt;/code&gt;方法中加入几行初始化代码：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onClick&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;animator&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;end&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;init&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;isDown&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里第3-5行让如果存在的&lt;code&gt;animator&lt;/code&gt;停止，否则新动画无法启动。&lt;/p&gt;
+&lt;p&gt;下篇博客将会从源码角度继续探索&lt;code&gt;animator&lt;/code&gt;的实现原理和更高级的一些特性。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/viseator/AndroidAnimatorBounceBallDemo"&gt;GitHub完整代码&lt;/a&gt;&lt;/p&gt;</content><category term="Android"></category><category term="UI"></category><category term="Animation"></category></entry><entry><title>设计模式——创建型模式</title><link href="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html" rel="alternate"></link><published>2017-03-20T12:56:00+08:00</published><updated>2017-03-20T12:56:00+08:00</updated><author><name>Yifeng Tang</name></author><id>tag:None,2017-03-20:/she-ji-mo-shi-chuang-jian-xing-mo-shi.html</id><summary type="html">&lt;h1&gt;Abstract Factory（抽象工厂）&lt;/h1&gt;
 &lt;h2&gt;目标&lt;/h2&gt;
 &lt;p&gt;提供一个无需指定的类而可以创建一系列相关的对象的接口。&lt;/p&gt;
 &lt;h2&gt;结构&lt;/h2&gt;
@@ -699,7 +1214,128 @@
 &lt;/pre&gt;&lt;/div&gt;
 
 
-&lt;p&gt;至于更复杂的计算逻辑由于本人能力有限就不写demo了，如果以后实际中遇到需要的时候再作补充。&lt;/p&gt;</content><category term="Android"></category><category term="View"></category></entry><entry><title>汇编语言综合研究</title><link href="/hui-bian-yu-yan-zong-he-yan-jiu.html" rel="alternate"></link><published>2017-03-10T10:35:37+08:00</published><updated>2017-03-10T10:35:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-10:/hui-bian-yu-yan-zong-he-yan-jiu.html</id><summary type="html">&lt;h2&gt;研究试验1 搭建一个精简的C语言开发环境&lt;/h2&gt;
+&lt;p&gt;至于更复杂的计算逻辑由于本人能力有限就不写demo了，如果以后实际中遇到需要的时候再作补充。&lt;/p&gt;</content><category term="Android"></category><category term="View"></category></entry><entry><title>Android PropertyAnimation 属性动画（一）初探</title><link href="/android-propertyanimation-shu-xing-dong-hua-yi-chu-tan.html" rel="alternate"></link><published>2017-03-10T14:14:45+08:00</published><updated>2017-03-10T14:14:45+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-10:/android-propertyanimation-shu-xing-dong-hua-yi-chu-tan.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;相对于静态的页面，动画往往能更直观地表达所需的信息，在UI开发过程中起着相当大的作用。&lt;/p&gt;
+&lt;p&gt;Android为我们提供了一系列实现动画效果的方法，&lt;code&gt;PropertyAnimaiton&lt;/code&gt;是最常见也是最实用的一种，如同它的名字一样，它的实现方式是通过改变对象的一系列属性值来改变对象的状态， 例如动态地改变绘制的位置就可以实现绘制物体的移动效果，动态地改变对象的显示状态可以实现闪烁效果。&lt;/p&gt;
+&lt;h2&gt;Animator概览&lt;/h2&gt;
+&lt;p&gt;Android提供的实现属性动画的工具是&lt;code&gt;android.animation.Animator&lt;/code&gt;这个类，它的使用需要配合&lt;code&gt;animation&lt;/code&gt;包下的其他工具类，这个类的功能是什么，我们要如何使用它来实现属性动画呢？&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;我们可以将&lt;code&gt;Animator&lt;/code&gt;理解为&lt;code&gt;Android&lt;/code&gt;为我们提供的一个按我们的需要在一定时间段内&lt;strong&gt;连续地&lt;/strong&gt;计算并返回值的工具，这个值可以是通用的整型、浮点型，也可以是我们自定义的类型。&lt;/p&gt;
+&lt;p&gt;我们可以设置返回值的范围，并可以控制值变化的快慢，例如实现自由落体下落的物体时我们需要让高度值以一个越来越快的速度降低。&lt;/p&gt;
+&lt;p&gt;这里的连续需要注意，实际上是不可能产生真正意义上的连续值的，但是如果&lt;strong&gt;在绘制过程中计算这个值的速度小于绘制一帧所需要的时间&lt;/strong&gt;，那么我们就可以在视觉上认为这个值是在连续改变的。这一点也是理解其作用的关键：我们很难去写出一个可以随时获取连续值的工具，而&lt;code&gt;Animator&lt;/code&gt;正是一个满足我们这个需求的一个通用工具。&lt;/p&gt;
+&lt;p&gt;通过将&lt;code&gt;Animator&lt;/code&gt;与&lt;code&gt;View&lt;/code&gt;的绘制过程结合 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;相对于静态的页面，动画往往能更直观地表达所需的信息，在UI开发过程中起着相当大的作用。&lt;/p&gt;
+&lt;p&gt;Android为我们提供了一系列实现动画效果的方法，&lt;code&gt;PropertyAnimaiton&lt;/code&gt;是最常见也是最实用的一种，如同它的名字一样，它的实现方式是通过改变对象的一系列属性值来改变对象的状态， 例如动态地改变绘制的位置就可以实现绘制物体的移动效果，动态地改变对象的显示状态可以实现闪烁效果。&lt;/p&gt;
+&lt;h2&gt;Animator概览&lt;/h2&gt;
+&lt;p&gt;Android提供的实现属性动画的工具是&lt;code&gt;android.animation.Animator&lt;/code&gt;这个类，它的使用需要配合&lt;code&gt;animation&lt;/code&gt;包下的其他工具类，这个类的功能是什么，我们要如何使用它来实现属性动画呢？&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;我们可以将&lt;code&gt;Animator&lt;/code&gt;理解为&lt;code&gt;Android&lt;/code&gt;为我们提供的一个按我们的需要在一定时间段内&lt;strong&gt;连续地&lt;/strong&gt;计算并返回值的工具，这个值可以是通用的整型、浮点型，也可以是我们自定义的类型。&lt;/p&gt;
+&lt;p&gt;我们可以设置返回值的范围，并可以控制值变化的快慢，例如实现自由落体下落的物体时我们需要让高度值以一个越来越快的速度降低。&lt;/p&gt;
+&lt;p&gt;这里的连续需要注意，实际上是不可能产生真正意义上的连续值的，但是如果&lt;strong&gt;在绘制过程中计算这个值的速度小于绘制一帧所需要的时间&lt;/strong&gt;，那么我们就可以在视觉上认为这个值是在连续改变的。这一点也是理解其作用的关键：我们很难去写出一个可以随时获取连续值的工具，而&lt;code&gt;Animator&lt;/code&gt;正是一个满足我们这个需求的一个通用工具。&lt;/p&gt;
+&lt;p&gt;通过将&lt;code&gt;Animator&lt;/code&gt;与&lt;code&gt;View&lt;/code&gt;的绘制过程结合，就可以实现绝大多数的动画效果， 但是&lt;code&gt;Animator&lt;/code&gt;也不只局限在使用在绘制动画，只要是有相似需求的地方都可以使用它来实现， 同时由于属性动画只针对属性进行修改，与被修改对象之前几乎没有耦合，不需要对被修改对象作出改变，可以设置方式也多种多样，这些都是动画的另一种实现方法&lt;code&gt;ViewAnimator&lt;/code&gt;所无法做到的，所以我属性动画是现在实现动画效果的普遍做法。&lt;/p&gt;
+&lt;h2&gt;使用Animator&lt;/h2&gt;
+&lt;h3&gt;Animator子类&lt;/h3&gt;
+&lt;p&gt;下面就来看看如何使用&lt;code&gt;Animator&lt;/code&gt;满足我们的需求。&lt;/p&gt;
+&lt;p&gt;我们使用&lt;code&gt;Animator&lt;/code&gt;可以分为两个步骤，一是进行数值的计算，二是将计算出的数值设置到对应的对象上。而&lt;code&gt;Animator&lt;/code&gt;有着三个子类：&lt;code&gt;ValueAnimator&lt;/code&gt; &lt;code&gt;ObjectAnimator&lt;/code&gt; &lt;code&gt;AnimatorSet&lt;/code&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ValueAnimator&lt;/code&gt;实现了上述过程的第一个步骤：进行数值的计算。第二个步骤则需要我们重写它的回调在值发生改变时候手动地为对象更新属性值。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ObjectAnimator&lt;/code&gt;则在其基础上进行了进一步的封装，加入了一些方法使得它可以绑定一个对象，在数值改变的同时对对象的属性进行更新。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;AnimatorSet&lt;/code&gt;可以对&lt;code&gt;Animator&lt;/code&gt;进行组合，让它们之间进行联动，例如可以设置一个动画根据另一个动画的状态来决定是否开始、暂停或停止。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;可以看到，&lt;code&gt;ValueAnimator&lt;/code&gt;提供了一个&lt;code&gt;Animator&lt;/code&gt;最核心的内容，也是使用中最为灵活的一个。&lt;code&gt;ObjectAnimator&lt;/code&gt;由于绑定了相应的对象，在使用上会受一些限制。&lt;code&gt;AnimatorSet&lt;/code&gt;专用于需要组合动画的场景。&lt;/p&gt;
+&lt;h3&gt;ValueAnimator&lt;/h3&gt;
+&lt;p&gt;在这篇博客中，我们关注最为核心的&lt;code&gt;ValueAnimator&lt;/code&gt;。&lt;/p&gt;
+&lt;h4&gt;关键属性&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator&lt;/code&gt;对象内部维护了一系列属性来保存所需的各种信息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Duration&lt;/code&gt;：动画的持续时间，通过&lt;code&gt;setDuration()&lt;/code&gt;方法设置&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Repeat count and behavior&lt;/code&gt;：重复计数与重复模式，我们可以通过设置这两个属性来控制动画是否重复以及重复的次数，通过&lt;code&gt;setRepeatCount()&lt;/code&gt;与&lt;code&gt;setRepeatMode()&lt;/code&gt;方法设置&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Frame refresh delay&lt;/code&gt;：帧刷新延迟，也就是计算两帧动画之间的间隔时间，但这个时间只是&lt;code&gt;Animator&lt;/code&gt;尽力去保持的值，具体的间隔时间会由于系统负载与性能的不同而不同，同时设置它的方法为一个静态方法：&lt;code&gt;ValueAnimator.setFrameDelay()&lt;/code&gt;，会被设置到所有的&lt;code&gt;Animator&lt;/code&gt;上，这是因为这些&lt;code&gt;Animator&lt;/code&gt;都在同一个时间循环中。这个属性也有可能会被忽略如果动画系统采用了内部的计时来源，例如&lt;code&gt;vsync&lt;/code&gt;来计算属性。同时这个方法需要在与&lt;code&gt;start()&lt;/code&gt;方法相同的进程中调用&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Time interpolation&lt;/code&gt;：时间插值器，是我们实现不同动画效果的关键，每一时刻所返回的数值由它决定，后文会详细讲&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;初始化与TypeEvaluator&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator&lt;/code&gt;对象的构造函数只由内部使用，获取&lt;code&gt;ValueAnimator&lt;/code&gt;对象的方法是调用它的工厂方法：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofArgb()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofInt()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofFloat()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofObject()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofPropertyValuesHolder()&lt;/code&gt; //本篇未涉及，下一篇进行讲解&lt;/p&gt;
+&lt;p&gt;前三个可以看作是&lt;code&gt;ValueAnimator&lt;/code&gt;为我们提供的初始化方式，它们的参数都是对应类型的长度可变参数:&lt;code&gt;(Type ...values)&lt;/code&gt;，我们需要提供一个以上的参数，&lt;code&gt;ValueAnimator&lt;/code&gt;最终提供的值会在这些值之前变动。&lt;/p&gt;
+&lt;p&gt;一般情况下这里提供的&lt;code&gt;Argb&lt;/code&gt;（用于颜色值的变化）和整型、浮点值基本可以满足我们的需求，但是某些时候我们需要结果是我们自定义的一些对象，这个时候就需要用到&lt;code&gt;TypeEvaluator&amp;lt;&amp;gt;&lt;/code&gt;接口了，与这个接口对应的工厂方法是&lt;code&gt;ValueAnimator.ofObject()&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="nf"&gt;ofObject&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TypeEvaluator&lt;/span&gt; &lt;span class="n"&gt;evaluator&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; 
+                &lt;span class="n"&gt;Object&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的可变参数类型变为了&lt;code&gt;Object&lt;/code&gt;，同时还需要我们提供一个&lt;code&gt;TypeEvaluator&amp;lt;&amp;gt;&lt;/code&gt;，用于“告诉”&lt;code&gt;Animator&lt;/code&gt;如何返回这个&lt;code&gt;Object&lt;/code&gt;值。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;code&gt;TypeEvaluator&amp;lt;&amp;gt;&lt;/code&gt;接口并不复杂，只有一个方法需要我们重写：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="nf"&gt;evaluate&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; 
+                &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="n"&gt;startValue&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; 
+                &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="n"&gt;endValue&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;startValue&lt;/code&gt;与&lt;code&gt;endValue&lt;/code&gt;非常好理解，就是我们在获取&lt;code&gt;Animator&lt;/code&gt;时指定的值的起始值和结束值。类型与返回类型一致，当然都是我们自定义的类型。&lt;/p&gt;
+&lt;p&gt;这里的&lt;code&gt;fraction&lt;/code&gt;就是决定我们最终返回值的关键参数。我们可以把这个&lt;code&gt;fraction&lt;/code&gt;理解为&lt;code&gt;animator&lt;/code&gt;提供给我们的最终的数值改变的比例，以小数表示，小于0表示低于&lt;code&gt;startValue&lt;/code&gt;，大于0表示超出&lt;code&gt;endValue&lt;/code&gt;，0-1之间表示在&lt;code&gt;startValue&lt;/code&gt;与&lt;code&gt;endValue&lt;/code&gt;之间。我们要做的就是把这个值转换为在起始和结果范围之间的合适的对象值。&lt;/p&gt;
+&lt;p&gt;例如，对于基本的浮点类型，默认的&lt;code&gt;FloatEvaluator&lt;/code&gt;是这样的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="n"&gt;Float&lt;/span&gt; &lt;span class="nf"&gt;evaluate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Number&lt;/span&gt; &lt;span class="n"&gt;startValue&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Number&lt;/span&gt; &lt;span class="n"&gt;endValue&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;startFloat&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;startValue&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;floatValue&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;startFloat&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;fraction&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;endValue&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;floatValue&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;startFloat&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到，就是相当于把&lt;code&gt;fraction&lt;/code&gt;所表示的比例“投射”到了我们所需要的数据对象上，这里是浮点类型。如果使用我们的自定义类型，我们必须为自己的类型定义这样的操作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意：&lt;/strong&gt;这里要求我们必须将&lt;code&gt;fraction&lt;/code&gt;&lt;strong&gt;线性&lt;/strong&gt;地反应到对应的类型上，因为&lt;code&gt;fraction&lt;/code&gt;反映的是最终的动画进度，我们必须如实地按照这个进度改变我们的属性，所以需要将result = x0 + t * (x1 - x0)`这样的形式反映到我们自己的对象上。&lt;/p&gt;
+&lt;p&gt;自定义了&lt;code&gt;TypeEvaluator&lt;/code&gt;以后就可以作为参数使用在上面的&lt;code&gt;obObject()&lt;/code&gt;工厂方法中了。&lt;/p&gt;
+&lt;h4&gt;插补细分器(&lt;code&gt;Interpolators&lt;/code&gt;)&lt;/h4&gt;
+&lt;p&gt;下面介绍使用&lt;code&gt;ValueAnimator&lt;/code&gt;控制值变化过程中最为重要的一个概念：插补细分器(&lt;code&gt;Interpolators&lt;/code&gt;)。&lt;/p&gt;
+&lt;p&gt;它实际上是一个关于时间的函数， 根据时刻的不同来返回不同的值，进而来控制最后的输出的值。那么它是如何表示的呢？&lt;/p&gt;
+&lt;p&gt;系统为我们提供了一系列预置的&lt;code&gt;Interpolators&lt;/code&gt;，以较常用的&lt;code&gt;LinearInterpolater&lt;/code&gt;为例，顾名思义，它是一个线性的插补细分器，意味着输入与输出呈线性关系：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="nf"&gt;getInterpolation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入输出的关键函数就是这个&lt;code&gt;getInterpolation()&lt;/code&gt;了，可以看到，参数与返回值都是&lt;code&gt;float&lt;/code&gt;类型，&lt;code&gt;input&lt;/code&gt;的值在0-1之间，结合前面，我们可以很容易理解，这个&lt;code&gt;input&lt;/code&gt;就是一个以0-1之间的小数表示的过去的时间值，例如整个动画是1000ms，当&lt;code&gt;input&lt;/code&gt;为0.25的时候意味着现在的时间过去了250ms。&lt;/p&gt;
+&lt;p&gt;而返回值就是经过我们的转换，表示出的动画应该进行的时间的比例，这里由于是线性的，所以可以直接返回&lt;code&gt;input&lt;/code&gt;，这个值最后会到哪里呢？自然就是给我们前面介绍的&lt;code&gt;TypeEvaluator&lt;/code&gt;。下面一段源码展示了这个过程：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mInterpolator&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;fraction&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mInterpolator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getInterpolation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;mEvaluator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;evaluate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mFirstKeyframe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValue&lt;/span&gt;&lt;span class="o"&gt;(),&lt;/span&gt;
+        &lt;span class="n"&gt;mLastKeyframe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValue&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;作为&lt;code&gt;getInterpolation()&lt;/code&gt;参数的&lt;code&gt;fraction&lt;/code&gt;代表着过去的时间比例，这里调用我们设置的&lt;code&gt;Interpolator&lt;/code&gt;来更新这个&lt;code&gt;fraction&lt;/code&gt;，现在这个&lt;code&gt;fraction&lt;/code&gt;表示的就是动画已经进行的比例，下一步就要根据它来获取对应的对象值（调用了我们之间谈到过的&lt;code&gt;evaluate()&lt;/code&gt;方法，这里的&lt;code&gt;KeyFrame&lt;/code&gt;的概念会在之后的博客讲到），后面的两个参数就是传递给&lt;code&gt;evaluate&lt;/code&gt;的起始与结束范围。&lt;/p&gt;
+&lt;p&gt;最终，我们就获得了一个按照我们设定的&lt;code&gt;Interpolator&lt;/code&gt;返回的动画属性值。&lt;/p&gt;
+&lt;p&gt;如果想要实现加速效果呢？Android同样为我们提供了现成的&lt;code&gt;AccelerateInterpolator&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="nf"&gt;getInterpolation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mFactor&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mf"&gt;1.0f&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="n"&gt;Math&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;pow&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mDoubleFactor&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同样很简洁，这里用到了&lt;code&gt;mFactor&lt;/code&gt;与&lt;code&gt;mDoubleFactor&lt;/code&gt;分别表示我们在构造函数里面设置的指数值：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;AccelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;factor&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mFactor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;factor&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mDoubleFactor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;mFactor&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果我们设置的为1，会返回&lt;code&gt;input&lt;/code&gt;的平方，其他值则会返回&lt;code&gt;input&lt;/code&gt;的&lt;code&gt;mDoubleFactor&lt;/code&gt;次方，使得动画属性可以以不同的函数曲线形式变化。&lt;/p&gt;
+&lt;p&gt;如果我们要实现自己的&lt;code&gt;Interpolator&lt;/code&gt;呢？只需要实现&lt;code&gt;TimeInterpolator&lt;/code&gt;接口，这个接口只需要我们实现一个&lt;code&gt;getInterpolation&lt;/code&gt;方法。我们可以根据&lt;code&gt;input&lt;/code&gt;值返回不同的值来返回不同的值表示动画的进度。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意：&lt;/strong&gt;返回值的范围不一定要在0-1之间，小于0或大小1的值可以表示超出预设范围的目标值。&lt;/p&gt;
+&lt;p&gt;这篇博客到此结束，在下一篇博客中将会以一个绘制自由落体的弹跳小球的示例来演示如何使用&lt;code&gt;Animator&lt;/code&gt;与介绍它的回调函数。&lt;/p&gt;</content><category term="Android"></category><category term="UI"></category><category term="Animation"></category></entry><entry><title>汇编语言综合研究</title><link href="/hui-bian-yu-yan-zong-he-yan-jiu.html" rel="alternate"></link><published>2017-03-10T10:35:37+08:00</published><updated>2017-03-10T10:35:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-10:/hui-bian-yu-yan-zong-he-yan-jiu.html</id><summary type="html">&lt;h2&gt;研究试验1 搭建一个精简的C语言开发环境&lt;/h2&gt;
 &lt;p&gt;TC进行连接需要如下的文件：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;C0S.OBJ&lt;/li&gt;
