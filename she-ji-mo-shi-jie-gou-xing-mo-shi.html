@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>设计模式——结构型模式</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="Adapter（适配器模式） 目标 将一个类的接口转换成客户所希望的另一个接口，范围从单纯的改变接口的名称直到适配、甚至添加额外的方法以便满足完全没有联系的接口方法。 结构...">
+
+        <meta name="author" content="Yifeng Tang">
+
+        <meta name="tags" content="Design Patterns">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/yifeng-tang.html">
+	<meta property="og:url" content="/she-ji-mo-shi-jie-gou-xing-mo-shi.html">
+	<meta property="og:title" content="设计模式——结构型模式">
+	<meta property="article:published_time" content="2017-04-06 19:38:39+08:00">
+            <meta property="og:description" content="Adapter（适配器模式） 目标 将一个类的接口转换成客户所希望的另一个接口，范围从单纯的改变接口的名称直到适配、甚至添加额外的方法以便满足完全没有联系的接口方法。 结构...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/pages/about/index.html">关于</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>设计模式——结构型模式</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/yifeng-tang.html">Yifeng Tang</a>
+                             on 2017年 4月06日 周四
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h1>Adapter（适配器模式）</h1>
+<h2>目标</h2>
+<p>将一个类的接口转换成客户所希望的另一个接口，范围从单纯的改变接口的名称直到适配、甚至添加额外的方法以便满足完全没有联系的接口方法。</p>
+<h2>结构</h2>
+<p><img alt="对象适配器结构图" src="/images/2017_3_20_3.jpg"></p>
+<p>对象适配器依赖于对象的组合，主要是依靠Adapter类的代理，将对于Adapter的requset与special request转发到Target类与Adaptee中去。</p>
+<p><img alt="类适配器结构图" src="/images/2017_3_20_4.jpg"></p>
+<p>类适配器依赖于多重继承（java中即是接口），将相应需要提供的方法加在Target类上。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_20_5.jpg"></p>
+<p>如图所示，Client类调用Adapter类上的某些方法，以实现相应的request或者是specailRequset方法。</p>
+<!--more-->
+
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>存在一个想要使用的但是接口并不满足你的需求的一个类的时候；</p>
+</li>
+<li>
+<p>你想创建一个可以复用的类，这个类可以与其他不相关的或者不可预见的类协同工作；</p>
+</li>
+<li>
+<p>你想要使用一些子类，但是你只想适配它的父类方法。（仅适用于对象适配器中）</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Target</p>
+<p>定义用户原有的各种业务代码与功能。</p>
+</li>
+<li>
+<p>Client</p>
+<p>与Target接口进行交流。</p>
+</li>
+<li>
+<p>Adaptee</p>
+<p>一个已经存在并且需要适配才能正常工作的一个接口。</p>
+</li>
+<li>
+<p>Adapter</p>
+<p>对Adatper的接口与Target接口进行适配。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>Adapter的适配程度</p>
+<p>Adapter的工作量取决于两个接口的相似程度，工作范围从简单的改变操作名到支持完全不同的操作。</p>
+</li>
+<li>
+<p>可插入的Adapter</p>
+<p><a href="http://blog.csdn.net/yqj2065/article/details/48260633">可插入的适配器（暂时还看不懂）</a></p>
+</li>
+</ol>
+<h2>代码实例</h2>
+<ol>
+<li>对象适配器</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">Socket</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">twoPinPlug</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">interface</span> <span class="nc">Usb</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">charge</span><span class="o">();</span>
+<span class="o">}</span> 
+
+<span class="kd">class</span> <span class="nc">MixSocket</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Socket</span> <span class="n">socket</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">Usb</span> <span class="n">usb</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">MixSocket</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Socket</span><span class="o">;</span>
+        <span class="n">usb</span> <span class="o">=</span> <span class="k">new</span> <span class="n">usb</span> <span class="o">{</span>
+            <span class="nd">@Override</span>
+            <span class="kd">public</span> <span class="kt">void</span> <span class="nf">charge</span><span class="o">()</span> <span class="o">{}</span>
+        <span class="o">};</span>
+    <span class="o">}</span> 
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">twoPinPlug</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">socket</span><span class="o">.</span><span class="na">twoPinPlug</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">usb</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">usb</span><span class="o">.</span><span class="na">charge</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">User</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">MixSocket</span> <span class="n">socket</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">User</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MixSocket</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">User</span><span class="o">();</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">socket</span><span class="o">.</span><span class="na">twoPinPlug</span><span class="o">();</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">socket</span><span class="o">.</span><span class="na">usb</span><span class="o">();</span>
+    <span class="o">}</span> 
+<span class="o">}</span>
+</pre></div>
+
+
+<ol>
+<li>类适配器</li>
+</ol>
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">Socket</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">twoPinPlug</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">interface</span> <span class="nc">Usb</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">charge</span><span class="o">();</span>
+<span class="o">}</span> 
+
+<span class="kd">class</span> <span class="nc">MixSocket</span> <span class="kd">extends</span> <span class="n">Socket</span> <span class="kd">implements</span> <span class="n">Usb</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">MixSocket</span><span class="o">()</span> <span class="o">{}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">charge</span><span class="o">()</span> <span class="o">{}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">User</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">MixSocket</span> <span class="n">socket</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">User</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MixSocket</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">User</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">User</span><span class="o">();</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">socket</span><span class="o">.</span><span class="na">twoPinPlug</span><span class="o">();</span>
+        <span class="n">user</span><span class="o">.</span><span class="na">socket</span><span class="o">.</span><span class="na">usb</span><span class="o">();</span>
+    <span class="o">}</span> 
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Bridge（桥接模式）</h1>
+<h2>目标</h2>
+<p>将抽象部分与他的实现部分分离，使它们都可以独立地变化。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_3_23_1.jpg"></p>
+<p>桥接模式在抽象父类中存储一个抽象的Implementor指针，然后在子类实现的时候传递一个ConcreteImplementor。Client直接调用抽象父类的相应方法即可。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_23_2.jpg"></p>
+<p>Client在创建了一个具体的功能实现类对象，将这个功能传递给父类，这样就获得一个能够实现功能的操作类。</p>
+<!--more-->
+
+<h2>使用情形</h2>
+<ol>
+<li>
+<p>抽象和实现部分之间有一个固定的绑定关系；</p>
+</li>
+<li>
+<p>类的抽象以及实现部分可以通过生成子类的方法进行扩充，此时可以通过对不同的抽象接口和实现进行组合并且分别进行扩充；</p>
+</li>
+<li>
+<p>对一个抽象的实现方法的修改应该不影响用户；</p>
+</li>
+<li>
+<p>你需要将一个具有很多将要生成的子类的类分成两部分。</p>
+</li>
+<li>
+<p>与适配器模式的最大区别就在于，适配器模式是在使用的时候进行的组合，桥接模式是在最开始构架的时候设计好的。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Abstraction</p>
+<p>定义并且维护一个纸箱Implementor类型对象的指针。</p>
+</li>
+<li>
+<p>RefinedAbstraction</p>
+<p>扩展后的Abstraction。</p>
+</li>
+<li>
+<p>Implementor</p>
+<p>定义实现类的接口。</p>
+</li>
+<li>
+<p>Implementor</p>
+<p>实现具体的Implementor类方法。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>分离接口及其实现方式。（在某方面避免了用户通过反射获得实现的信息？）</p>
+</li>
+<li>
+<p>提高可扩展性，实现细节对客户透明。</p>
+</li>
+</ol>
+<h2>代码实例</h2>
+<div class="highlight"><pre><span></span><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">WaterBottle</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">ContainsWater</span> <span class="n">contains</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">WaterBottle</span><span class="o">(</span><span class="n">ContainsWater</span> <span class="n">containsWater</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">contains</span> <span class="o">=</span> <span class="n">containsWater</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">containsWater</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">contains</span><span class="o">.</span><span class="na">contains</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">HotWaterBottle</span> <span class="kd">extends</span> <span class="n">WaterBottle</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="nf">HotWaterBottle</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="k">new</span> <span class="n">ContainsHotWater</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">CoolWaterBottle</span> <span class="kd">extends</span> <span class="n">WaterBottle</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="n">CoolWaterBottle</span><span class="o">{</span>
+        <span class="kd">super</span><span class="o">(</span><span class="k">new</span> <span class="n">ContainsCoolWater</span><span class="o">());</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">ContainsWater</span><span class="o">{</span>
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">contains</span><span class="o">();</span>
+<span class="o">};</span>
+
+<span class="kd">class</span> <span class="nc">ContainsHotWater</span> <span class="kd">extends</span> <span class="n">ContainsWater</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">contains</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Hot water!&quot;</span><span class="o">);</span>    
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">ContainsCoolWater</span> <span class="kd">extends</span> <span class="n">ContainsWater</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">contains</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Cooooool water!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">WaterBottle</span> <span class="n">bottle1</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">WaterBottle</span> <span class="n">bottle2</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">bottle1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HotWaterBottle</span><span class="o">();</span>
+        <span class="n">bottle2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CoolWaterBottle</span><span class="o">();</span>
+        <span class="n">bottle1</span><span class="o">.</span><span class="na">containsWater</span><span class="o">();</span>
+        <span class="n">bottle2</span><span class="o">.</span><span class="na">containsWater</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Composite（组合模式）</h1>
+<h2>目标</h2>
+<p>将对象组合成树形结构以表示“部分-整体”的层次结构，该模式是的用户对单个对象以及组合对象的使用具有一致性。</p>
+<h2>结构</h2>
+<p><img alt="通用结构图" src="/images/2017_3_24_1.jpg"></p>
+<p>一个组合模式中有着容器以及实现对象，但是它们都是一个Component的各子类。</p>
+<p><img alt="Android中View层次图" src="/images/2017_3_24_2.jpg"></p>
+<p>Android中的View，可以作为一种容器来存放其他的View，也可以自己作为一个单独的View。</p>
+<!--more-->
+
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>需要表示对象的部分-整体层次结构；</p>
+</li>
+<li>
+<p>用户可以忽略组合对象与单个对象的不同，统一地调度操作对象。</p>
+<p>对于用户来说，该对象是否是组合对象并不重要。例如一般的文件管理器中，对于文件夹或者文件都有着复制、粘贴等功能，内部实现稍有区别。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Component</p>
+<p>为组合的对象声明接口并且实现所有方法的默认方法，并且拥有一个能够访问和管理所有Component子组件的方法以及一个可选择的、能够访问到父组件的一个方法。</p>
+</li>
+<li>
+<p>Leaf</p>
+<p>在组合结构中表示没有容器对象行为的组件。</p>
+</li>
+<li>
+<p>Composite</p>
+<p>存储、管理、操作子部件，并且在Component接口中实现相应功能。</p>
+</li>
+<li>
+<p>Client</p>
+<p>通过Component操作组合结构。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>定义了包含基本对象和组合对象的类层次结构。这样可以让用户将所需要的组件无限递归地组合添加下去，使得用户可以在所有的地方用到组合对象。</p>
+</li>
+<li>
+<p>简化客户代码。用户不需要关心处理的是一个叶结点还是一个组合容器，对于用户来说，都可以用同样的方法来实现业务。</p>
+</li>
+<li>
+<p>使设计更容易加入新的组件。</p>
+</li>
+</ol>
+<h2>实现细节</h2>
+<ol>
+<li>
+<p>最大化Component接口。为了让用户真正的不能感觉到自己是在使用一个Leaf或者Composite，Component接口应该尽可能多的支持更多的公共方法。这里就会发生一个矛盾，一般的来说一个类只应该定义那些对自己或者子类有意义的方法，但是Component却要在很多地方提供很多的缺省操作。</p>
+</li>
+<li>
+<p>实现子类管理的位置。如果你在Component接口中定义了Add、Remove方法，这样的话Leaf也会有这个方法，用户可能会对Leaf执行很多无意义的操作；如果你只在Composite中定义Add、Remove方法，用户就会意识到自己是在使用一个Composite而不是一个Leaf。一般地来说，推荐使用前一种方法。否则用户就需要将一个Component强行转换为Composite类，这样会出现用户将Leaf转换的可能，一种可能的方法是在Component中提供一个getComposite方法，若是在Compsite中调用便会返回自己，Leaf中便返回NULL即可。</p>
+</li>
+</ol>
+<h2>代码示例</h2>
+<div class="highlight"><pre><span></span><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Goods</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Linklist</span><span class="o">&lt;</span><span class="n">Goods</span><span class="o">&gt;</span> <span class="n">children</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">Goods</span> <span class="n">parent</span><span class="o">;</span>
+
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">contains</span><span class="o">(</span><span class="n">Goods</span> <span class="n">good</span><span class="o">);</span>
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">values</span><span class="o">();</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setParent</span><span class="o">(</span><span class="n">Goods</span> <span class="n">parent</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">parent</span> <span class="o">=</span> <span class="n">parent</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="n">Goods</span> <span class="nf">getParent</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">parent</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Gold</span> <span class="kd">extends</span> <span class="n">Goods</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">contains</span><span class="o">(</span><span class="n">Goods</span> <span class="n">good</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// DO NOTHING</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">values</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;This costs a LOT!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Box</span> <span class="kd">extends</span> <span class="n">Goods</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">contains</span><span class="o">(</span><span class="n">Goods</span> <span class="n">good</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">children</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">good</span><span class="o">);</span>
+        <span class="n">good</span><span class="o">.</span><span class="na">setParent</span><span class="o">(</span><span class="k">this</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">values</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;This costs litte&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">Goods</span> <span class="n">good1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Box</span><span class="o">();</span>
+        <span class="n">Goods</span> <span class="n">good2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Gold</span><span class="o">();</span>
+        <span class="n">Goods</span> <span class="n">good3</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Box</span><span class="o">();</span>
+        <span class="n">good1</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">good2</span><span class="o">);</span>
+        <span class="n">good2</span><span class="o">.</span><span class="na">contains</span><span class="o">(</span><span class="n">good3</span><span class="o">);</span>
+        <span class="n">good3</span><span class="o">.</span><span class="na">values</span><span class="o">();</span>
+        <span class="n">good2</span><span class="o">.</span><span class="na">values</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Decorator 模式</h1>
+<h2>目标</h2>
+<p>动态地给一个对象添加一些额外的职责，比子类的生成更佳灵活。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_3_25_1.jpg"></p>
+<p>Decorator类中保留着一个Component类的一个指针。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_25_2.jpg"></p>
+<p>Decorator的Operation方法被调用先调用Component中的Operation，然后再调用Decorator类中的Operation方法进行装饰绘制。</p>
+<!--more-->
+
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>不在影响其他对象的情况下，以动态、透明的方式给单个对象添加、撤销职责；</p>
+</li>
+<li>
+<p>当有着大量且可以互相组合的扩展功能的时候的时候，适用子类将会使子类数量极大的时候；</p>
+</li>
+<li>
+<p>当某个类是不可被继承的时候，想要扩展其功能也可以使用装饰器模式。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Component</p>
+<p>一个需要动态添加职责的对象接口。</p>
+</li>
+<li>
+<p>ConcreteComponent</p>
+<p>具体具有相应职责的一个对象。</p>
+</li>
+<li>
+<p>Decorator</p>
+<p>保留一个指向Component对象的指针，具有与Component完全一样的接口方法。</p>
+</li>
+<li>
+<p>ConcreteDecorator</p>
+<p>具有着具体的实现方法的装饰器，会给予Component各种不同的职责。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>比继承更加灵活。</p>
+<p>使用户可以自由组合各种职责，增加职责添加删除的自由度，同时可以很方便地重复添加一个特性。</p>
+</li>
+<li>
+<p>不需要让抽象类在一开始就支持过多的方法与特征。</p>
+</li>
+<li>
+<p>会出现许多的小对象，使得用户在使用的时候比较容易，但是在学习使用的时候花费大量的时间。</p>
+</li>
+<li>
+<p>Decorator就像是一个外壳，将会把原有的Component类包裹住，所以在这样的情况下就有要求Component应该足够的简单，以便于Decorator能够拥有Component类的所有接口方法。如果Component类原本就非常大，就应该使用Strategy模式而不是装饰器模式。</p>
+</li>
+</ol>
+<h2>代码示例</h2>
+<div class="highlight"><pre><span></span><span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Garden</span><span class="o">{</span>
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">beVisited</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">BigGarden</span> <span class="kd">extends</span> <span class="n">Garden</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">beVisited</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;What a lovely place!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Flower</span> <span class="kd">extends</span> <span class="n">Garden</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Garden</span> <span class="n">obj</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nf">Flower</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">Flower</span><span class="o">(</span><span class="n">Garden</span> <span class="n">garden</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">();</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">obj</span> <span class="o">=</span> <span class="n">garden</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">beVisited</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">obj</span><span class="o">.</span><span class="na">beVisited</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;How fragrant!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Bird</span> <span class="kd">extends</span> <span class="n">Garden</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Garden</span> <span class="n">obj</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nf">Bird</span><span class="o">()</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">Bird</span><span class="o">(</span><span class="n">Garden</span> <span class="n">garden</span><span class="o">)</span> <span class="o">{</span>
+        <span class="kd">super</span><span class="o">();</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">obj</span> <span class="o">=</span> <span class="n">garden</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">beVisited</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">obj</span><span class="o">.</span><span class="na">beVisited</span><span class="o">();</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;How wonderful!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Visitor</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">Garden</span> <span class="n">garden</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Bird</span><span class="o">(</span><span class="k">new</span> <span class="n">Flower</span><span class="o">(</span><span class="k">new</span> <span class="n">BigGarden</span><span class="o">()));</span>
+        <span class="n">garden</span><span class="o">.</span><span class="na">beVisited</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Facade（外观模式）</h1>
+<h2>目标</h2>
+<p>为子系统中的一组接口提供一个一致界面，定义一个可以试子系统更加容易使用的高级接口。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_3_31_1.jpg"></p>
+<p>客户在一个统一的高级接口的调用下完成了对完全解耦的子系统的调用，以避免用户对子系统细节的直接参与等。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_3_31_2.jpg"></p>
+<p>Client类通过对Facade接口的创建统一地对子系统下的各文件进行创建，并且在调用一个Facade提供的方法之后，由Facade接口统一地调度进行操作子系统中相应的方法。Client从而不会直接访问子程序。</p>
+<!--more-->
+
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>需要为一个复杂的子系统提供一个简单的接口。有时候子系统可能随着演化变得非常复杂以及可复用，此时对于一些只需要基本操作的用户来说可以使用Facade提供的接口进行简单的操作。如果是需要高级操作的用户，可以跳过Facade直接对子系统进行操作即可；</p>
+</li>
+<li>
+<p>Facade接口可以降低子系统与Client类之间的依赖性，降低系统的耦合度；</p>
+</li>
+<li>
+<p>当需要创建一个具有层次结构的系统时，可以使用Facade来定义子系统中每层的入口。从而让子系统之间只通过Facade进行通讯从而简化他们之间的依赖关系。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Facade</p>
+<p>知道子系统的具体方法与接口，并且将客户端的请求转发给相应的子系统对象。</p>
+</li>
+<li>
+<p>Subsystem classes</p>
+<p>实现子系统的功能、完成Facade指派的任务，并且__不会__包含Facade对象的任何信息。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>对客户屏蔽子系统组建，以减少客户处理的对象的数目并且使用户使用子系统更加方便；</p>
+</li>
+<li>
+<p>实现子系统与客户之间的松耦合关系，由于子系统之间的操作往往是紧耦合的，这样可以降低对子系统进行修改之后对客户的修改；</p>
+</li>
+<li>
+<p>可以在用户需要的时候开放相应的子系统以便用户实施高级操作。</p>
+</li>
+<li>
+<p>私有化子系统类，我们往往并不是希望所有的子系统类都是用户可以高级定制的。此时可以通过私有化类，从而让某些公用类暴露，其他的类将会对客户不可见。</p>
+</li>
+</ol>
+<h2>代码示例</h2>
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">AutomaticTransmission</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">FirstGear</span> <span class="n">firstGear</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">SecondGear</span> <span class="n">secondGear</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">AutomaticTransmission</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">firstGear</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FirstGear</span><span class="o">();</span>
+        <span class="n">secondGear</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SecondGear</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">drive</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">firstGear</span><span class="o">.</span><span class="na">drive</span><span class="o">();</span>
+        <span class="n">secondGear</span><span class="o">.</span><span class="na">drive</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">FirstGear</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">drive</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;At first gear!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">SecondGear</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">drive</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;At first gear!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">C1Driver</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">AutomaticTransmission</span> <span class="n">auto</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">FirstGear</span> <span class="n">firstGear</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">SecondGear</span> <span class="n">secondGear</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">C1Driver</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">auto</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AutomaticTransmission</span><span class="o">();</span>
+        <span class="n">firstGear</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FirstGear</span><span class="o">();</span>
+        <span class="n">secondGear</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SecondGear</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">driveAuto</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">auto</span><span class="o">.</span><span class="na">drive</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">driveManual</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">firstGear</span><span class="o">.</span><span class="na">drive</span><span class="o">();</span>
+        <span class="n">secondGear</span><span class="o">.</span><span class="na">drive</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">C2Driver</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">AutomaticTransmission</span> <span class="n">auto</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">C2Driver</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">auto</span> <span class="o">=</span> <span class="k">new</span> <span class="n">AutomaticTransmission</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">driveAuto</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">auto</span><span class="o">.</span><span class="na">drive</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Flyweight（享元模式）</h1>
+<h2>目标</h2>
+<p>使用共享技术有效地支持大量细粒度的对象。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_4_1_1.jpg"></p>
+<p>享元接口由享元工厂生产出来，其中包含着可被共享的享元与不可共享的享元。当用户需要一个享元对象的时候，享元工厂将根据情况生产或者返回对象。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_4_1_2.jpg"></p>
+<p>用户通过调用享元工厂以得到相应的享元对象，这个对象将会根据是否是一个可被共享的享元对象让工厂对其能不能作为一个享元来进行相应的操作。</p>
+<!--more-->
+
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>一个程序使用了大量的造成了极大的存储开销的对象；</p>
+</li>
+<li>
+<p>这些对象的大部分属性可以变为外部状态，并且这些外部状态可以被对象中剥离下来；</p>
+</li>
+<li>
+<p>程序不依赖于对象标志，使用相同的对象对程序并不会造成任何的误解或者冲突等。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Flyweight</p>
+<p>一个可以接受外部状态的接口，作为享元的基类。</p>
+</li>
+<li>
+<p>ConcreteFlyweight</p>
+<p>实现Flyweight接口，并且存储了独立于ConcreteFlyweight对象所在场景内部状态，并且必须是一个可共享的对象。</p>
+</li>
+<li>
+<p>UnsharedConcreteFlyweight</p>
+<p>一个不会被共享的享元对象，通常作为Flyweight层次结构中，ConcreteFlyweight对象的父节点。（例如一个文字编辑文件中Row和Column）</p>
+</li>
+<li>
+<p>FlyweightFactory</p>
+<p>创建并且管理Flyweight对象，确保能够正确地使用共享一个享元对象。</p>
+</li>
+<li>
+<p>Client</p>
+<p>维持一个Flyweight的引用指针，计算、存储所有Flyweight对象的外部状态。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>使用享元模式的时候，将会在计算、传输、查找外部状态时会产生很多运行时的额外开销，这些额外开销将会通过减少的对象存储空间使用所抵消。</p>
+</li>
+<li>
+<p>存储节约的主要因素：</p>
+<ul>
+<li>
+<p>因为共享、示例总数减少的数目；</p>
+</li>
+<li>
+<p>对象内部状态的平均数目；</p>
+</li>
+<li>
+<p>外部共享状态是计算出来还是存储下来的。</p>
+</li>
+</ul>
+</li>
+<li>
+<p>外部状态理想条件下应该是可以通过某种对象结构直接计算出来的，并且要求的存储量非常小。</p>
+</li>
+<li>
+<p>享元模式将会通过单例模式以及工厂模式进行管理，可以使用对象表进行管理。</p>
+</li>
+</ol>
+<h2>代码示例</h2>
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">Printer</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span> <span class="n">MovableType</span><span class="o">&gt;</span> <span class="n">typeMap</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nf">Printer</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">typeMap</span> <span class="o">=</span> <span class="k">new</span> <span class="n">HashMap</span><span class="o">&lt;</span><span class="n">Character</span><span class="o">,</span> <span class="n">MovableType</span><span class="o">&gt;();</span>
+    <span class="o">}</span>
+    <span class="kd">public</span> <span class="n">MovableType</span> <span class="nf">getType</span><span class="o">(</span><span class="n">Character</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span><span class="o">(!</span><span class="n">typeMap</span><span class="o">.</span><span class="na">keySet</span><span class="o">().</span><span class="na">contains</span><span class="o">(</span><span class="n">c</span><span class="o">))</span> <span class="o">{</span>
+            <span class="n">typeMap</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">c</span><span class="o">,</span> <span class="n">MovableType</span><span class="o">.</span><span class="na">instance</span><span class="o">(</span><span class="n">c</span><span class="o">));</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">typeMap</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">c</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">MovableType</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="n">Class</span><span class="o">[]</span> <span class="n">classList</span><span class="o">;</span>
+    <span class="kd">protected</span> <span class="nf">MovableType</span><span class="o">();</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="n">MovableType</span> <span class="nf">instance</span><span class="o">(</span><span class="kt">char</span> <span class="n">c</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">classList</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">classList</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Class</span><span class="o">[</span><span class="mi">26</span><span class="o">];</span>
+            <span class="n">classList</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span> <span class="o">=</span> <span class="n">TypeA</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+            <span class="n">classList</span><span class="o">[</span><span class="mi">2</span><span class="o">]</span> <span class="o">=</span> <span class="n">TypeB</span><span class="o">.</span><span class="na">class</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="n">classList</span><span class="o">[</span><span class="n">c</span> <span class="o">-</span> <span class="sc">&#39;A&#39;</span><span class="o">].</span><span class="na">newInstance</span><span class="o">();</span>
+    <span class="o">}</span> 
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">TypeA</span> <span class="kd">extends</span> <span class="n">MovableType</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;A&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">TypeB</span> <span class="kd">extends</span> <span class="n">MovableType</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">print</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;B&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Client</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">MovableType</span> <span class="n">movableType</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">color</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">size</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">Printer</span> <span class="n">printer</span><span class="o">;</span>
+    <span class="kd">public</span> <span class="nf">Client</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">printer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Printer</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addColor</span><span class="o">(</span><span class="n">String</span> <span class="n">color</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">color</span> <span class="o">=</span> <span class="n">color</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">addSize</span><span class="o">(</span><span class="n">String</span> <span class="n">size</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">size</span> <span class="o">=</span> <span class="n">size</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">use</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">color</span> <span class="o">+</span> <span class="s">&quot; &quot;</span> <span class="o">+</span> <span class="n">size</span><span class="o">);</span>
+        <span class="n">movableType</span><span class="o">.</span><span class="na">print</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">Clinet</span> <span class="n">client</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Client</span><span class="o">();</span>
+        <span class="n">client</span><span class="o">.</span><span class="na">movableType</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="na">printer</span><span class="o">.</span><span class="na">getType</span><span class="o">(</span><span class="sc">&#39;A&#39;</span><span class="o">);</span>
+        <span class="n">client</span><span class="o">.</span><span class="na">addColor</span><span class="o">(</span><span class="s">&quot;red&quot;</span><span class="o">);</span>
+        <span class="n">client</span><span class="o">.</span><span class="na">addSize</span><span class="o">(</span><span class="s">&quot;Large&quot;</span><span class="o">);</span>
+        <span class="n">client</span><span class="o">.</span><span class="na">use</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<h1>Proxy（代理模式）</h1>
+<h2>目标</h2>
+<p>为其他对象提供一种代理，以得以控制这个对象的访问。</p>
+<h2>结构</h2>
+<p><img alt="结构图" src="/images/2017_4_2_1.jpg"></p>
+<p>Subject作为Proxy与RealSubject的共用接口保证了能使用RealSubject的接口的地方都可以使用Proxy，并且Proxy中保存着一个能够访问到RealSubject的指针。</p>
+<h2>协作</h2>
+<p><img alt="时序图" src="/images/2017_4_2_2.jpg"></p>
+<p>Client类在创建一个Proxy对象的同时，Proxy对象也会创建一个RealSubject实例。当Client发出一个请求之后，Proxy对象会在处理了preRequest之后调用RealSubject的request方法，最后再调用afterRequest方法。</p>
+<!--more-->
+
+<h2>适用情形</h2>
+<ol>
+<li>
+<p>远程代理</p>
+<p>为一个对象在不同的地址空间提供一个局部代理对象，有些地方把这种行为称作“Ambassador”。</p>
+</li>
+<li>
+<p>虚代理</p>
+<p>当需要创建一个很大的对象，但是不希望在一开始加载的时候就全部创建的。如同当一个网页中有一个非常大的图片的时候，用户往往希望是网页先打开然后再等待图片的加载。</p>
+</li>
+<li>
+<p>保护代理</p>
+<p>控制对原始对象的访问，从而限制用户对于某些对象的访问权限。</p>
+</li>
+<li>
+<p>智能指针</p>
+<p>在单纯的指针中加入其他的预处理、后处理方法，以便于实现更加复杂的操作。</p>
+</li>
+</ol>
+<h2>参与者</h2>
+<ul>
+<li>
+<p>Proxy</p>
+<p>保存一个可以直接访问到实体的指针，并且实现一个与RealSubject相同的接口，以保证Proxy可以代替RealSubject被调用，以及其他的预处理或者是后处理方法。</p>
+</li>
+<li>
+<p>Subject</p>
+<p>定义RealSubject与Proxy的共用接口。</p>
+</li>
+<li>
+<p>RealSubject</p>
+<p>定义实体对象。</p>
+</li>
+</ul>
+<h2>效果</h2>
+<ol>
+<li>
+<p>随着代理类型、附加间接性有着多种用途（略）；</p>
+</li>
+<li>
+<p>代理模式可以对用户隐藏一种称为copy-on-write的方法，这样可以延迟一个对某个对象的拷贝操作。因为拷贝一个很大的对象往往是非常开销非常大的，使用这样的方法可以保证只有在对象被用户进行了修改之后才发生拷贝动作；</p>
+</li>
+<li>
+<p>如果使用范型的话，Proxy对象将不必要知道具体的实体类的名称等。</p>
+</li>
+</ol>
+<h2>代码示例</h2>
+<div class="highlight"><pre><span></span><span class="kd">interface</span> <span class="nc">Food</span><span class="o">{</span>
+    <span class="kt">void</span> <span class="nf">eat</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Rice</span> <span class="kd">implements</span> <span class="n">Food</span><span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">eat</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Yummy!&quot;</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">CookedRice</span> <span class="kd">implements</span> <span class="n">Food</span><span class="o">{</span>
+    <span class="kd">private</span> <span class="n">Rice</span> <span class="n">rice</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">eat</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;Cook!&quot;</span><span class="o">);</span>
+        <span class="n">rice</span><span class="o">.</span><span class="na">eat</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">People</span><span class="o">{</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="n">String</span> <span class="n">args</span><span class="o">[])</span> <span class="o">{</span>
+        <span class="n">Food</span> <span class="n">rice</span> <span class="o">=</span> <span class="k">new</span> <span class="n">CookedRice</span><span class="o">();</span>
+        <span class="n">rice</span><span class="o">.</span><span class="na">eat</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/design-patterns.html">Design Patterns</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
