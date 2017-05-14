@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>Android利用UDP、TCP进行局域网数据传输</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/misc.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="写在前面 在团队内部的hackweek中实现了一个在局域网环境中（同一个wifi下）进行的卡片收发小游戏，踩了一些关于局域网内通信的坑，这篇博文就用来整理一下整个过程的思路，完整代码地址。 实现思路...">
+
+        <meta name="author" content="Di Wu">
+
+        <meta name="tags" content="Android">
+        <meta name="tags" content="Network">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/di-wu.html">
+	<meta property="og:url" content="/androidli-yong-udp-tcpjin-xing-ju-yu-wang-shu-ju-chuan-shu.html">
+	<meta property="og:title" content="Android利用UDP、TCP进行局域网数据传输">
+	<meta property="article:published_time" content="2017-05-11 15:58:06+08:00">
+            <meta property="og:description" content="写在前面 在团队内部的hackweek中实现了一个在局域网环境中（同一个wifi下）进行的卡片收发小游戏，踩了一些关于局域网内通信的坑，这篇博文就用来整理一下整个过程的思路，完整代码地址。 实现思路...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/pages/about/index.html">关于</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Android利用UDP、TCP进行局域网数据传输</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/di-wu.html">Di Wu</a>
+                             on 2017年 5月11日 周四
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h2>写在前面</h2>
+<p>在团队内部的hackweek中实现了一个在局域网环境中（同一个wifi下）进行的卡片收发小游戏，踩了一些关于局域网内通信的坑，这篇博文就用来整理一下整个过程的思路，<a href="https://github.com/viseator/AnonymousCard">完整代码地址</a>。</p>
+<h2>实现思路</h2>
+<p>在整个过程中利用到了UDP与TCP两种传输层协议，两者的特性决定了使用上的不同。</p>
+<p>简单地说，UDP非面向连接，不需要先与目标建立连接，所以UDP不提供可靠的数据传输，也不能保证数据准确无误地到达目的地，但UDP的优势在于它可以迅速传送大量信息，传输性能比较好。</p>
+<p>而TCP是面向连接的协议，需要经过三次握手与目的地址建立一个稳定的连接，可以保证数据准确、完整地到达。但是它的传输效率就没有UDP那么高。</p>
+<p>首先，为了数据传输的稳定和准确性，在传送主要数据部分我们必需使用TCP来建立一个点对点的稳定的连接来传输主要数据。</p>
+<!--more-->
+
+<p>但是，为了建立一个TCP连接，请求的一方必须要知道被请求一方（下面简称服务方）的IP地址。而在局域网中，如果我们想要实现每个人连接局域网以后马上可以收发信息，由于每次加入时分配到的IP地址并不是固定的也无法提前得知，所以我们需要使用其他的办法先获取到服务方的IP地址。</p>
+<p>这时就要利用到UDP协议的组播特性了，组播可以让设备都加入一个预设好的组，然后就可以向这个组中发送数据包，只要加入了这个组的设备都可以收到这个数据包。这样只要所有的设备都提前加入了同一个组，不需要互相知道IP地址就可以交换数据，那么我们应该如何利用这样的特性呢？</p>
+<p>结合我们的实际需求，游戏过程是每个人可以向所有人发送一个只有标题的匿名卡片（这个过程就符合UDP组播的特性），如果感兴趣的人就可以点击收到的卡片来打开这个卡片查看具体内容（这个过程就需要我们建立TCP连接来传输数据）。</p>
+<p>所以我们就有了思路，向所有人发送卡片的过程使用UDP进行组播，数据包中除了包含标题信息还要包含一个发送人的IP地址以及一个Mac地址作为ID（考虑到重新连接后地址发生改变的问题），当所有人收到这个卡片以后需要建立连接的时候就可以得到发送人的IP来进行TCP连接。</p>
+<p>下面我们来实现这个过程。</p>
+<h2>具体实现</h2>
+<h3>组播</h3>
+<p>我们定义一个<code>ComUtil</code>类来处理组播</p>
+<h4>加入组</h4>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">CHARSET</span> <span class="o">=</span> <span class="s">&quot;utf-8&quot;</span><span class="o">;</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="n">String</span> <span class="n">BROADCAST_IP</span> <span class="o">=</span> <span class="s">&quot;224.0.1.2&quot;</span><span class="o">;</span> <span class="c1">//IP协议中特殊IP地址，作为一个组，用来集合加入的所有客户端</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">BROADCAST_PORT</span> <span class="o">=</span> <span class="mi">7816</span><span class="o">;</span> <span class="c1">//广播目的端的端口号</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="kt">int</span> <span class="n">DATA_LEN</span> <span class="o">=</span> <span class="mi">4096</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">MulticastSocket</span> <span class="n">socket</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+<span class="kd">private</span> <span class="n">InetAddress</span> <span class="n">broadcastAddress</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span><span class="c1">//当前设备在局域网下的IP地址</span>
+<span class="kt">byte</span><span class="o">[]</span> <span class="n">inBuff</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="n">DATA_LEN</span><span class="o">];</span>
+<span class="kd">private</span> <span class="n">DatagramPacket</span> <span class="n">inPacket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DatagramPacket</span><span class="o">(</span><span class="n">inBuff</span><span class="o">,</span> <span class="n">inBuff</span><span class="o">.</span><span class="na">length</span><span class="o">);</span><span class="c1">//用于接受对象的packet</span>
+<span class="kd">private</span> <span class="n">DatagramPacket</span> <span class="n">outPacket</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span><span class="c1">//用于发送对象的packet</span>
+<span class="kd">private</span> <span class="n">Handler</span> <span class="n">handler</span><span class="o">;</span>
+<span class="kd">public</span> <span class="nf">ComUtil</span><span class="o">(</span><span class="n">Handler</span> <span class="n">handler</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">handler</span> <span class="o">=</span> <span class="n">handler</span><span class="o">;</span><span class="c1">//回调使用Handler机制</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">startReceiveMsg</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="n">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">MulticastSocket</span><span class="o">(</span><span class="n">BROADCAST_PORT</span><span class="o">);</span><span class="c1">//打开一个组播Socket</span>
+        <span class="n">broadcastAddress</span> <span class="o">=</span> <span class="n">InetAddress</span><span class="o">.</span><span class="na">getByName</span><span class="o">(</span><span class="n">BROADCAST_IP</span><span class="o">);</span><span class="c1">//需要进行一步转换来使用String类型的IP地址</span>
+        <span class="n">socket</span><span class="o">.</span><span class="na">joinGroup</span><span class="o">(</span><span class="n">broadcastAddress</span><span class="o">);</span><span class="c1">//加入一个组</span>
+        <span class="n">outPacket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">DatagramPacket</span><span class="o">(</span><span class="k">new</span> <span class="kt">byte</span><span class="o">[</span><span class="mi">0</span><span class="o">],</span> <span class="mi">0</span><span class="o">,</span> <span class="n">broadcastAddress</span><span class="o">,</span> <span class="n">BROADCAST_PORT</span><span class="o">);</span><span class="c1">//用于发送数据包的DatagramPacket</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="c1">//下面两行用于下文中的开始接收广播</span>
+    <span class="n">Thread</span> <span class="n">thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">ReadBroad</span><span class="o">());</span>
+    <span class="n">thread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>注释应该讲得比较清楚了，这里要注意的是UDP数据的收发需要使用一个<code>DatagramPacket</code>来进行。可以理解为一个数据包。</p>
+<h4>接收组播信息</h4>
+<p>上面的代码最后两行新建了一个线程用于接收组播信息，具体代码如下：</p>
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">ReadBroad</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">socket</span><span class="o">.</span><span class="na">receive</span><span class="o">(</span><span class="n">inPacket</span><span class="o">);</span>
+                <span class="n">Message</span> <span class="n">message</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Message</span><span class="o">();</span>
+                <span class="n">message</span><span class="o">.</span><span class="na">what</span> <span class="o">=</span> <span class="n">BROADCAST_PORT</span><span class="o">;</span>
+                <span class="n">message</span><span class="o">.</span><span class="na">obj</span> <span class="o">=</span> <span class="n">inBuff</span><span class="o">;</span>
+                <span class="n">handler</span><span class="o">.</span><span class="na">sendMessage</span><span class="o">(</span><span class="n">message</span><span class="o">);</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>进行了一个无限循环，进行到第5行时如果没有收到广播的<code>DatagramPacket</code>会一直处于阻塞状态，收到一个<code>DatagramPacket</code>后就会通过<code>Handler</code>来转发出去，在<code>Handler</code>所在线程来处理这个数据包。之后再进行循环不断地接收并处理数据包。</p>
+<h4>发送组播信息</h4>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">broadCast</span><span class="o">(</span><span class="kd">final</span> <span class="kt">byte</span><span class="o">[]</span> <span class="n">msg</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">Thread</span> <span class="n">thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">Runnable</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nd">@Override</span>
+        <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">outPacket</span><span class="o">.</span><span class="na">setData</span><span class="o">(</span><span class="n">msg</span><span class="o">);</span> <span class="c1">//数据来源为外部，类型是二进制数据</span>
+                <span class="n">socket</span><span class="o">.</span><span class="na">send</span><span class="o">(</span><span class="n">outPacket</span><span class="o">);</span><span class="c1">//向组中发送该数据包</span>
+            <span class="o">}</span>
+            <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">ex</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">ex</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">socket</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">socket</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">});</span>
+    <span class="n">thread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>这个方法由外部调用，传入一个二进制数组数据通过<code>setData()</code>放在数据包中向组中的所有成员发送。成员通过上一节的接收方法接收到的就会是同样的数据包。</p>
+<h3>数据处理</h3>
+<p>建立了组播的工具，下一步就要建立一个数据对象来进行信息的交换。由于数据包中的数据只能是以字节码的形式存在，所以我们设计的数据对象一定要是可序列化的（也就是实现了<code>Serializable</code>接口的），再通过流工具进行转换。</p>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kd">class</span> <span class="nc">UDPDataPackage</span> <span class="kd">implements</span> <span class="n">Serializable</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">ipAddress</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">macAddress</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">title</span><span class="o">;</span>
+    <span class="kd">private</span> <span class="n">String</span> <span class="n">id</span><span class="o">;</span>
+  <span class="o">...</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>在这个简单的JavaBean中只定义了四个简单数据。</p>
+<p>我们将自己的信息设置后就可以通过如下方法转换成一个字节数组再通过上面的广播方法来发送：</p>
+<div class="highlight"><pre><span></span><span class="n">comUtil</span><span class="o">.</span><span class="na">broadCast</span><span class="o">(</span><span class="n">ConvertData</span><span class="o">.</span><span class="na">objectToByte</span><span class="o">(</span><span class="k">new</span> <span class="n">UDPDataPackage</span><span class="o">(...)));</span> <span class="c1">//发送数据</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="c1">//通过流来进行的序列化</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kt">byte</span><span class="o">[]</span> <span class="nf">objectToByte</span><span class="o">(</span><span class="n">Object</span> <span class="n">object</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">ByteArrayOutputStream</span> <span class="n">byteArrayOutputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ByteArrayOutputStream</span><span class="o">();</span>
+    <span class="n">ObjectOutputStream</span> <span class="n">outputStream</span><span class="o">;</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="n">outputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectOutputStream</span><span class="o">(</span><span class="n">byteArrayOutputStream</span><span class="o">);</span>
+        <span class="n">outputStream</span><span class="o">.</span><span class="na">writeObject</span><span class="o">(</span><span class="n">object</span><span class="o">);</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">byteArrayOutputStream</span><span class="o">.</span><span class="na">toByteArray</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>同样的，在接收到数据以后可以反序列化来得到原对象：</p>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kd">static</span> <span class="n">Object</span> <span class="nf">byteToObject</span><span class="o">(</span><span class="kt">byte</span><span class="o">[]</span> <span class="n">bytes</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">ByteArrayInputStream</span> <span class="n">byteInputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ByteArrayInputStream</span><span class="o">(</span><span class="n">bytes</span><span class="o">);</span>
+    <span class="n">Object</span> <span class="n">object</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+    <span class="k">try</span> <span class="o">{</span>
+        <span class="n">ObjectInputStream</span> <span class="n">objectInputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectInputStream</span><span class="o">(</span><span class="n">byteInputStream</span><span class="o">);</span>
+        <span class="n">object</span> <span class="o">=</span> <span class="n">objectInputStream</span><span class="o">.</span><span class="na">readObject</span><span class="o">();</span>
+    <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="o">|</span> <span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">object</span><span class="o">;</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>这样，我们就可以从这个对象中获取想到的IP地址等信息了。</p>
+<h3>建立TCP连接传输数据</h3>
+<p>想要建立TCP连接，需要客户端与服务端两端的配合，我们现在已经获取到了需要建立连接的IP地址，下面我们要做的是与这个地址的服务端建立连接再传输数据。服务端需要一直运行来随时准备接受可能的请求。</p>
+<p>由于我们同一个设备既要作为客户端，也要作为服务端，所以要编写两个类。</p>
+<h4>服务端</h4>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">startServer</span><span class="o">(</span><span class="n">Handler</span> <span class="n">handler</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">handler</span> <span class="o">=</span> <span class="n">handler</span><span class="o">;</span><span class="c1">//利用handler进行处理</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">RunServer</span><span class="o">());</span>
+    <span class="n">thread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span><span class="c1">//另开一个线程接收连接请求</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">RunServer</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">ServerSocket</span> <span class="n">serverSocket</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">serverSocket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ServerSocket</span><span class="o">();</span><span class="c1">//初始化一个ServerSocket</span>
+            <span class="n">serverSocket</span><span class="o">.</span><span class="na">setReuseAddress</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+            <span class="n">serverSocket</span><span class="o">.</span><span class="na">bind</span><span class="o">(</span><span class="k">new</span> <span class="n">InetSocketAddress</span><span class="o">(</span><span class="n">SERVER_PORT</span><span class="o">));</span><span class="c1">//与端口绑定</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+        <span class="k">while</span> <span class="o">(</span><span class="kc">true</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="n">Socket</span> <span class="n">socket</span> <span class="o">=</span> <span class="n">serverSocket</span><span class="o">.</span><span class="na">accept</span><span class="o">();</span><span class="c1">//利用accept方法获得socket</span>
+                <span class="n">InputStream</span> <span class="n">inputStream</span><span class="o">;</span>
+                <span class="n">inputStream</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">();</span><span class="c1">//获取输入流（来源自客户端）</span>
+                <span class="n">ObjectInputStream</span> <span class="n">objectInputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectInputStream</span><span class="o">(</span><span class="n">inputStream</span><span class="o">);</span><span class="c1">//转换为对象输入流</span>
+
+                <span class="c1">//获取udpDataPackage对象</span>
+                <span class="n">UDPDataPackage</span> <span class="n">udpDataPackage</span> <span class="o">=</span> <span class="o">(</span><span class="n">UDPDataPackage</span><span class="o">)</span> <span class="n">objectInputStream</span><span class="o">.</span><span class="na">readObject</span><span class="o">();</span>
+                <span class="n">OutputStream</span> <span class="n">outputStream</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">();</span>
+                <span class="n">ObjectOutputStream</span> <span class="n">objectOutputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectOutputStream</span><span class="o">(</span><span class="n">outputStream</span><span class="o">);</span>
+                <span class="n">objectOutputStream</span><span class="o">.</span><span class="na">writeObject</span><span class="o">(</span><span class="n">udpDataPackage</span><span class="o">);</span><span class="c1">//将数据包写入输出流传送给客户端</span>
+                <span class="n">objectOutputStream</span><span class="o">.</span><span class="na">flush</span><span class="o">();</span><span class="c1">//刷新流</span>
+
+                <span class="n">objectOutputStream</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="n">outputStream</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="n">objectInputStream</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+                <span class="n">inputStream</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="o">|</span> <span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>解释见注释。</p>
+<h4>客户端</h4>
+<div class="highlight"><pre><span></span><span class="kd">public</span> <span class="kt">void</span> <span class="nf">sendRequest</span><span class="o">(</span><span class="n">String</span> <span class="n">ipAddress</span><span class="o">,</span> <span class="n">UDPDataPackage</span> <span class="n">udpDataPackage</span><span class="o">,</span> <span class="n">Handler</span> <span class="n">handler</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">ipAddress</span> <span class="o">=</span> <span class="n">ipAddress</span><span class="o">;</span><span class="c1">//即为之前获取到的IP地址</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">udpDataPackage</span> <span class="o">=</span> <span class="n">udpDataPackage</span><span class="o">;</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">handler</span> <span class="o">=</span> <span class="n">handler</span><span class="o">;</span>
+    <span class="n">thread</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Thread</span><span class="o">(</span><span class="k">new</span> <span class="n">SendData</span><span class="o">());</span>
+    <span class="n">thread</span><span class="o">.</span><span class="na">start</span><span class="o">();</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="kd">class</span> <span class="nc">SendData</span> <span class="kd">implements</span> <span class="n">Runnable</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">run</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">Socket</span> <span class="n">socket</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">socket</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Socket</span><span class="o">(</span><span class="n">ipAddress</span><span class="o">,</span> <span class="n">SERVER_PORT</span><span class="o">);</span><span class="c1">//新建一个socket</span>
+            <span class="n">socket</span><span class="o">.</span><span class="na">setReuseAddress</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span>
+            <span class="n">socket</span><span class="o">.</span><span class="na">setKeepAlive</span><span class="o">(</span><span class="kc">true</span><span class="o">);</span><span class="c1">//设置socket属性</span>
+            <span class="n">socket</span><span class="o">.</span><span class="na">setSoTimeout</span><span class="o">(</span><span class="mi">5000</span><span class="o">);</span><span class="c1">//设置超时</span>
+            <span class="c1">//获得一个对象输出流</span>
+            <span class="n">OutputStream</span> <span class="n">outputStream</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="na">getOutputStream</span><span class="o">();</span>
+            <span class="n">ObjectOutputStream</span> <span class="n">objectOutputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectOutputStream</span><span class="o">(</span><span class="n">outputStream</span><span class="o">);</span>
+            <span class="n">objectOutputStream</span><span class="o">.</span><span class="na">writeObject</span><span class="o">(</span><span class="n">udpDataPackage</span><span class="o">);</span><span class="c1">//将请求包写入输出流（传送给服务端）</span>
+            <span class="c1">//获取服务端返回的流</span>
+            <span class="n">InputStream</span> <span class="n">inputStream</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="na">getInputStream</span><span class="o">();</span>
+            <span class="n">ObjectInputStream</span> <span class="n">objectInputStream</span> <span class="o">=</span> <span class="k">new</span> <span class="n">ObjectInputStream</span><span class="o">(</span><span class="n">inputStream</span><span class="o">);</span>
+            <span class="n">udpDataPackage</span> <span class="n">dataPackage</span> <span class="o">=</span> <span class="o">(</span><span class="n">udpDataPackage</span><span class="o">)</span> <span class="n">objectInputStream</span><span class="o">.</span><span class="na">readObject</span><span class="o">();</span><span class="c1">//获取到返回的数据对象</span>
+            <span class="c1">//转发给handler进行处理</span>
+            <span class="n">Message</span> <span class="n">msg</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Message</span><span class="o">();</span>
+            <span class="n">msg</span><span class="o">.</span><span class="na">what</span> <span class="o">=</span> <span class="n">SERVER_PORT</span><span class="o">;</span>
+            <span class="n">msg</span><span class="o">.</span><span class="na">obj</span> <span class="o">=</span> <span class="n">dataPackage</span><span class="o">;</span>
+            <span class="n">handler</span><span class="o">.</span><span class="na">sendMessage</span><span class="o">(</span><span class="n">msg</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">SocketTimeoutException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">try</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">socket</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="n">socket</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+            <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="n">e1</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">e1</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+            <span class="o">}</span>
+            <span class="n">sendRequest</span><span class="o">(</span><span class="n">ipAddress</span><span class="o">,</span> <span class="n">udpDataPackage</span><span class="o">,</span> <span class="n">handler</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="n">IOException</span> <span class="o">|</span> <span class="n">ClassNotFoundException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</pre></div>
+
+
+<p>解释见注释。</p>
+<hr>
+<p>可以看见TCP连接还是比较简单的，设置好<code>socket</code>并获取到输入输出流以后就可以把服务端当作本地流一样操作，具体的网络通信实现过程被隐藏了，有了流以后就可以进行所有能对流进行的操作了。到这里，我们要实现的局域网数据传输已经完成了。</p>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/android.html">Android</a>, <a href="/tag/network.html">Network</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>
