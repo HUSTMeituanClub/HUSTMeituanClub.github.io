@@ -1,0 +1,836 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - Android</title><link href="http/" rel="alternate"></link><link href="http/feeds/android.atom.xml" rel="self"></link><id>http/</id><updated>2017-05-11T15:58:06+08:00</updated><entry><title>Android利用UDP、TCP进行局域网数据传输</title><link href="http/androidli-yong-udp-tcpjin-xing-ju-yu-wang-shu-ju-chuan-shu.html" rel="alternate"></link><published>2017-05-11T15:58:06+08:00</published><updated>2017-05-11T15:58:06+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-11:http/androidli-yong-udp-tcpjin-xing-ju-yu-wang-shu-ju-chuan-shu.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;在团队内部的hackweek中实现了一个在局域网环境中（同一个wifi下）进行的卡片收发小游戏，踩了一些关于局域网内通信的坑，这篇博文就用来整理一下整个过程的思路，&lt;a href="https://github.com/viseator/AnonymousCard"&gt;完整代码地址&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;实现思路&lt;/h2&gt;
+&lt;p&gt;在整个过程中利用到了UDP与TCP两种传输层协议，两者的特性决定了使用上的不同。&lt;/p&gt;
+&lt;p&gt;简单地说，UDP非面向连接，不需要先与目标建立连接，所以UDP不提供可靠的数据传输，也不能保证数据准确无误地到达目的地，但UDP的优势在于它可以迅速传送大量信息，传输性能比较好。&lt;/p&gt;
+&lt;p&gt;而TCP是面向连接的协议，需要经过三次握手与目的地址建立一个稳定的连接，可以保证数据准确、完整地到达。但是它的传输效率就没有UDP那么高。&lt;/p&gt;
+&lt;p&gt;首先，为了数据传输的稳定和准确性，在传送主要数据部分我们必需使用TCP来建立一个点对点的稳定的连接来传输主要数据。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;但是，为了建立一个TCP连接，请求的一方必须要知道被请求一方（下面简称服务方）的IP地址。而在局域网中，如果我们想要实现每个人连接局域网以后马上可以收发信息，由于每次加入时分配到的IP地址并不是固定的也无法提前得知，所以我们需要使用其他的办法先获取到服务方的IP地址。&lt;/p&gt;
+&lt;p&gt;这时就要利用到UDP协议的组播特性了，组播可以让设备都加入一个预设好的组，然后就可以向这个组中发送数据包，只要加入了这个组的设备都可以收到这个数据包。这样只要所有的设备都提前加入了同一个组，不需要互相知道IP地址就可以交换数据，那么我们应该如何利用这样的特性呢？&lt;/p&gt;
+&lt;p&gt;结合我们的实际需求，游戏过程是每个人可以向所有人发送一个只有标题的匿名卡片（这个过程就符合UDP组播的特性），如果感兴趣的人就可以点击收到的卡片来打开这个卡片查看具体内容（这个过程就需要我们建立TCP连接来传输数据）。&lt;/p&gt;
+&lt;p&gt;所以我们就有了思路，向所有人发送卡片的过程使用UDP进行组播，数据包中除了包含标题信息还要包含一个发送人的IP地址以及一个Mac地址作为ID（考虑到重新连接后地址发生改变的问题 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;在团队内部的hackweek中实现了一个在局域网环境中（同一个wifi下）进行的卡片收发小游戏，踩了一些关于局域网内通信的坑，这篇博文就用来整理一下整个过程的思路，&lt;a href="https://github.com/viseator/AnonymousCard"&gt;完整代码地址&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;实现思路&lt;/h2&gt;
+&lt;p&gt;在整个过程中利用到了UDP与TCP两种传输层协议，两者的特性决定了使用上的不同。&lt;/p&gt;
+&lt;p&gt;简单地说，UDP非面向连接，不需要先与目标建立连接，所以UDP不提供可靠的数据传输，也不能保证数据准确无误地到达目的地，但UDP的优势在于它可以迅速传送大量信息，传输性能比较好。&lt;/p&gt;
+&lt;p&gt;而TCP是面向连接的协议，需要经过三次握手与目的地址建立一个稳定的连接，可以保证数据准确、完整地到达。但是它的传输效率就没有UDP那么高。&lt;/p&gt;
+&lt;p&gt;首先，为了数据传输的稳定和准确性，在传送主要数据部分我们必需使用TCP来建立一个点对点的稳定的连接来传输主要数据。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;但是，为了建立一个TCP连接，请求的一方必须要知道被请求一方（下面简称服务方）的IP地址。而在局域网中，如果我们想要实现每个人连接局域网以后马上可以收发信息，由于每次加入时分配到的IP地址并不是固定的也无法提前得知，所以我们需要使用其他的办法先获取到服务方的IP地址。&lt;/p&gt;
+&lt;p&gt;这时就要利用到UDP协议的组播特性了，组播可以让设备都加入一个预设好的组，然后就可以向这个组中发送数据包，只要加入了这个组的设备都可以收到这个数据包。这样只要所有的设备都提前加入了同一个组，不需要互相知道IP地址就可以交换数据，那么我们应该如何利用这样的特性呢？&lt;/p&gt;
+&lt;p&gt;结合我们的实际需求，游戏过程是每个人可以向所有人发送一个只有标题的匿名卡片（这个过程就符合UDP组播的特性），如果感兴趣的人就可以点击收到的卡片来打开这个卡片查看具体内容（这个过程就需要我们建立TCP连接来传输数据）。&lt;/p&gt;
+&lt;p&gt;所以我们就有了思路，向所有人发送卡片的过程使用UDP进行组播，数据包中除了包含标题信息还要包含一个发送人的IP地址以及一个Mac地址作为ID（考虑到重新连接后地址发生改变的问题），当所有人收到这个卡片以后需要建立连接的时候就可以得到发送人的IP来进行TCP连接。&lt;/p&gt;
+&lt;p&gt;下面我们来实现这个过程。&lt;/p&gt;
+&lt;h2&gt;具体实现&lt;/h2&gt;
+&lt;h3&gt;组播&lt;/h3&gt;
+&lt;p&gt;我们定义一个&lt;code&gt;ComUtil&lt;/code&gt;类来处理组播&lt;/p&gt;
+&lt;h4&gt;加入组&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;CHARSET&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;utf-8&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;BROADCAST_IP&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;224.0.1.2&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;//IP协议中特殊IP地址，作为一个组，用来集合加入的所有客户端&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;BROADCAST_PORT&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;7816&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;//广播目的端的端口号&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;DATA_LEN&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;4096&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;MulticastSocket&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;InetAddress&lt;/span&gt; &lt;span class="n"&gt;broadcastAddress&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//当前设备在局域网下的IP地址&lt;/span&gt;
+&lt;span class="kt"&gt;byte&lt;/span&gt;&lt;span class="o"&gt;[]&lt;/span&gt; &lt;span class="n"&gt;inBuff&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="kt"&gt;byte&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="n"&gt;DATA_LEN&lt;/span&gt;&lt;span class="o"&gt;];&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;DatagramPacket&lt;/span&gt; &lt;span class="n"&gt;inPacket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;DatagramPacket&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inBuff&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;inBuff&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;length&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//用于接受对象的packet&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;DatagramPacket&lt;/span&gt; &lt;span class="n"&gt;outPacket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//用于发送对象的packet&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;Handler&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;ComUtil&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Handler&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;handler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//回调使用Handler机制&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;startReceiveMsg&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;MulticastSocket&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BROADCAST_PORT&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//打开一个组播Socket&lt;/span&gt;
+        &lt;span class="n"&gt;broadcastAddress&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;InetAddress&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getByName&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;BROADCAST_IP&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//需要进行一步转换来使用String类型的IP地址&lt;/span&gt;
+        &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;joinGroup&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;broadcastAddress&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//加入一个组&lt;/span&gt;
+        &lt;span class="n"&gt;outPacket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;DatagramPacket&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="kt"&gt;byte&lt;/span&gt;&lt;span class="o"&gt;[&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;],&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;broadcastAddress&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;BROADCAST_PORT&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//用于发送数据包的DatagramPacket&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+  &lt;span class="c1"&gt;//下面两行用于下文中的开始接收广播&lt;/span&gt;
+    &lt;span class="n"&gt;Thread&lt;/span&gt; &lt;span class="n"&gt;thread&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Thread&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ReadBroad&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="n"&gt;thread&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;注释应该讲得比较清楚了，这里要注意的是UDP数据的收发需要使用一个&lt;code&gt;DatagramPacket&lt;/code&gt;来进行。可以理解为一个数据包。&lt;/p&gt;
+&lt;h4&gt;接收组播信息&lt;/h4&gt;
+&lt;p&gt;上面的代码最后两行新建了一个线程用于接收组播信息，具体代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;ReadBroad&lt;/span&gt; &lt;span class="kd"&gt;implements&lt;/span&gt; &lt;span class="n"&gt;Runnable&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;receive&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inPacket&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+                &lt;span class="n"&gt;Message&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Message&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;what&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;BROADCAST_PORT&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;inBuff&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;sendMessage&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;进行了一个无限循环，进行到第5行时如果没有收到广播的&lt;code&gt;DatagramPacket&lt;/code&gt;会一直处于阻塞状态，收到一个&lt;code&gt;DatagramPacket&lt;/code&gt;后就会通过&lt;code&gt;Handler&lt;/code&gt;来转发出去，在&lt;code&gt;Handler&lt;/code&gt;所在线程来处理这个数据包。之后再进行循环不断地接收并处理数据包。&lt;/p&gt;
+&lt;h4&gt;发送组播信息&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;broadCast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;byte&lt;/span&gt;&lt;span class="o"&gt;[]&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;Thread&lt;/span&gt; &lt;span class="n"&gt;thread&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Thread&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Runnable&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="nd"&gt;@Override&lt;/span&gt;
+        &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;outPacket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setData&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt; &lt;span class="c1"&gt;//数据来源为外部，类型是二进制数据&lt;/span&gt;
+                &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;send&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;outPacket&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//向组中发送该数据包&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+            &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="n"&gt;ex&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;ex&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                    &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;close&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="o"&gt;}&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;});&lt;/span&gt;
+    &lt;span class="n"&gt;thread&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这个方法由外部调用，传入一个二进制数组数据通过&lt;code&gt;setData()&lt;/code&gt;放在数据包中向组中的所有成员发送。成员通过上一节的接收方法接收到的就会是同样的数据包。&lt;/p&gt;
+&lt;h3&gt;数据处理&lt;/h3&gt;
+&lt;p&gt;建立了组播的工具，下一步就要建立一个数据对象来进行信息的交换。由于数据包中的数据只能是以字节码的形式存在，所以我们设计的数据对象一定要是可序列化的（也就是实现了&lt;code&gt;Serializable&lt;/code&gt;接口的），再通过流工具进行转换。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;UDPDataPackage&lt;/span&gt; &lt;span class="kd"&gt;implements&lt;/span&gt; &lt;span class="n"&gt;Serializable&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;macAddress&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;title&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;id&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+  &lt;span class="o"&gt;...&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这个简单的JavaBean中只定义了四个简单数据。&lt;/p&gt;
+&lt;p&gt;我们将自己的信息设置后就可以通过如下方法转换成一个字节数组再通过上面的广播方法来发送：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;comUtil&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;broadCast&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ConvertData&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;objectToByte&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;UDPDataPackage&lt;/span&gt;&lt;span class="o"&gt;(...)));&lt;/span&gt; &lt;span class="c1"&gt;//发送数据&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;//通过流来进行的序列化&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;byte&lt;/span&gt;&lt;span class="o"&gt;[]&lt;/span&gt; &lt;span class="nf"&gt;objectToByte&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Object&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;ByteArrayOutputStream&lt;/span&gt; &lt;span class="n"&gt;byteArrayOutputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ByteArrayOutputStream&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;ObjectOutputStream&lt;/span&gt; &lt;span class="n"&gt;outputStream&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;outputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ObjectOutputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;byteArrayOutputStream&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;outputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;writeObject&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;object&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;byteArrayOutputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;toByteArray&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同样的，在接收到数据以后可以反序列化来得到原对象：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="n"&gt;Object&lt;/span&gt; &lt;span class="nf"&gt;byteToObject&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;byte&lt;/span&gt;&lt;span class="o"&gt;[]&lt;/span&gt; &lt;span class="n"&gt;bytes&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;ByteArrayInputStream&lt;/span&gt; &lt;span class="n"&gt;byteInputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ByteArrayInputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;bytes&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Object&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;ObjectInputStream&lt;/span&gt; &lt;span class="n"&gt;objectInputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ObjectInputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;byteInputStream&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;object&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;objectInputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;readObject&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;ClassNotFoundException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;object&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样，我们就可以从这个对象中获取想到的IP地址等信息了。&lt;/p&gt;
+&lt;h3&gt;建立TCP连接传输数据&lt;/h3&gt;
+&lt;p&gt;想要建立TCP连接，需要客户端与服务端两端的配合，我们现在已经获取到了需要建立连接的IP地址，下面我们要做的是与这个地址的服务端建立连接再传输数据。服务端需要一直运行来随时准备接受可能的请求。&lt;/p&gt;
+&lt;p&gt;由于我们同一个设备既要作为客户端，也要作为服务端，所以要编写两个类。&lt;/p&gt;
+&lt;h4&gt;服务端&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;startServer&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Handler&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;handler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//利用handler进行处理&lt;/span&gt;
+    &lt;span class="n"&gt;thread&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Thread&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;RunServer&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="n"&gt;thread&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;&lt;span class="c1"&gt;//另开一个线程接收连接请求&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;RunServer&lt;/span&gt; &lt;span class="kd"&gt;implements&lt;/span&gt; &lt;span class="n"&gt;Runnable&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;ServerSocket&lt;/span&gt; &lt;span class="n"&gt;serverSocket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;serverSocket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ServerSocket&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;&lt;span class="c1"&gt;//初始化一个ServerSocket&lt;/span&gt;
+            &lt;span class="n"&gt;serverSocket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setReuseAddress&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;serverSocket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bind&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;InetSocketAddress&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SERVER_PORT&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;&lt;span class="c1"&gt;//与端口绑定&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;Socket&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;serverSocket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;accept&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;&lt;span class="c1"&gt;//利用accept方法获得socket&lt;/span&gt;
+                &lt;span class="n"&gt;InputStream&lt;/span&gt; &lt;span class="n"&gt;inputStream&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;inputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getInputStream&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;&lt;span class="c1"&gt;//获取输入流（来源自客户端）&lt;/span&gt;
+                &lt;span class="n"&gt;ObjectInputStream&lt;/span&gt; &lt;span class="n"&gt;objectInputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ObjectInputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inputStream&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//转换为对象输入流&lt;/span&gt;
+
+                &lt;span class="c1"&gt;//获取udpDataPackage对象&lt;/span&gt;
+                &lt;span class="n"&gt;UDPDataPackage&lt;/span&gt; &lt;span class="n"&gt;udpDataPackage&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;UDPDataPackage&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;objectInputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;readObject&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;OutputStream&lt;/span&gt; &lt;span class="n"&gt;outputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getOutputStream&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;ObjectOutputStream&lt;/span&gt; &lt;span class="n"&gt;objectOutputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ObjectOutputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;outputStream&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+                &lt;span class="n"&gt;objectOutputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;writeObject&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;udpDataPackage&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//将数据包写入输出流传送给客户端&lt;/span&gt;
+                &lt;span class="n"&gt;objectOutputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;flush&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;&lt;span class="c1"&gt;//刷新流&lt;/span&gt;
+
+                &lt;span class="n"&gt;objectOutputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;close&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;outputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;close&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;objectInputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;close&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+                &lt;span class="n"&gt;inputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;close&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;ClassNotFoundException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解释见注释。&lt;/p&gt;
+&lt;h4&gt;客户端&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;sendRequest&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;String&lt;/span&gt; &lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;UDPDataPackage&lt;/span&gt; &lt;span class="n"&gt;udpDataPackage&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Handler&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ipAddress&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;&lt;span class="c1"&gt;//即为之前获取到的IP地址&lt;/span&gt;
+    &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;udpDataPackage&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;udpDataPackage&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;handler&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;thread&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Thread&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;SendData&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="n"&gt;thread&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;SendData&lt;/span&gt; &lt;span class="kd"&gt;implements&lt;/span&gt; &lt;span class="n"&gt;Runnable&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;run&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;Socket&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Socket&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;SERVER_PORT&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//新建一个socket&lt;/span&gt;
+            &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setReuseAddress&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setKeepAlive&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//设置socket属性&lt;/span&gt;
+            &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setSoTimeout&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;5000&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//设置超时&lt;/span&gt;
+            &lt;span class="c1"&gt;//获得一个对象输出流&lt;/span&gt;
+            &lt;span class="n"&gt;OutputStream&lt;/span&gt; &lt;span class="n"&gt;outputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getOutputStream&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;ObjectOutputStream&lt;/span&gt; &lt;span class="n"&gt;objectOutputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ObjectOutputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;outputStream&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;objectOutputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;writeObject&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;udpDataPackage&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;&lt;span class="c1"&gt;//将请求包写入输出流（传送给服务端）&lt;/span&gt;
+            &lt;span class="c1"&gt;//获取服务端返回的流&lt;/span&gt;
+            &lt;span class="n"&gt;InputStream&lt;/span&gt; &lt;span class="n"&gt;inputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getInputStream&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;ObjectInputStream&lt;/span&gt; &lt;span class="n"&gt;objectInputStream&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;ObjectInputStream&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inputStream&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;udpDataPackage&lt;/span&gt; &lt;span class="n"&gt;dataPackage&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;udpDataPackage&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;objectInputStream&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;readObject&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;&lt;span class="c1"&gt;//获取到返回的数据对象&lt;/span&gt;
+            &lt;span class="c1"&gt;//转发给handler进行处理&lt;/span&gt;
+            &lt;span class="n"&gt;Message&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Message&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;what&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;SERVER_PORT&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;obj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;dataPackage&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;sendMessage&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;SocketTimeoutException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;socket&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;socket&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;close&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="n"&gt;e1&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;e1&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+            &lt;span class="n"&gt;sendRequest&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ipAddress&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;udpDataPackage&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;handler&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;catch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;IOException&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;ClassNotFoundException&lt;/span&gt; &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;e&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;printStackTrace&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解释见注释。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;可以看见TCP连接还是比较简单的，设置好&lt;code&gt;socket&lt;/code&gt;并获取到输入输出流以后就可以把服务端当作本地流一样操作，具体的网络通信实现过程被隐藏了，有了流以后就可以进行所有能对流进行的操作了。到这里，我们要实现的局域网数据传输已经完成了。&lt;/p&gt;</content><category term="Android"></category><category term="Network"></category></entry><entry><title>Android PropertyAnimation 属性动画（二）弹跳小球实例</title><link href="http/android-propertyanimation-shu-xing-dong-hua-er-dan-tiao-xiao-qiu-shi-li.html" rel="alternate"></link><published>2017-04-02T10:08:31+08:00</published><updated>2017-04-02T10:08:31+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-04-02:http/android-propertyanimation-shu-xing-dong-hua-er-dan-tiao-xiao-qiu-shi-li.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/viseator/AndroidAnimatorBounceBallDemo"&gt;GitHub完整代码&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.viseator.com/2017/03/26/android_property_animation_1/"&gt;上篇博客&lt;/a&gt;简单介绍了属性动画的原理，这篇博客将会以一个简单的实例来运用上之前讲的内容，并对&lt;code&gt;Animator&lt;/code&gt;的几个回调方法进行讲解。&lt;/p&gt;
+&lt;p&gt;目标是自定义一个&lt;code&gt;View&lt;/code&gt;，在画布上绘制一个小球，点击屏幕后小球从顶部自由下落，落到底边后反弹，反弹损失一半的能量，也就是说小球只能上升到下落时一半的高度，再重复这个过程直到退出程序。如图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/android_animator.gif"&gt;&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;h2&gt;创建自定义View&lt;/h2&gt;
+&lt;p&gt;首先我们要创建一个自定义&lt;code&gt;View&lt;/code&gt;，这里我就采用继承&lt;code&gt;LinearLayout&lt;/code&gt;的方式来创建这个&lt;code&gt;View&lt;/code&gt;，但要注意&lt;code&gt;LinearLayout&lt;/code&gt;默认是不绘制自身的，需要在&lt;code&gt;onDraw()&lt;/code&gt;方法之前适当的时候调用&lt;code&gt;setWillNotDraw(false);&lt;/code&gt;令其进行绘制。&lt;/p&gt;
+&lt;p&gt;在继承&lt;code&gt;LinearLayout&lt;/code&gt;的同时我们要实现全部三个构造方法，否则xml文件的预览解析会出现问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;&lt;a href="https://github.com/viseator/AndroidAnimatorBounceBallDemo"&gt;GitHub完整代码&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://www.viseator.com/2017/03/26/android_property_animation_1/"&gt;上篇博客&lt;/a&gt;简单介绍了属性动画的原理，这篇博客将会以一个简单的实例来运用上之前讲的内容，并对&lt;code&gt;Animator&lt;/code&gt;的几个回调方法进行讲解。&lt;/p&gt;
+&lt;p&gt;目标是自定义一个&lt;code&gt;View&lt;/code&gt;，在画布上绘制一个小球，点击屏幕后小球从顶部自由下落，落到底边后反弹，反弹损失一半的能量，也就是说小球只能上升到下落时一半的高度，再重复这个过程直到退出程序。如图：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/android_animator.gif"&gt;&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;h2&gt;创建自定义View&lt;/h2&gt;
+&lt;p&gt;首先我们要创建一个自定义&lt;code&gt;View&lt;/code&gt;，这里我就采用继承&lt;code&gt;LinearLayout&lt;/code&gt;的方式来创建这个&lt;code&gt;View&lt;/code&gt;，但要注意&lt;code&gt;LinearLayout&lt;/code&gt;默认是不绘制自身的，需要在&lt;code&gt;onDraw()&lt;/code&gt;方法之前适当的时候调用&lt;code&gt;setWillNotDraw(false);&lt;/code&gt;令其进行绘制。&lt;/p&gt;
+&lt;p&gt;在继承&lt;code&gt;LinearLayout&lt;/code&gt;的同时我们要实现全部三个构造方法，否则xml文件的预览解析会出现问题：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;创建好自定义&lt;code&gt;View&lt;/code&gt;后，我们就可以在对应的layout xml布局文件中用完整包名+类名的方式使用我们的自定义&lt;code&gt;View&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;com.viseator.viewtest.VView&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;match_parent&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;match_parent&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同时，我们在绘制之前的&lt;code&gt;onMeasure()&lt;/code&gt;方法中调用&lt;code&gt;setWillNotDraw(false);&lt;/code&gt;使自定义&lt;code&gt;View&lt;/code&gt;可以绘制：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;setWillNotDraw&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;setOnClickListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里也调用了&lt;code&gt;setOnClickListener()&lt;/code&gt;注册之后的点击事件。&lt;/p&gt;
+&lt;h2&gt;绘制&lt;/h2&gt;
+&lt;h3&gt;小球的绘制&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;50&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;xPos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;yPos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="n"&gt;Paint&lt;/span&gt; &lt;span class="n"&gt;paint&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Paint&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onDraw&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Canvas&lt;/span&gt; &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onDraw&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;animator&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getHeight&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;         
+        &lt;span class="n"&gt;paint&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setColor&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;getResources&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;getColor&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;R&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;color&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;Gray&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+        &lt;span class="n"&gt;paint&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setAntiAlias&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;drawCircle&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;drawCircle&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Canvas&lt;/span&gt; &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;canvas&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;drawCircle&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;xPos&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;yPos&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;paint&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里第10行对是否是第一次绘制进行判断并将画布大小保存到&lt;code&gt;canvasHeight&lt;/code&gt;供之后的绘制使用（之后的绘制的坐标需要相对于画布的坐标）并设置&lt;code&gt;paint&lt;/code&gt;的属性。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;drawCircle()&lt;/code&gt;方法也非常简单，只是调用&lt;code&gt;canvas&lt;/code&gt;提供的&lt;code&gt;drawCircle()&lt;/code&gt;方法指定位置与半径和之前设置的&lt;code&gt;paint&lt;/code&gt;，调用后就会在屏幕上的对应位置绘制一个小球。&lt;/p&gt;
+&lt;h3&gt;下落动画的绘制&lt;/h3&gt;
+&lt;p&gt;下面就要让小球“动”起来，其实并不是小球发生了移动，只是我们不停地改变小球绘制的位置，当绘制的速率（帧率）大于24帧时的，就在视觉上变成了流畅的动画。也就是说，我们需要使用&lt;code&gt;Animator&lt;/code&gt;连续地改变小球的位置，为了实现加速的效果，位置的改变速率应该随时间增加，也就是需要我们上一篇博客提到的&lt;code&gt;Evaluator&lt;/code&gt;来实现。&lt;/p&gt;
+&lt;h4&gt;animator的初始化&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;init&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;end&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ofInt&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;start&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;end&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setDuration&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;1000&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setRepeatCount&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;INFINITE&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setRepeatMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;RESTART&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;AccelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;rate&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addUpdateListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;addListener&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;写成一个初始化方法便于重新初始化。&lt;/p&gt;
+&lt;p&gt;第2行将传入的值区间的开始与结束值作为参数获得了一个值为&lt;code&gt;int&lt;/code&gt;的&lt;code&gt;ValueAnimator&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;第3行设置了动画的时间为1秒。&lt;/p&gt;
+&lt;p&gt;第4、5行分别设置了动画的重复次数为无限次，重复模式为重新开始，顾名思义，动画可以重复进行，重新开始的重复模式意味着一次动画结束之后数值重新从&lt;code&gt;start&lt;/code&gt;到&lt;code&gt;end&lt;/code&gt;进行改变，也可以设置重复的模式为反向，即一次动画结束之后数值从&lt;code&gt;end&lt;/code&gt;到&lt;code&gt;start&lt;/code&gt;变化。&lt;/p&gt;
+&lt;p&gt;第六行为&lt;code&gt;animator&lt;/code&gt;设置了一个库中提供的&lt;code&gt;AccelerateInterpolator&lt;/code&gt;即加速插值器，这就是我们实现加速效果的关键，上篇之中已经看过它的源码，默认时返回的最终动画进行百分比是时间百分比的平方，达到了位置随着时间的平方变化，也就是实现了加速下落的效果。&lt;/p&gt;
+&lt;p&gt;第7、8两行分别为&lt;code&gt;animator&lt;/code&gt;设置了一个&lt;code&gt;UpdateListener&lt;/code&gt;用于监听数值变化，一个&lt;code&gt;Listener&lt;/code&gt;用于监听&lt;code&gt;animator&lt;/code&gt;本身开始、停止、重复。&lt;/p&gt;
+&lt;h4&gt;完成下落动画&lt;/h4&gt;
+&lt;p&gt;创建好了&lt;code&gt;ValueAnimator&lt;/code&gt;，下一步就是在适合的时候在画布上重新绘制位置参数被&lt;code&gt;animator&lt;/code&gt;改变后的小球。注意到我们之前小球的y坐标存储在&lt;code&gt;yPos&lt;/code&gt;变量中，我们只要适时令&lt;code&gt;yPos&lt;/code&gt;等于改变后的值再通过&lt;code&gt;invalidate()&lt;/code&gt;方法进入&lt;code&gt;onDraw()&lt;/code&gt;方法让&lt;code&gt;View&lt;/code&gt;按小球的参数重新进行绘制就可以了。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;animator&lt;/code&gt;的&lt;code&gt;ValueAnimator.AnimatorUpdateListener&lt;/code&gt;为我们提供了一个及时刷新&lt;code&gt;View&lt;/code&gt;的时机，之前为&lt;code&gt;animator&lt;/code&gt;注册一个&lt;code&gt;UpdateListener&lt;/code&gt;之后，每当&lt;code&gt;animator&lt;/code&gt;的值发生改变时，&lt;code&gt;onAniamtionUpdate()&lt;/code&gt;就会被回调。&lt;/p&gt;
+&lt;p&gt;那我们就可以在这个回调方法中为&lt;code&gt;yPos&lt;/code&gt;设置新的值并令&lt;code&gt;View&lt;/code&gt;重新绘制：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onAnimationUpdate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;yPos&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getAnimatedValue&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;invalidate&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;   
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样，我们只要启动&lt;code&gt;animator&lt;/code&gt;令它的值开始变化，就会不断地调用&lt;code&gt;onAnimationUpdate()&lt;/code&gt;重绘&lt;code&gt;View&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onClick&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;init&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;start()&lt;/code&gt;方法令&lt;code&gt;animator&lt;/code&gt;开始。&lt;/p&gt;
+&lt;p&gt;到这里，我们已经可以看到点击屏幕后小球下落到底部并停止的效果。&lt;/p&gt;
+&lt;h3&gt;回弹效果实现&lt;/h3&gt;
+&lt;p&gt;我们之前已经为&lt;code&gt;animator&lt;/code&gt;设置了无限重复，并且模式为重新开始，那么要做到回弹的效果，就要在小球落到底边（动画完成）之后，为小球设置新的初始值与最终值，让小球从最低点回到落下时一半的高度。高度数据我们在&lt;code&gt;onClick()&lt;/code&gt;中的第4行（上面代码）已经初始化为了相对于画布的高度，之后再使用时只需把它除2就可以表示圆心距底边的高度了。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Animator.AnimatorListener&lt;/code&gt;为我们提供了一系列方法用于监听&lt;code&gt;animator&lt;/code&gt;状态的变化（而不是数值）：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/AnimatorListener.jpg"&gt;&lt;/p&gt;
+&lt;p&gt;（除金色为Android 8新增外），依次为动画取消，动画结束，动画开始重复，动画开始。&lt;/p&gt;
+&lt;p&gt;这里我们就需要在&lt;code&gt;onAnimationReapt()&lt;/code&gt;回调中为动画设置新的初值与结束数值：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onAnimationRepeat&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Animator&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="n"&gt;vAnimation&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;animation&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;isDown&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mf"&gt;0.5&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;isDown&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;isDown&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;isDown&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setIntValues&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;animationHeight&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;AccelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setIntValues&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;animationHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;vAnimation&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;setInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;DecelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;回调参数中的&lt;code&gt;animation&lt;/code&gt;就是回调这个函数的&lt;code&gt;animator&lt;/code&gt;，第3行对其进行一个类型转换。&lt;/p&gt;
+&lt;p&gt;这里我们使用了一个&lt;code&gt;isDown&lt;/code&gt;参数来判断是否是下落过程，如果上个动画是下落过程，就将&lt;code&gt;animationHeight&lt;/code&gt;减半。&lt;/p&gt;
+&lt;p&gt;第7行把&lt;code&gt;isDown&lt;/code&gt;置反，再根据&lt;code&gt;isDown&lt;/code&gt;的判断使用&lt;code&gt;setIntValues()&lt;/code&gt;方法为&lt;code&gt;animator&lt;/code&gt;设置新的范围，使用&lt;code&gt;setInterpolator()&lt;/code&gt;方法设置新的插值器，注意上升时使用的应该是&lt;code&gt;DecelerateInterpolater&lt;/code&gt;减速上升。&lt;/p&gt;
+&lt;p&gt;这样在新的动画开始时属性改变的范围就得到了改变，也就使得小球可以反弹了。&lt;/p&gt;
+&lt;p&gt;为了让每一次点击时动画都可以重新开始，在&lt;code&gt;onClick()&lt;/code&gt;方法中加入几行初始化代码：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onClick&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;v&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;animator&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;end&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;init&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;animationHeight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;canvasHeight&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;radius&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;isDown&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;animator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;start&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里第3-5行让如果存在的&lt;code&gt;animator&lt;/code&gt;停止，否则新动画无法启动。&lt;/p&gt;
+&lt;p&gt;下篇博客将会从源码角度继续探索&lt;code&gt;animator&lt;/code&gt;的实现原理和更高级的一些特性。&lt;/p&gt;
+&lt;p&gt;&lt;a href="https://github.com/viseator/AndroidAnimatorBounceBallDemo"&gt;GitHub完整代码&lt;/a&gt;&lt;/p&gt;</content><category term="Android"></category><category term="UI"></category><category term="Animation"></category></entry><entry><title>Android View绘制之layout过程</title><link href="http/android-viewhui-zhi-zhi-layoutguo-cheng.html" rel="alternate"></link><published>2017-03-12T14:02:47+08:00</published><updated>2017-03-12T14:02:47+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-12:http/android-viewhui-zhi-zhi-layoutguo-cheng.html</id><summary type="html">&lt;p&gt;经过&lt;a href="http://www.viseator.xyz/2017/03/10/android_view_onMeasure/"&gt;上一篇&lt;/a&gt;介绍的&lt;code&gt;measure&lt;/code&gt;过程之后，各个&lt;code&gt;View&lt;/code&gt;的尺寸信息已经存储在了每个&lt;code&gt;View&lt;/code&gt;中，下面是&lt;code&gt;layout&lt;/code&gt;过程，&lt;code&gt;layout&lt;/code&gt;过程的目的是根据上一步中计算出的尺寸来正确设置各个&lt;code&gt;View&lt;/code&gt;及其后代的位置。这个过程首先被调用的是&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法，&lt;code&gt;layout()&lt;/code&gt;的方法签名是&lt;code&gt;public void layout(int l, int t, int r, int b)&lt;/code&gt;，四个参数分别为左边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，上边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离，右边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，下边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;changed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;isLayoutModeOptical …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;经过&lt;a href="http://www.viseator.xyz/2017/03/10/android_view_onMeasure/"&gt;上一篇&lt;/a&gt;介绍的&lt;code&gt;measure&lt;/code&gt;过程之后，各个&lt;code&gt;View&lt;/code&gt;的尺寸信息已经存储在了每个&lt;code&gt;View&lt;/code&gt;中，下面是&lt;code&gt;layout&lt;/code&gt;过程，&lt;code&gt;layout&lt;/code&gt;过程的目的是根据上一步中计算出的尺寸来正确设置各个&lt;code&gt;View&lt;/code&gt;及其后代的位置。这个过程首先被调用的是&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法，&lt;code&gt;layout()&lt;/code&gt;的方法签名是&lt;code&gt;public void layout(int l, int t, int r, int b)&lt;/code&gt;，四个参数分别为左边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，上边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离，右边界距父&lt;code&gt;View&lt;/code&gt;左边界的距离，下边界距父&lt;code&gt;View&lt;/code&gt;上边界的距离。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;changed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;isLayoutModeOptical&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mParent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt;
+        &lt;span class="n"&gt;setOpticalFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;l&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;setFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;l&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;t&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;r&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;b&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;changed&lt;/code&gt;是用于传递给&lt;code&gt;onLayout()&lt;/code&gt;方法的参数，它指示了布局是否被改变。&lt;/p&gt;
+&lt;p&gt;后面的表达式查看了父&lt;code&gt;View&lt;/code&gt;的布局模式是否需要显示边框，如需要，调用的是&lt;code&gt;setOpticalFrame()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="nf"&gt;setOpticalFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;Insets&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mParent&lt;/span&gt; &lt;span class="k"&gt;instanceof&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt;
+            &lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="n"&gt;mParent&lt;/span&gt;&lt;span class="o"&gt;).&lt;/span&gt;&lt;span class="na"&gt;getOpticalInsets&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Insets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;NONE&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;Insets&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getOpticalInsets&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;setFrame&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;left&lt;/span&gt;   &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;left&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;top&lt;/span&gt;    &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;top&lt;/span&gt;  &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;right&lt;/span&gt;  &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;left&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;bottom&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;parentInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;top&lt;/span&gt;  &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;childInsets&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到这个方法读取了设置的边框值， 把原值加上边框值后还是调用了&lt;code&gt;setFrame()&lt;/code&gt;方法。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;setFrame()&lt;/code&gt;方法通过传入的参数确定了该&lt;code&gt;View&lt;/code&gt;最终的位置以及尺寸。&lt;/p&gt;
+&lt;p&gt;可以看到，一个&lt;code&gt;View&lt;/code&gt;最终显示在什么位置以及它的尺寸是由&lt;code&gt;layout()&lt;/code&gt;方法决定的，&lt;code&gt;onMeasure()&lt;/code&gt;方法只是将测量出的&lt;code&gt;View&lt;/code&gt;期望具有的大小储存在&lt;code&gt;View&lt;/code&gt;中。一般情况下，我们会根据储存的这个尺寸来作为设定的依据。&lt;/p&gt;
+&lt;p&gt;接下来&lt;code&gt;layout()&lt;/code&gt;方法会调用&lt;code&gt;onLayout()&lt;/code&gt;方法，（如果需要的话）我们需要重写这个方法来调用子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法。所以决定子&lt;code&gt;View&lt;/code&gt;如何显示的关键步骤就在这里，他们的位置和尺寸完全取决于这里调用它们的&lt;code&gt;layout()&lt;/code&gt;方法时传入的参数。当然一般情况下我们会根据子&lt;code&gt;View&lt;/code&gt;中的测量结果来设置这个值。这里拿&lt;code&gt;FrameLayout&lt;/code&gt;这个需要处理子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;ViewGroup&lt;/code&gt;实例来举例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onLayout&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;changed&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;layoutChildren&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt; &lt;span class="cm"&gt;/* no force left gravity */&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;直接调用了&lt;code&gt;layoutChildren()&lt;/code&gt;：（省略部分行）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;layoutChildren&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;forceLeftGravity&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getChildCount&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentLeft&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getPaddingLeftWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentRight&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;right&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;left&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;getPaddingRightWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getPaddingTopWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;parentBottom&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;bottom&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;top&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;getPaddingBottomWithForeground&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getChildAt&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMeasuredWidth&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+            &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMeasuredHeight&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;childLeft&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;childTop&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+            &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;verticalGravity&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Gravity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;TOP&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Gravity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;CENTER_VERTICAL&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;parentBottom&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt;
+                    &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottomMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;Gravity&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;BOTTOM&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentBottom&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottomMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                    &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                    &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;parentTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+
+            &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;layout&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;childLeft&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;childTop&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;childLeft&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;childTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;省略了与获取布局属性相关的代码，可以看到：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;4-8行获取了父&lt;code&gt;View&lt;/code&gt;的位置数据并在18-31行用于确定最终的位置数据&lt;/li&gt;
+&lt;li&gt;10-11行遍历了所有的子&lt;code&gt;View&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;12-13行获取了子&lt;code&gt;View&lt;/code&gt;中在上一步骤的测量过程中储存的宽和高，并用于第33行中设置最终的右边界与下边界&lt;/li&gt;
+&lt;li&gt;第33行调用子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;layout()&lt;/code&gt;方法&lt;/li&gt;
+&lt;/ul&gt;</content><category term="Android"></category><category term="View"></category></entry><entry><title>Android View绘制之measure过程</title><link href="http/android-viewhui-zhi-zhi-measureguo-cheng.html" rel="alternate"></link><published>2017-03-10T18:30:16+08:00</published><updated>2017-03-10T18:30:16+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-10:http/android-viewhui-zhi-zhi-measureguo-cheng.html</id><summary type="html">&lt;p&gt;&lt;a href="http://www.viseator.xyz/2017/03/09/android_view_lifeCycle/"&gt;上一篇博客&lt;/a&gt;简单地介绍了&lt;code&gt;View&lt;/code&gt;绘制的生命周期， 从这篇博客开始将会对这个周期中一些有用的过程进行一个详细一些的介绍。这篇的主角就是在构造方法之后调用的&lt;code&gt;measure&lt;/code&gt;过程。&lt;/p&gt;
+&lt;p&gt;为了演示，继承了&lt;code&gt;TextView&lt;/code&gt;来实现一个自定义的&lt;code&gt;View&lt;/code&gt;。注意这里继承的应该是&lt;code&gt;android.support.v7.widget.AppCompatTextView&lt;/code&gt;这个类。同时为了&lt;code&gt;xml&lt;/code&gt;文件的正常解析，我们需要实现&lt;code&gt;View&lt;/code&gt;的三个构造方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;&lt;a href="http://www.viseator.xyz/2017/03/09/android_view_lifeCycle/"&gt;上一篇博客&lt;/a&gt;简单地介绍了&lt;code&gt;View&lt;/code&gt;绘制的生命周期， 从这篇博客开始将会对这个周期中一些有用的过程进行一个详细一些的介绍。这篇的主角就是在构造方法之后调用的&lt;code&gt;measure&lt;/code&gt;过程。&lt;/p&gt;
+&lt;p&gt;为了演示，继承了&lt;code&gt;TextView&lt;/code&gt;来实现一个自定义的&lt;code&gt;View&lt;/code&gt;。注意这里继承的应该是&lt;code&gt;android.support.v7.widget.AppCompatTextView&lt;/code&gt;这个类。同时为了&lt;code&gt;xml&lt;/code&gt;文件的正常解析，我们需要实现&lt;code&gt;View&lt;/code&gt;的三个构造方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;VView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Context&lt;/span&gt; &lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;AttributeSet&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;context&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;attrs&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;defStyleAttr&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;再通过完整包名的方法在&lt;code&gt;xml&lt;/code&gt;布局文件中创建我们的&lt;code&gt;View&lt;/code&gt;就可以直接显示了。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;com.viseator.viewtest.VView&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;100dp&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;100dp&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;@color/Gray&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里给了&lt;code&gt;TextView&lt;/code&gt;一个背景颜色便于后面的观察。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;下面就开始分析&lt;code&gt;measure&lt;/code&gt;过程。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;measure&lt;/code&gt;是一个自顶向下的过程，即父&lt;code&gt;View&lt;/code&gt;会依次调用它的子&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;measure()&lt;/code&gt;方法来对它的子&lt;code&gt;View&lt;/code&gt;进行测量。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;measure()&lt;/code&gt;方法最终会调用&lt;code&gt;onMeasure()&lt;/code&gt;，真正的尺寸信息就是在&lt;code&gt;onMeasure()&lt;/code&gt;方法中最终确定的。所以我们需要做的就是在自定义&lt;code&gt;View&lt;/code&gt;中重写&lt;code&gt;onMeasure()&lt;/code&gt;方法。&lt;/p&gt;
+&lt;p&gt;那么子&lt;code&gt;View&lt;/code&gt;根据什么来确定自己应该具有的尺寸呢？当然不可能让子&lt;code&gt;View&lt;/code&gt;自由地决定自己的大小，父&lt;code&gt;View&lt;/code&gt;必然需要向子&lt;code&gt;View&lt;/code&gt;传递信息来帮助子&lt;code&gt;View&lt;/code&gt;来确定尺寸，而子&lt;code&gt;View&lt;/code&gt;则必须满足父&lt;code&gt;View&lt;/code&gt;的要求。查看&lt;code&gt;measure()&lt;/code&gt;的方法签名：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;measure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的&lt;code&gt;widthMeasureSpec&lt;/code&gt;与&lt;code&gt;heightMeasureSpec&lt;/code&gt;就是存储这一信息的参数。它们的类型是&lt;code&gt;int&lt;/code&gt;，内部以高两位来存储测量的模式，低三十位为测量的大小，计算中使用了位运算来提高并优化效率。当然我们不必使用位运算来获得对应的数值，&lt;code&gt;View.MeasureSpec&lt;/code&gt;为我们提供了对应的方法。&lt;/p&gt;
+&lt;p&gt;测量模式有三种：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;EXACTLY&lt;/code&gt;：精确值模式，即子&lt;code&gt;View&lt;/code&gt;必须使用这一尺寸，并且保证它们的所有后代都在这个范围之内。当我们将控件的&lt;code&gt;layout_width&lt;/code&gt;、&lt;code&gt;layout_height&lt;/code&gt;属性指定为具体数值或&lt;code&gt;match_parent&lt;/code&gt;时，系统使用这一模式。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;UNSPECIFIED&lt;/code&gt;：无限制模式，不对子&lt;code&gt;View&lt;/code&gt;施加任何限制，完全由子&lt;code&gt;View&lt;/code&gt;决定自己的大小。可以用于查看子&lt;code&gt;View&lt;/code&gt;想要的尺寸，比如可以把子&lt;code&gt;View&lt;/code&gt;的长度使用&lt;code&gt;EXACTLY&lt;/code&gt;模式限制在100，不限制宽度来查看子&lt;code&gt;View&lt;/code&gt;在长度为100情况想要的宽度。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;AT_MOST&lt;/code&gt;：最大值模式，只限制子&lt;code&gt;View&lt;/code&gt;能具有的最大尺寸，子&lt;code&gt;View&lt;/code&gt;必须保证它和它的后代们都在这一范围之内。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;了解这些，我们就可以通过重写&lt;code&gt;onMeasure()&lt;/code&gt;来确定一个&lt;code&gt;View&lt;/code&gt;的尺寸。&lt;/p&gt;
+&lt;p&gt;但在重写方法时要注意：必须调用&lt;code&gt;setMeasuredDimension()&lt;/code&gt; 来将最终尺寸存储在&lt;code&gt;View&lt;/code&gt;中，否则会抛出一个&lt;code&gt;IllegalStateException&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;xml&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nt"&gt;&amp;lt;com.viseator.viewtest.VView&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_width=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;wrap_content&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:layout_height=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;100dp&amp;quot;&lt;/span&gt;
+    &lt;span class="na"&gt;android:background=&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;@color/Gray&amp;quot;&lt;/span&gt;
+    &lt;span class="nt"&gt;/&amp;gt;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;VView&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;widthMode: &amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;widthMode&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;heightMode: &amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;heightMode&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;width :&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;width&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;Log&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;d&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TAG&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;height :&amp;quot;&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;height&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kd"&gt;super&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;log:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="output" src="/images/onMeasureOutput1.png"&gt;&lt;/p&gt;
+&lt;p&gt;这段简单的代码验证了之前的说法，分别对宽高设置了&lt;code&gt;wrap_content&lt;/code&gt;和固定值，可以发现模式分别为&lt;code&gt;AT_MOST&lt;/code&gt;与&lt;code&gt;EXACTLY&lt;/code&gt;（以数值表示）。&lt;/p&gt;
+&lt;p&gt;这里输出的宽高值是以像素为单位的，可以看到高度的期望值就是设置的大小，但&lt;code&gt;wrap_content&lt;/code&gt;期望的宽度值为1080（屏幕宽度），默认即为屏幕宽度，但最终计算得出的宽度值由于里面没有文字所以为0。&lt;/p&gt;
+&lt;p&gt;同样地，&lt;code&gt;UNSPECIFIED&lt;/code&gt;模式给出的默认尺寸也是屏幕的宽/高。&lt;/p&gt;
+&lt;p&gt;所以我们可以看到如果想要实现&lt;code&gt;wrap_content&lt;/code&gt;的效果，我们必须在&lt;code&gt;onMeasure&lt;/code&gt;中对&lt;code&gt;AT_MOST&lt;/code&gt;模式计算其内容宽/高并作为最终的宽/高，否则将以屏幕的宽/高进行填充。以&lt;code&gt;LinearLayout&lt;/code&gt;的源码为例：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;useLargestChild&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt;
+        &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMode&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;AT_MOST&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;heightMode&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;UNSPECIFIED&lt;/span&gt;&lt;span class="o"&gt;))&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;child&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;getVirtualChildAt&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;measureNullChild&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;continue&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getVisibility&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;GONE&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;getChildrenSkipCount&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;continue&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;LinearLayout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;LinearLayout&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+                &lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getLayoutParams&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="c1"&gt;// Account for negative margins&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;totalLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mTotalLength&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Math&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;max&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;totalLength&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;totalLength&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;largestChildHeight&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt;
+                &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;topMargin&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;lp&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;bottomMargin&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;getNextLocationOffset&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;child&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="c1"&gt;// Add in our padding&lt;/span&gt;
+&lt;span class="n"&gt;mTotalLength&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;mPaddingTop&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;mPaddingBottom&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightSize&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mTotalLength&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这部分代码向我们展示了&lt;code&gt;LinearLayout&lt;/code&gt;处理子&lt;code&gt;View&lt;/code&gt;并计算所有的高度的情况。&lt;/p&gt;
+&lt;p&gt;知道了这个调用过程，我们就可以真正地进行&lt;code&gt;onMeasure()&lt;/code&gt;的重写了。&lt;/p&gt;
+&lt;p&gt;例如可以暴力指定&lt;code&gt;View&lt;/code&gt;尺寸：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;setMeasuredDimension&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;100&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;600&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以为&lt;code&gt;AT_MOST&lt;/code&gt;与&lt;code&gt;UNSPECIFIED&lt;/code&gt;模式指定一个默认大小：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onMeasure&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;setMeasuredDimension&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;widthMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;),&lt;/span&gt; &lt;span class="n"&gt;measureSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;heightMeasureSpec&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;measureSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;mode&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mode&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;EXACTLY&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;size&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;300&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;//Default size&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;Math&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;min&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;&lt;span class="n"&gt;MeasureSpec&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSize&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;measureSpec&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;至于更复杂的计算逻辑由于本人能力有限就不写demo了，如果以后实际中遇到需要的时候再作补充。&lt;/p&gt;</content><category term="Android"></category><category term="View"></category></entry><entry><title>Android PropertyAnimation 属性动画（一）初探</title><link href="http/android-propertyanimation-shu-xing-dong-hua-yi-chu-tan.html" rel="alternate"></link><published>2017-03-10T14:14:45+08:00</published><updated>2017-03-10T14:14:45+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-10:http/android-propertyanimation-shu-xing-dong-hua-yi-chu-tan.html</id><summary type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;相对于静态的页面，动画往往能更直观地表达所需的信息，在UI开发过程中起着相当大的作用。&lt;/p&gt;
+&lt;p&gt;Android为我们提供了一系列实现动画效果的方法，&lt;code&gt;PropertyAnimaiton&lt;/code&gt;是最常见也是最实用的一种，如同它的名字一样，它的实现方式是通过改变对象的一系列属性值来改变对象的状态， 例如动态地改变绘制的位置就可以实现绘制物体的移动效果，动态地改变对象的显示状态可以实现闪烁效果。&lt;/p&gt;
+&lt;h2&gt;Animator概览&lt;/h2&gt;
+&lt;p&gt;Android提供的实现属性动画的工具是&lt;code&gt;android.animation.Animator&lt;/code&gt;这个类，它的使用需要配合&lt;code&gt;animation&lt;/code&gt;包下的其他工具类，这个类的功能是什么，我们要如何使用它来实现属性动画呢？&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;我们可以将&lt;code&gt;Animator&lt;/code&gt;理解为&lt;code&gt;Android&lt;/code&gt;为我们提供的一个按我们的需要在一定时间段内&lt;strong&gt;连续地&lt;/strong&gt;计算并返回值的工具，这个值可以是通用的整型、浮点型，也可以是我们自定义的类型。&lt;/p&gt;
+&lt;p&gt;我们可以设置返回值的范围，并可以控制值变化的快慢，例如实现自由落体下落的物体时我们需要让高度值以一个越来越快的速度降低。&lt;/p&gt;
+&lt;p&gt;这里的连续需要注意，实际上是不可能产生真正意义上的连续值的，但是如果&lt;strong&gt;在绘制过程中计算这个值的速度小于绘制一帧所需要的时间&lt;/strong&gt;，那么我们就可以在视觉上认为这个值是在连续改变的。这一点也是理解其作用的关键：我们很难去写出一个可以随时获取连续值的工具，而&lt;code&gt;Animator&lt;/code&gt;正是一个满足我们这个需求的一个通用工具。&lt;/p&gt;
+&lt;p&gt;通过将&lt;code&gt;Animator&lt;/code&gt;与&lt;code&gt;View&lt;/code&gt;的绘制过程结合 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;前言&lt;/h2&gt;
+&lt;p&gt;相对于静态的页面，动画往往能更直观地表达所需的信息，在UI开发过程中起着相当大的作用。&lt;/p&gt;
+&lt;p&gt;Android为我们提供了一系列实现动画效果的方法，&lt;code&gt;PropertyAnimaiton&lt;/code&gt;是最常见也是最实用的一种，如同它的名字一样，它的实现方式是通过改变对象的一系列属性值来改变对象的状态， 例如动态地改变绘制的位置就可以实现绘制物体的移动效果，动态地改变对象的显示状态可以实现闪烁效果。&lt;/p&gt;
+&lt;h2&gt;Animator概览&lt;/h2&gt;
+&lt;p&gt;Android提供的实现属性动画的工具是&lt;code&gt;android.animation.Animator&lt;/code&gt;这个类，它的使用需要配合&lt;code&gt;animation&lt;/code&gt;包下的其他工具类，这个类的功能是什么，我们要如何使用它来实现属性动画呢？&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;我们可以将&lt;code&gt;Animator&lt;/code&gt;理解为&lt;code&gt;Android&lt;/code&gt;为我们提供的一个按我们的需要在一定时间段内&lt;strong&gt;连续地&lt;/strong&gt;计算并返回值的工具，这个值可以是通用的整型、浮点型，也可以是我们自定义的类型。&lt;/p&gt;
+&lt;p&gt;我们可以设置返回值的范围，并可以控制值变化的快慢，例如实现自由落体下落的物体时我们需要让高度值以一个越来越快的速度降低。&lt;/p&gt;
+&lt;p&gt;这里的连续需要注意，实际上是不可能产生真正意义上的连续值的，但是如果&lt;strong&gt;在绘制过程中计算这个值的速度小于绘制一帧所需要的时间&lt;/strong&gt;，那么我们就可以在视觉上认为这个值是在连续改变的。这一点也是理解其作用的关键：我们很难去写出一个可以随时获取连续值的工具，而&lt;code&gt;Animator&lt;/code&gt;正是一个满足我们这个需求的一个通用工具。&lt;/p&gt;
+&lt;p&gt;通过将&lt;code&gt;Animator&lt;/code&gt;与&lt;code&gt;View&lt;/code&gt;的绘制过程结合，就可以实现绝大多数的动画效果， 但是&lt;code&gt;Animator&lt;/code&gt;也不只局限在使用在绘制动画，只要是有相似需求的地方都可以使用它来实现， 同时由于属性动画只针对属性进行修改，与被修改对象之前几乎没有耦合，不需要对被修改对象作出改变，可以设置方式也多种多样，这些都是动画的另一种实现方法&lt;code&gt;ViewAnimator&lt;/code&gt;所无法做到的，所以我属性动画是现在实现动画效果的普遍做法。&lt;/p&gt;
+&lt;h2&gt;使用Animator&lt;/h2&gt;
+&lt;h3&gt;Animator子类&lt;/h3&gt;
+&lt;p&gt;下面就来看看如何使用&lt;code&gt;Animator&lt;/code&gt;满足我们的需求。&lt;/p&gt;
+&lt;p&gt;我们使用&lt;code&gt;Animator&lt;/code&gt;可以分为两个步骤，一是进行数值的计算，二是将计算出的数值设置到对应的对象上。而&lt;code&gt;Animator&lt;/code&gt;有着三个子类：&lt;code&gt;ValueAnimator&lt;/code&gt; &lt;code&gt;ObjectAnimator&lt;/code&gt; &lt;code&gt;AnimatorSet&lt;/code&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;ValueAnimator&lt;/code&gt;实现了上述过程的第一个步骤：进行数值的计算。第二个步骤则需要我们重写它的回调在值发生改变时候手动地为对象更新属性值。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;ObjectAnimator&lt;/code&gt;则在其基础上进行了进一步的封装，加入了一些方法使得它可以绑定一个对象，在数值改变的同时对对象的属性进行更新。&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;AnimatorSet&lt;/code&gt;可以对&lt;code&gt;Animator&lt;/code&gt;进行组合，让它们之间进行联动，例如可以设置一个动画根据另一个动画的状态来决定是否开始、暂停或停止。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;可以看到，&lt;code&gt;ValueAnimator&lt;/code&gt;提供了一个&lt;code&gt;Animator&lt;/code&gt;最核心的内容，也是使用中最为灵活的一个。&lt;code&gt;ObjectAnimator&lt;/code&gt;由于绑定了相应的对象，在使用上会受一些限制。&lt;code&gt;AnimatorSet&lt;/code&gt;专用于需要组合动画的场景。&lt;/p&gt;
+&lt;h3&gt;ValueAnimator&lt;/h3&gt;
+&lt;p&gt;在这篇博客中，我们关注最为核心的&lt;code&gt;ValueAnimator&lt;/code&gt;。&lt;/p&gt;
+&lt;h4&gt;关键属性&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator&lt;/code&gt;对象内部维护了一系列属性来保存所需的各种信息。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;Duration&lt;/code&gt;：动画的持续时间，通过&lt;code&gt;setDuration()&lt;/code&gt;方法设置&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Repeat count and behavior&lt;/code&gt;：重复计数与重复模式，我们可以通过设置这两个属性来控制动画是否重复以及重复的次数，通过&lt;code&gt;setRepeatCount()&lt;/code&gt;与&lt;code&gt;setRepeatMode()&lt;/code&gt;方法设置&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Frame refresh delay&lt;/code&gt;：帧刷新延迟，也就是计算两帧动画之间的间隔时间，但这个时间只是&lt;code&gt;Animator&lt;/code&gt;尽力去保持的值，具体的间隔时间会由于系统负载与性能的不同而不同，同时设置它的方法为一个静态方法：&lt;code&gt;ValueAnimator.setFrameDelay()&lt;/code&gt;，会被设置到所有的&lt;code&gt;Animator&lt;/code&gt;上，这是因为这些&lt;code&gt;Animator&lt;/code&gt;都在同一个时间循环中。这个属性也有可能会被忽略如果动画系统采用了内部的计时来源，例如&lt;code&gt;vsync&lt;/code&gt;来计算属性。同时这个方法需要在与&lt;code&gt;start()&lt;/code&gt;方法相同的进程中调用&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;Time interpolation&lt;/code&gt;：时间插值器，是我们实现不同动画效果的关键，每一时刻所返回的数值由它决定，后文会详细讲&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;初始化与TypeEvaluator&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator&lt;/code&gt;对象的构造函数只由内部使用，获取&lt;code&gt;ValueAnimator&lt;/code&gt;对象的方法是调用它的工厂方法：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofArgb()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofInt()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofFloat()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofObject()&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;ValueAnimator.ofPropertyValuesHolder()&lt;/code&gt; //本篇未涉及，下一篇进行讲解&lt;/p&gt;
+&lt;p&gt;前三个可以看作是&lt;code&gt;ValueAnimator&lt;/code&gt;为我们提供的初始化方式，它们的参数都是对应类型的长度可变参数:&lt;code&gt;(Type ...values)&lt;/code&gt;，我们需要提供一个以上的参数，&lt;code&gt;ValueAnimator&lt;/code&gt;最终提供的值会在这些值之前变动。&lt;/p&gt;
+&lt;p&gt;一般情况下这里提供的&lt;code&gt;Argb&lt;/code&gt;（用于颜色值的变化）和整型、浮点值基本可以满足我们的需求，但是某些时候我们需要结果是我们自定义的一些对象，这个时候就需要用到&lt;code&gt;TypeEvaluator&amp;lt;&amp;gt;&lt;/code&gt;接口了，与这个接口对应的工厂方法是&lt;code&gt;ValueAnimator.ofObject()&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ValueAnimator&lt;/span&gt; &lt;span class="nf"&gt;ofObject&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;TypeEvaluator&lt;/span&gt; &lt;span class="n"&gt;evaluator&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; 
+                &lt;span class="n"&gt;Object&lt;/span&gt;&lt;span class="o"&gt;...&lt;/span&gt; &lt;span class="n"&gt;values&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里的可变参数类型变为了&lt;code&gt;Object&lt;/code&gt;，同时还需要我们提供一个&lt;code&gt;TypeEvaluator&amp;lt;&amp;gt;&lt;/code&gt;，用于“告诉”&lt;code&gt;Animator&lt;/code&gt;如何返回这个&lt;code&gt;Object&lt;/code&gt;值。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;&lt;code&gt;TypeEvaluator&amp;lt;&amp;gt;&lt;/code&gt;接口并不复杂，只有一个方法需要我们重写：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="nf"&gt;evaluate&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; 
+                &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="n"&gt;startValue&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; 
+                &lt;span class="n"&gt;T&lt;/span&gt; &lt;span class="n"&gt;endValue&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;startValue&lt;/code&gt;与&lt;code&gt;endValue&lt;/code&gt;非常好理解，就是我们在获取&lt;code&gt;Animator&lt;/code&gt;时指定的值的起始值和结束值。类型与返回类型一致，当然都是我们自定义的类型。&lt;/p&gt;
+&lt;p&gt;这里的&lt;code&gt;fraction&lt;/code&gt;就是决定我们最终返回值的关键参数。我们可以把这个&lt;code&gt;fraction&lt;/code&gt;理解为&lt;code&gt;animator&lt;/code&gt;提供给我们的最终的数值改变的比例，以小数表示，小于0表示低于&lt;code&gt;startValue&lt;/code&gt;，大于0表示超出&lt;code&gt;endValue&lt;/code&gt;，0-1之间表示在&lt;code&gt;startValue&lt;/code&gt;与&lt;code&gt;endValue&lt;/code&gt;之间。我们要做的就是把这个值转换为在起始和结果范围之间的合适的对象值。&lt;/p&gt;
+&lt;p&gt;例如，对于基本的浮点类型，默认的&lt;code&gt;FloatEvaluator&lt;/code&gt;是这样的：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="n"&gt;Float&lt;/span&gt; &lt;span class="nf"&gt;evaluate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Number&lt;/span&gt; &lt;span class="n"&gt;startValue&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;Number&lt;/span&gt; &lt;span class="n"&gt;endValue&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;startFloat&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;startValue&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;floatValue&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;startFloat&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;fraction&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;endValue&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;floatValue&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="n"&gt;startFloat&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到，就是相当于把&lt;code&gt;fraction&lt;/code&gt;所表示的比例“投射”到了我们所需要的数据对象上，这里是浮点类型。如果使用我们的自定义类型，我们必须为自己的类型定义这样的操作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意：&lt;/strong&gt;这里要求我们必须将&lt;code&gt;fraction&lt;/code&gt;&lt;strong&gt;线性&lt;/strong&gt;地反应到对应的类型上，因为&lt;code&gt;fraction&lt;/code&gt;反映的是最终的动画进度，我们必须如实地按照这个进度改变我们的属性，所以需要将result = x0 + t * (x1 - x0)`这样的形式反映到我们自己的对象上。&lt;/p&gt;
+&lt;p&gt;自定义了&lt;code&gt;TypeEvaluator&lt;/code&gt;以后就可以作为参数使用在上面的&lt;code&gt;obObject()&lt;/code&gt;工厂方法中了。&lt;/p&gt;
+&lt;h4&gt;插补细分器(&lt;code&gt;Interpolators&lt;/code&gt;)&lt;/h4&gt;
+&lt;p&gt;下面介绍使用&lt;code&gt;ValueAnimator&lt;/code&gt;控制值变化过程中最为重要的一个概念：插补细分器(&lt;code&gt;Interpolators&lt;/code&gt;)。&lt;/p&gt;
+&lt;p&gt;它实际上是一个关于时间的函数， 根据时刻的不同来返回不同的值，进而来控制最后的输出的值。那么它是如何表示的呢？&lt;/p&gt;
+&lt;p&gt;系统为我们提供了一系列预置的&lt;code&gt;Interpolators&lt;/code&gt;，以较常用的&lt;code&gt;LinearInterpolater&lt;/code&gt;为例，顾名思义，它是一个线性的插补细分器，意味着输入与输出呈线性关系：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="nf"&gt;getInterpolation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;输入输出的关键函数就是这个&lt;code&gt;getInterpolation()&lt;/code&gt;了，可以看到，参数与返回值都是&lt;code&gt;float&lt;/code&gt;类型，&lt;code&gt;input&lt;/code&gt;的值在0-1之间，结合前面，我们可以很容易理解，这个&lt;code&gt;input&lt;/code&gt;就是一个以0-1之间的小数表示的过去的时间值，例如整个动画是1000ms，当&lt;code&gt;input&lt;/code&gt;为0.25的时候意味着现在的时间过去了250ms。&lt;/p&gt;
+&lt;p&gt;而返回值就是经过我们的转换，表示出的动画应该进行的时间的比例，这里由于是线性的，所以可以直接返回&lt;code&gt;input&lt;/code&gt;，这个值最后会到哪里呢？自然就是给我们前面介绍的&lt;code&gt;TypeEvaluator&lt;/code&gt;。下面一段源码展示了这个过程：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mInterpolator&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;fraction&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mInterpolator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getInterpolation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;mEvaluator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;evaluate&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fraction&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mFirstKeyframe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValue&lt;/span&gt;&lt;span class="o"&gt;(),&lt;/span&gt;
+        &lt;span class="n"&gt;mLastKeyframe&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getValue&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;作为&lt;code&gt;getInterpolation()&lt;/code&gt;参数的&lt;code&gt;fraction&lt;/code&gt;代表着过去的时间比例，这里调用我们设置的&lt;code&gt;Interpolator&lt;/code&gt;来更新这个&lt;code&gt;fraction&lt;/code&gt;，现在这个&lt;code&gt;fraction&lt;/code&gt;表示的就是动画已经进行的比例，下一步就要根据它来获取对应的对象值（调用了我们之间谈到过的&lt;code&gt;evaluate()&lt;/code&gt;方法，这里的&lt;code&gt;KeyFrame&lt;/code&gt;的概念会在之后的博客讲到），后面的两个参数就是传递给&lt;code&gt;evaluate&lt;/code&gt;的起始与结束范围。&lt;/p&gt;
+&lt;p&gt;最终，我们就获得了一个按照我们设定的&lt;code&gt;Interpolator&lt;/code&gt;返回的动画属性值。&lt;/p&gt;
+&lt;p&gt;如果想要实现加速效果呢？Android同样为我们提供了现成的&lt;code&gt;AccelerateInterpolator&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="nf"&gt;getInterpolation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mFactor&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mf"&gt;1.0f&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="n"&gt;Math&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;pow&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;input&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mDoubleFactor&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同样很简洁，这里用到了&lt;code&gt;mFactor&lt;/code&gt;与&lt;code&gt;mDoubleFactor&lt;/code&gt;分别表示我们在构造函数里面设置的指数值：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="nf"&gt;AccelerateInterpolator&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;float&lt;/span&gt; &lt;span class="n"&gt;factor&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mFactor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;factor&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mDoubleFactor&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;mFactor&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果我们设置的为1，会返回&lt;code&gt;input&lt;/code&gt;的平方，其他值则会返回&lt;code&gt;input&lt;/code&gt;的&lt;code&gt;mDoubleFactor&lt;/code&gt;次方，使得动画属性可以以不同的函数曲线形式变化。&lt;/p&gt;
+&lt;p&gt;如果我们要实现自己的&lt;code&gt;Interpolator&lt;/code&gt;呢？只需要实现&lt;code&gt;TimeInterpolator&lt;/code&gt;接口，这个接口只需要我们实现一个&lt;code&gt;getInterpolation&lt;/code&gt;方法。我们可以根据&lt;code&gt;input&lt;/code&gt;值返回不同的值来返回不同的值表示动画的进度。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;注意：&lt;/strong&gt;返回值的范围不一定要在0-1之间，小于0或大小1的值可以表示超出预设范围的目标值。&lt;/p&gt;
+&lt;p&gt;这篇博客到此结束，在下一篇博客中将会以一个绘制自由落体的弹跳小球的示例来演示如何使用&lt;code&gt;Animator&lt;/code&gt;与介绍它的回调函数。&lt;/p&gt;</content><category term="Android"></category><category term="UI"></category><category term="Animation"></category></entry><entry><title>Android View绘制生命周期总览</title><link href="http/android-viewhui-zhi-sheng-ming-zhou-qi-zong-lan.html" rel="alternate"></link><published>2017-03-09T17:22:41+08:00</published><updated>2017-03-09T17:22:41+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-03-09:http/android-viewhui-zhi-sheng-ming-zhou-qi-zong-lan.html</id><summary type="html">&lt;p&gt;为了直观表示整个过程，我制作了一张流程图。注意以下只是整个生命周期中比较常用的方法，并不代表所有的过程。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="viewLifeCircle" src="/images/viewLifeCircle.png"&gt;&lt;/p&gt;
+&lt;p&gt;当一个&lt;code&gt;Activity&lt;/code&gt;收到焦点即将要处于激活状态时，将会被要求绘制它的布局，绘制布局之前的过程在这里不涉及，我们从绘制&lt;code&gt;View&lt;/code&gt;开始分析。&lt;/p&gt;
+&lt;p&gt;每个&lt;code&gt;Activity&lt;/code&gt;被要求提供一个&lt;code&gt;ViewGroup&lt;/code&gt;作为View树的根，也就是我们熟悉的&lt;code&gt;setContentView&lt;/code&gt;方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nd"&gt;@LayoutRes&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ViewGroup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;为了直观表示整个过程，我制作了一张流程图。注意以下只是整个生命周期中比较常用的方法，并不代表所有的过程。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="viewLifeCircle" src="/images/viewLifeCircle.png"&gt;&lt;/p&gt;
+&lt;p&gt;当一个&lt;code&gt;Activity&lt;/code&gt;收到焦点即将要处于激活状态时，将会被要求绘制它的布局，绘制布局之前的过程在这里不涉及，我们从绘制&lt;code&gt;View&lt;/code&gt;开始分析。&lt;/p&gt;
+&lt;p&gt;每个&lt;code&gt;Activity&lt;/code&gt;被要求提供一个&lt;code&gt;ViewGroup&lt;/code&gt;作为View树的根，也就是我们熟悉的&lt;code&gt;setContentView&lt;/code&gt;方法。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="nd"&gt;@LayoutRes&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;layoutResID&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="nd"&gt;@Override&lt;/span&gt;
+    &lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;ViewGroup&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;LayoutParams&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;getDelegate&lt;/span&gt;&lt;span class="o"&gt;().&lt;/span&gt;&lt;span class="na"&gt;setContentView&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;view&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;params&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;可以看到&lt;code&gt;setContentView&lt;/code&gt;拥有三种形式，可以直接传入&lt;code&gt;View&lt;/code&gt;、传入一个&lt;code&gt;layout&lt;/code&gt;资源文件，或传入一个&lt;code&gt;View&lt;/code&gt;文件和一个用于提供参数的&lt;code&gt;LayoutParams&lt;/code&gt;对象。&lt;/p&gt;
+&lt;p&gt;整个过程将从这个根&lt;code&gt;View&lt;/code&gt;开始，并遍历它的子&lt;code&gt;View&lt;/code&gt;来逐一绘制，每个&lt;code&gt;ViewGroup&lt;/code&gt;承担了要求它的子&lt;code&gt;View&lt;/code&gt;进行绘制的责任，每个&lt;code&gt;View&lt;/code&gt;承担了绘制自身的责任。并且父&lt;code&gt;View&lt;/code&gt;会在子&lt;code&gt;View&lt;/code&gt;完成绘制之前进行绘制，同级的&lt;code&gt;View&lt;/code&gt;将以它们出现在树中的顺序进行绘制。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;首先调用的当然是&lt;code&gt;View&lt;/code&gt;的构造函数，构造函数分为两种，一种供代码创建的&lt;code&gt;View&lt;/code&gt;使用，另一种是由&lt;code&gt;layout&lt;/code&gt;文件生成的&lt;code&gt;View&lt;/code&gt;使用，区别在于后者会从&lt;code&gt;layout&lt;/code&gt;文件中读入所有的属性，前者的属性则需要在代码中设置。&lt;/p&gt;
+&lt;p&gt;另外后者在所有的子&lt;code&gt;View&lt;/code&gt;都生成完毕之后会回调&lt;code&gt;onFinishInflate&lt;/code&gt;方法。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;在正式绘制之前要进行两个过程（布局机制[layout mechanism]）：&lt;/p&gt;
+&lt;p&gt;首先是&lt;code&gt;measure&lt;/code&gt;过程。这是一个自顶向下的过程，父&lt;code&gt;View&lt;/code&gt;将期望尺寸传递给子&lt;code&gt;View&lt;/code&gt;，子&lt;code&gt;View&lt;/code&gt;需要根据这一信息确定自己的尺寸，并且保证这一尺寸满足父&lt;code&gt;View&lt;/code&gt;对其的要求，在子&lt;code&gt;View&lt;/code&gt;确定自己尺寸的过程中也要向它的子&lt;code&gt;View&lt;/code&gt;传递信息，就这样递归地确定自己的尺寸信息并储存在自身中，保证在&lt;code&gt;measure&lt;/code&gt;方法返回时，自身的尺寸信息已经确定。所以在根&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;measure&lt;/code&gt;方法返回时，所有子&lt;code&gt;View&lt;/code&gt;的尺寸信息已经全部确定了。&lt;/p&gt;
+&lt;p&gt;这个过程需要注意一个&lt;code&gt;View&lt;/code&gt;可能不止一次地调用&lt;code&gt;measure&lt;/code&gt;方法来对子&lt;code&gt;View&lt;/code&gt;进行测量。比如，可能要先传递一个无限制的信息来获取子&lt;code&gt;View&lt;/code&gt;想要的尺寸，当子&lt;code&gt;View&lt;/code&gt;希望的尺寸过大或过小时，父&lt;code&gt;View&lt;/code&gt;需要再次调用&lt;code&gt;measure&lt;/code&gt;方法来给予子&lt;code&gt;View&lt;/code&gt;一些限制。&lt;/p&gt;
+&lt;p&gt;第二个是&lt;code&gt;layout&lt;/code&gt;过程，这也是一个自顶向下的遍历过程，在这个过程中父&lt;code&gt;View&lt;/code&gt;负责按照上一个过程中计算并储存在&lt;code&gt;View&lt;/code&gt;中的尺寸信息来正确地放置子&lt;code&gt;View&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;同时这个过程可以通过调用&lt;code&gt;requestLayout()&lt;/code&gt;来重新进行，并且会引起后面步骤的执行，相当于对以这个&lt;code&gt;View&lt;/code&gt;为根的&lt;code&gt;View&lt;/code&gt;树进行重新布局。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;下面就是真正的绘制过程了，也就是&lt;code&gt;View&lt;/code&gt;的&lt;code&gt;draw()&lt;/code&gt;方法，在&lt;code&gt;draw()&lt;/code&gt;方法中，（如果需要）会&lt;strong&gt;依次&lt;/strong&gt;调用如下方法：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;drawBackground()&lt;/code&gt;：在画布上绘制特定的背景&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;onDraw()&lt;/code&gt;：重写&lt;code&gt;View&lt;/code&gt;几乎必重写的一个方法，用于绘制图形&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;dispatchDraw()&lt;/code&gt;：&lt;code&gt;ViewGroup&lt;/code&gt;会重写这个方法，用于对所有的子&lt;code&gt;View&lt;/code&gt;调用&lt;code&gt;draw()&lt;/code&gt;方法进行绘制&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;onDrawForeground()&lt;/code&gt;：用于绘制前景（如果需要）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;可以看到如果需要调用上述的方法必定会按照这个顺序进行，也就是说，子&lt;code&gt;View&lt;/code&gt;的绘制是在父&lt;code&gt;View&lt;/code&gt;绘制之后进行的，而同级&lt;code&gt;View&lt;/code&gt;的绘制是根据&lt;code&gt;View&lt;/code&gt;在父&lt;code&gt;View&lt;/code&gt;中的顺序进行绘制的。&lt;/p&gt;
+&lt;p&gt;同时这个过程可以通过调用&lt;code&gt;invalidate()&lt;/code&gt;来重新进行，相当于进行某个&lt;code&gt;View&lt;/code&gt;的重绘。&lt;/p&gt;</content><category term="Android"></category><category term="View"></category><category term="LifeCycle"></category></entry></feed>
