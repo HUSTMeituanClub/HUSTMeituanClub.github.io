@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>NFC与门禁卡初探</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/nfc.atom.xml" type="application/atom+xml" rel="alternate" title="美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="前言 开学之后，学校寝室和启明学院都开始使用了以校园卡为载体的门禁服务，只有刷指定人员的校园卡才能进入。我对其原理产生了好奇，就趁机进行了一些研究。 了解NFC NFC，near field...">
+
+        <meta name="author" content="Lichen Zhang">
+
+        <meta name="tags" content="hack">
+        <meta name="tags" content="NFC">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/lichen-zhang.html">
+	<meta property="og:url" content="/nfcyu-men-jin-qia-chu-tan.html">
+	<meta property="og:title" content="NFC与门禁卡初探">
+	<meta property="article:published_time" content="2017-05-17 11:36:21+08:00">
+            <meta property="og:description" content="前言 开学之后，学校寝室和启明学院都开始使用了以校园卡为载体的门禁服务，只有刷指定人员的校园卡才能进入。我对其原理产生了好奇，就趁机进行了一些研究。 了解NFC NFC，near field...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/categories.html">分类</a></li>
+                        <li><a href="/archives.html">归档</a></li>
+                        <li><a href="/authors.html">作者</a></li>
+                        <li><a href="/tags.html">标签</a></li>
+                        <li><a href="/pages/about/index.html">关于</a></li>
+                        <li><a href="/pages/friendlinks/index.html">友链</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>NFC与门禁卡初探</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/lichen-zhang.html">Lichen Zhang</a>
+                             on 2017年 5月17日 周三
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h1>前言</h1>
+<p>开学之后，学校寝室和启明学院都开始使用了以校园卡为载体的门禁服务，只有刷指定人员的校园卡才能进入。我对其原理产生了好奇，就趁机进行了一些研究。</p>
+<h1>了解NFC</h1>
+<p>NFC，near field communication(近场通信)，是一种短距离的高频无线通信技术，允许电子设备之间进行非接触式点对点数据传输，在十厘米内交换数据。2004年，诺基亚、飞利浦以及索尼三家公司建立了NFC forum，成为了NFC的开端。</p>
+<p>NFC从其本质上来说，是一种RFID的演进技术，其于04年和05年发布了两个协议标准，分别是ISO/IEC 18092：2004和ISO/IEC 21481：2005。上述两个协议均源于更早的RFID协议 ISO/IEC 14443，即13.56MHz RFID协议标准。上述两个NFC协议推出的第二版分别是ISO/IEC 18092：2013(NFCIP-1)和ISO/IEC 21481：2012(NFCIP-2)。NFC向下兼容索尼的FeliCaTM标准以及飞利浦的MIFARE标准。</p>
+<table>
+<thead>
+<tr>
+<th>技术</th>
+<th>协议</th>
+<th>频率</th>
+<th>传输距离</th>
+<th>主动</th>
+<th>被动</th>
+<th>典型设备和应用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NFC</td>
+<td>ISO/IEC 18092<br>ISO/IEC 21481</td>
+<td>13.56 MHz</td>
+<td>10 cm</td>
+<td>√</td>
+<td>√</td>
+<td>对等网络中的智能手机、平板电脑、便携式设备</td>
+</tr>
+<tr>
+<td>免接触智能卡</td>
+<td>ISO/IEC 14443</td>
+<td>13.56 MHz</td>
+<td>10 cm</td>
+<td></td>
+<td>√</td>
+<td>票务、支付、门禁、护照等</td>
+</tr>
+<tr>
+<td>RFID</td>
+<td>ISO/IEC 18000</td>
+<td>LF (120–150 KHz)<br>HF (13.56 MHz)<br>UHF (433–900 MHz)</td>
+<td>&lt;40 m</td>
+<td>√</td>
+<td>√</td>
+<td>标记和跟踪物品，适用于制造物流、零售等</td>
+</tr>
+</tbody>
+</table>
+<p>NFC的工作模式有三种，卡模拟模式（Card emulation mode）、点对点模式（P2P mode）和读/写模式（Reader/Writer mode）。</p>
+<ul>
+<li>在读/写模式中，NFC读/写器从NFC智能对象中读取数据，并根据这些信息操作。例如，采用支持NFC的手机，用户可以通过检索的URL自动联网、无需键入便可发送短信(SMS)文本、获取优惠券等，所有这些仅需触摸此对象的设备即可。</li>
+<li>在点对点模式中，任何支持NFC功能的读/写器都可与另一个NFC读/写器进行通信并交换数据，与读/写模式具有同样的安全性、直观性和简单性等优势。在这种模式下，一个读/写器可作为一个标签，创建通信链路。例如，具有读/写器的两个设备(如智能电话)可以彼此通信。</li>
+<li>卡模拟模式的NFC器件可以取代非接触式智能卡，使NFC器件能够用于现有的非接触式卡基础设施，进行票务、门禁、运输、收费站以及非接触式支付等操作。</li>
+</ul>
+<h1>复制流程</h1>
+<h2>初步分析</h2>
+<p>由于采集门禁卡信息时，只需要提供学号和姓名，以及卡编号，无需其他信息，故推测门禁只是简单读取卡的ID，而不会去解密其他信息，只需要使用卡模拟模式，简单地模拟一个ID相同的卡即可。在网上查阅资料可得知，门禁卡的工作原理大多如此。</p>
+<h2>信息采集</h2>
+<p>由于手头设备有限，只能用手机查看校园卡的ID信息。</p>
+<p><a href="https://play.google.com/store/apps/details?id=com.wakdev.wdnfc">NFC Tools下载地址</a>
+<img alt="" src="/images/ID-information.jpg"></p>
+<p>容易得到，Serial number处为形如<code>XX:XX:XX:XX</code>的ID（X为16进制数字）。这就是门禁所识别的ID。</p>
+<h2>信息查询</h2>
+<p>查阅相关资料可以得知，NFC的相应配置保存在<code>/system/etc/libnfc-nxp.conf</code>或<code>/system/etc/libnfc-brcm.conf</code>中，具体的配置取决于NFC芯片的类型。</p>
+<p>手头有一部Nexus 6P，其芯片为NXP PN548，故阅读了<code>libnfc-nxp.conf</code>，通过注释从中发现了需要更改的配置。在文件的607行，有Core configuration settings中的<code>LA_NFCID1</code>，代表了手机NFC的NFCA-ID，这正是门禁系统能识别的ID。这里，33表示配置的类型，04表示后面所跟的配置字节数，后面的四个字节为数据。</p>
+<div class="highlight"><pre><span></span>###############################################################################
+# Core configuration settings
+# It includes
+# 18        - Poll Mode NFC-F:   PF_BIT_RATE
+# 21        - Poll Mode ISO-DEP: PI_BIT_RATE
+# 28        - Poll Mode NFC-DEP: PN_NFC_DEP_SPEED
+# 30        - Lis. Mode NFC-A:   LA_BIT_FRAME_SDD
+# 31        - Lis. Mode NFC-A:   LA_PLATFORM_CONFIG
+# 33        - Lis. Mode NFC-A:   LA_NFCID1
+# 50        - Lis. Mode NFC-F:   LF_PROTOCOL_TYPE
+# 54        - Lis. Mode NFC-F:   LF_CON_BITR_F
+# 5B        - Lis. Mode ISO-DEP: LI_BIT_RATE
+# 60        - Lis. Mode NFC-DEP: LN_WT
+# 80        - Other Param.:      RF_FIELD_INFO
+# 81        - Other Param.:      RF_NFCEE_ACTION
+# 82        - Other Param.:      NFCDEP_OP
+NXP_CORE_CONF={20, 02, 2B, 0D,
+        18, 01, 01,
+        21, 01, 00,
+        28, 01, 00,
+        30, 01, 08,
+        31, 01, 03,
+        33, 04, 00, 00, 00, 00,
+        50, 01, 02,
+        54, 01, 06,
+        5B, 01, 00,
+        60, 01, 0E,
+        80, 01, 01,
+        81, 01, 01,
+        82, 01, 0E
+}
+</pre></div>
+
+
+<h2>信息修改</h2>
+<p>将上面获取到的ID插入配置文件中，重启手机NFC，即可完成修改。</p>
+<div class="highlight"><pre><span></span> <span class="c1">#!/system/bin/sh</span>
+ sed -i <span class="s1">&#39;607s/^.*$/        33, 04, XX, XX, XX, XX,/&#39;</span> /etc/libnfc-nxp.conf
+</pre></div>
+
+
+<h2>批量修改</h2>
+<p>尝试着写了批量修改的脚本，以完成某些特殊要求，但是由于安卓系统本身的限制，无法做到自动重启NFC，贴代码仅供参考。</p>
+<div class="highlight"><pre><span></span><span class="ch">#!/system/bin/sh</span>
+setenforce <span class="m">0</span>
+<span class="nb">echo</span> <span class="s2">&quot;SElinux disabled&quot;</span>
+<span class="c1">#disable SElinux</span>
+mount -o rw,remount /system
+<span class="nb">echo</span> <span class="s2">&quot;nfc disabled&quot;</span>
+service call nfc <span class="m">5</span>
+sleep <span class="m">1</span>
+<span class="c1">#first person</span>
+sed -i <span class="s1">&#39;607s/^.*$/        33, 04, XX, XX, XX, XX,/&#39;</span> /etc/libnfc-nxp.conf
+sleep <span class="m">1</span>
+service call nfc <span class="m">6</span>
+<span class="nb">echo</span> <span class="s2">&quot;nfc enabled&quot;</span>
+sleep <span class="m">5</span>
+service call nfc <span class="m">5</span>
+<span class="nb">echo</span> <span class="s2">&quot;nfc disabled&quot;</span>
+sleep <span class="m">1</span>
+<span class="c1">#second person</span>
+sed -i <span class="s1">&#39;607s/^.*$/        33, 04, XX, XX, XX, XX,/&#39;</span> /etc/libnfc-nxp.conf
+service call nfc <span class="m">6</span>
+<span class="nb">echo</span> <span class="s2">&quot;nfc enabled&quot;</span>
+sleep <span class="m">1</span>
+setenforce <span class="m">1</span>
+</pre></div>
+
+
+<h1>总结</h1>
+<p>门禁使用易于复制的射频卡ID检测是极为不安全的，外来人员只需要注意到这一点就可以轻松地进入宿舍，同时，此功能还可以用来体育打卡、进入图书馆等，需要慎加利用。</p>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/hack.html">hack</a>, <a href="/tag/nfc.html">NFC</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

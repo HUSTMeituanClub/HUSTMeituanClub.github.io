@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - Linux</title><link href="/" rel="alternate"></link><link href="/feeds/linux.atom.xml" rel="self"></link><id>/</id><updated>2017-05-18T04:37:00+08:00</updated><entry><title>使用openbox配置archlinux桌面环境w</title><link href="/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html" rel="alternate"></link><published>2017-05-18T04:37:00+08:00</published><updated>2017-05-18T04:37:00+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-05-18:/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html</id><summary type="html">&lt;h2&gt;0x01 前言&lt;/h2&gt;
+
+&lt;p&gt;试用了一些 &lt;code&gt;archlinux wiki&lt;/code&gt; 上推荐的桌面环境，发现并没有什么我喜欢的。&lt;/p&gt;
+
+&lt;p&gt;所以决定自己用 &lt;code&gt;openbox&lt;/code&gt; 配置一发w。&lt;/p&gt;
+
+&lt;h2&gt;0x02 安装openbox并设置为默认桌面环境&lt;/h2&gt;
+
+&lt;p&gt;安装很简单， &lt;code&gt;pacman&lt;/code&gt; 一下就好了。&lt;/p&gt;
+
+&lt;p&gt;如果你像我一样，在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 下面配置好了执行 &lt;code&gt;~/.xinitrc&lt;/code&gt; ，那么以下操作就直接编辑 &lt;code&gt;~/.xinitrc&lt;/code&gt; 就好了。&lt;/p&gt;
+
+&lt;p&gt;如果不是，那么可以在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 里写。&lt;/p&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;p&gt;首先建立 &lt;code&gt;/usr/local/bin/mydesk&lt;/code&gt; ，然后在里面加入：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;#!/bin/sh
+
+openbox
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;p&gt;然后编辑 &lt;code&gt;xinitrc&lt;/code&gt; ，把原来的桌面环境注释掉，换成&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;exec /usr/local/bin …&lt;/code&gt;&lt;/pre&gt;</summary><content type="html">&lt;h2&gt;0x01 前言&lt;/h2&gt;
+
+&lt;p&gt;试用了一些 &lt;code&gt;archlinux wiki&lt;/code&gt; 上推荐的桌面环境，发现并没有什么我喜欢的。&lt;/p&gt;
+
+&lt;p&gt;所以决定自己用 &lt;code&gt;openbox&lt;/code&gt; 配置一发w。&lt;/p&gt;
+
+&lt;h2&gt;0x02 安装openbox并设置为默认桌面环境&lt;/h2&gt;
+
+&lt;p&gt;安装很简单， &lt;code&gt;pacman&lt;/code&gt; 一下就好了。&lt;/p&gt;
+
+&lt;p&gt;如果你像我一样，在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 下面配置好了执行 &lt;code&gt;~/.xinitrc&lt;/code&gt; ，那么以下操作就直接编辑 &lt;code&gt;~/.xinitrc&lt;/code&gt; 就好了。&lt;/p&gt;
+
+&lt;p&gt;如果不是，那么可以在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 里写。&lt;/p&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;p&gt;首先建立 &lt;code&gt;/usr/local/bin/mydesk&lt;/code&gt; ，然后在里面加入：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;#!/bin/sh
+
+openbox
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;p&gt;然后编辑 &lt;code&gt;xinitrc&lt;/code&gt; ，把原来的桌面环境注释掉，换成&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;exec /usr/local/bin/mydesk
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;p&gt;这样下次启动 &lt;code&gt;X&lt;/code&gt; 的时候，就会启动 &lt;code&gt;Openbox&lt;/code&gt; 了。&lt;/p&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;h2&gt;0x03 安装其他辅助工具&lt;/h2&gt;
+
+&lt;p&gt;如果只安装 &lt;code&gt;Openbox&lt;/code&gt; 的话，桌面上空空如也，连启动程序都不太容易。&lt;/p&gt;
+
+&lt;p&gt;自然会想到需要一些辅助用的程序。&lt;/p&gt;
+
+&lt;p&gt;首先，建议安装 &lt;code&gt;Docky&lt;/code&gt; 。安装方法也很简单，直接 &lt;code&gt;pacman -S docky&lt;/code&gt; 就可以了。&lt;/p&gt;
+
+&lt;p&gt;要让它开机启动的话，编辑 &lt;code&gt;/usr/local/bin/mydesk&lt;/code&gt; ，在 &lt;code&gt;openbox&lt;/code&gt; 这一行前面加入&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; sh ~/.mydesk.conf/.autostart&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;然后建立 &lt;code&gt;~/.mydesk.conf/.autostart&lt;/code&gt; 文件，然后在里面添加：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;#!/bin/sh
+
+docky &amp;amp;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;就可以开机启动 &lt;code&gt;docky&lt;/code&gt; 了。&lt;/p&gt;
+
+&lt;p&gt;桌面背景黑漆漆的是不是很难看？试试 &lt;code&gt;feh&lt;/code&gt; 吧。直接 &lt;code&gt;pacman&lt;/code&gt; 就可以安装。&lt;/p&gt;
+
+&lt;p&gt;在 &lt;code&gt;.autostart&lt;/code&gt; 里加入：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; feh --bg-fill /path/to/your/background/file.jpg&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;就可以设置桌面背景了。&lt;/p&gt;
+
+&lt;p&gt;还想要更多？试试桌面特效 &lt;code&gt;compton&lt;/code&gt; 如何？同样是直接 &lt;code&gt;pacman&lt;/code&gt; 就可以安装了。&lt;/p&gt;
+
+&lt;p&gt;启动的方法是在 &lt;code&gt;.autostart&lt;/code&gt; 里加入：&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt; compton --config ~/.compton.conf &amp;amp;&lt;/code&gt;&lt;/p&gt;
+
+&lt;p&gt;配置 &lt;code&gt;compton&lt;/code&gt; 的方法请自行 &lt;code&gt;google&lt;/code&gt; w！&lt;/p&gt;
+
+&lt;p&gt;这样，基本的桌面环境就已经可以使用了！&lt;/p&gt;
+
+&lt;p&gt;但是有人会问：怎么没有 &lt;code&gt;widget&lt;/code&gt; 啊？都没办法好好连 &lt;code&gt;wifi&lt;/code&gt; 了w！&lt;/p&gt;
+
+&lt;p&gt;嗯……如果可以接受命令行的话，不妨试试 &lt;code&gt;wifi_menu&lt;/code&gt; 或者给 &lt;code&gt;wpa_supplicant&lt;/code&gt; 加 &lt;code&gt;alias&lt;/code&gt; w！&lt;/p&gt;
+
+&lt;p&gt;当然了，我们要优雅的GUI！&lt;/p&gt;
+
+&lt;p&gt;安装 &lt;code&gt;tint2&lt;/code&gt; ！这东西可以在你的屏幕上方显示一行任务栏一样的东西w！&lt;/p&gt;
+
+&lt;p&gt;同样需要在 &lt;code&gt;.autostart&lt;/code&gt; 里加入 &lt;code&gt;tint2 &amp;amp;&lt;/code&gt; 来启动哦！&lt;/p&gt;
+
+&lt;p&gt;网络 &lt;code&gt;widget&lt;/code&gt; 的话，可以使用 &lt;code&gt;nm-applet&lt;/code&gt; w！&lt;/p&gt;
+
+&lt;p&gt;对了对了，还有输入法和锁定屏幕……&lt;/p&gt;
+
+&lt;p&gt;输入法的话 直接在 &lt;code&gt;.autostart&lt;/code&gt; 里加入 &lt;code&gt;fcitx &amp;amp;&lt;/code&gt; 就可以使用输入法了！&lt;/p&gt;
+
+&lt;p&gt;锁定屏幕，可以去试试 &lt;code&gt;i3lock&lt;/code&gt; ，配置教程应该可以在 &lt;code&gt;archlinux wiki&lt;/code&gt; 上找到。&lt;/p&gt;
+
+&lt;p&gt;之后就是编辑 &lt;code&gt;~/.config/openbox/rc.xml&lt;/code&gt; 增加锁定快捷键了。&lt;/p&gt;
+
+&lt;p&gt;&amp;nbsp;&lt;/p&gt;
+
+&lt;h2&gt;0x04 笔记本电脑？&lt;/h2&gt;
+
+&lt;p&gt;也没有什么特别好说的辣w&lt;/p&gt;
+
+&lt;p&gt;就是一个电池状态 &lt;code&gt;widget&lt;/code&gt; 的事情w&lt;/p&gt;
+
+&lt;p&gt;&lt;code&gt;archlinux wiki&lt;/code&gt; 上说的 &lt;code&gt;batterymon&lt;/code&gt; 在 &lt;code&gt;AUR&lt;/code&gt; 上找不到了w&lt;/p&gt;
+
+&lt;p&gt;但是有一个 &lt;code&gt;batterymon-clone&lt;/code&gt; 。&lt;/p&gt;
+
+&lt;p&gt;直接在 &lt;code&gt;AUR&lt;/code&gt; 上安装就好了！&lt;/p&gt;</content><category term="linux"></category><category term="desktop environment"></category><category term="openbox"></category></entry></feed>
