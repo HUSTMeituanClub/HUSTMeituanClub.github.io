@@ -955,7 +955,7 @@
         &lt;span class="n"&gt;rice&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;eat&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
     &lt;span class="o"&gt;}&lt;/span&gt;
 &lt;span class="o"&gt;}&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content><category term="Design Patterns"></category></entry><entry><title>设计模式——创建型模式</title><link href="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html" rel="alternate"></link><published>2017-03-20T12:56:00+08:00</published><updated>2017-03-20T12:56:00+08:00</updated><author><name>Yifeng Tang</name></author><id>tag:None,2017-03-20:/she-ji-mo-shi-chuang-jian-xing-mo-shi.html</id><summary type="html">&lt;h1&gt;Abstract Factory（抽象工厂）&lt;/h1&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="design patterns"></category></entry><entry><title>设计模式——创建型模式</title><link href="/she-ji-mo-shi-chuang-jian-xing-mo-shi.html" rel="alternate"></link><published>2017-03-20T12:56:00+08:00</published><updated>2017-03-20T12:56:00+08:00</updated><author><name>Yifeng Tang</name></author><id>tag:None,2017-03-20:/she-ji-mo-shi-chuang-jian-xing-mo-shi.html</id><summary type="html">&lt;h1&gt;Abstract Factory（抽象工厂）&lt;/h1&gt;
 &lt;h2&gt;目标&lt;/h2&gt;
 &lt;p&gt;提供一个无需指定的类而可以创建一系列相关的对象的接口。&lt;/p&gt;
 &lt;h2&gt;结构&lt;/h2&gt;
@@ -1430,7 +1430,7 @@
         &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;run&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
     &lt;span class="o"&gt;}&lt;/span&gt;
 &lt;span class="o"&gt;}&lt;/span&gt;
-&lt;/pre&gt;&lt;/div&gt;</content><category term="Design Patterns"></category></entry><entry><title>Java泛型中List、List&lt;Object&gt;、List&lt;?&gt;的区别</title><link href="/javafan-xing-zhong-list-listobject-listde-qu-bie.html" rel="alternate"></link><published>2017-02-14T16:30:00+08:00</published><updated>2017-02-14T16:30:00+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-02-14:/javafan-xing-zhong-list-listobject-listde-qu-bie.html</id><summary type="html">&lt;p&gt;Java 1.5中引入了泛型的概念以增加代码的安全性与清晰度，同时为了提供对旧代码的兼容性，让旧代码不经过改动也可以在新版本中运行，Java提供了原生态类型（或称原始类型）。但是实际中在新的代码中已经不应该使用原生态类型。&lt;/p&gt;
+&lt;/pre&gt;&lt;/div&gt;</content><category term="design patterns"></category></entry><entry><title>Java泛型中List、List&lt;Object&gt;、List&lt;?&gt;的区别</title><link href="/javafan-xing-zhong-list-listobject-listde-qu-bie.html" rel="alternate"></link><published>2017-02-14T16:30:00+08:00</published><updated>2017-02-14T16:30:00+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-02-14:/javafan-xing-zhong-list-listobject-listde-qu-bie.html</id><summary type="html">&lt;p&gt;Java 1.5中引入了泛型的概念以增加代码的安全性与清晰度，同时为了提供对旧代码的兼容性，让旧代码不经过改动也可以在新版本中运行，Java提供了原生态类型（或称原始类型）。但是实际中在新的代码中已经不应该使用原生态类型。&lt;/p&gt;
 &lt;p&gt;原生态类型的含义是不带任何实际参数的泛型名称，例如Java 1.5后改为泛型实现的&lt;code&gt;List&amp;lt;E&amp;gt;&lt;/code&gt;，&lt;code&gt;List&lt;/code&gt;就是它的原生态类型，与没有引入泛型之前的类型完全一致。&lt;/p&gt;
 &lt;p&gt;而在虚拟机层面上，是没有泛型这一概念的——所有对象都属于普通类。在编译时，所有的泛型类都会被视为原生态类型。&lt;/p&gt;
 &lt;p&gt;那么为什么不应该使用原生态类型呢？&lt;/p&gt;
@@ -1620,4 +1620,4 @@ where CAP#1 is a fresh type-variable:
 
 &lt;p&gt;上面的1,2两行是完全合法的，如果允许第3行的&lt;code&gt;add&lt;/code&gt;操作，那么会把一个&lt;code&gt;Parent&lt;/code&gt;对象加入到一个实际类型是&lt;code&gt;Child&lt;/code&gt;的&lt;code&gt;List&lt;/code&gt;中，而&lt;code&gt;Parent&lt;/code&gt;is-not-a &lt;code&gt;Child&lt;/code&gt;，这破坏了Java的类型安全，是绝对不允许的。&lt;/p&gt;
 &lt;p&gt;上面是有限制通配符的情况，那么针对&lt;code&gt;List&amp;lt;?&amp;gt;&lt;/code&gt;这样的无限制通配符更是如此。因此，为了保证类型安全，不允许对&lt;code&gt;List&amp;lt;?&amp;gt;&lt;/code&gt;或&lt;code&gt;List&amp;lt;? extends E&amp;gt;&lt;/code&gt;这样的通配符类型进行类似&lt;code&gt;add&lt;/code&gt;的操作。&lt;/p&gt;
-&lt;p&gt;使用泛型方法可以避免这个问题（重申通配符类型并不是泛型方法），使用无限制通配符类型可以取代其他需要表示&lt;strong&gt;包含某一种对象类型的泛型类型&lt;/strong&gt;的情况而不是使用原生态类型&lt;code&gt;List&lt;/code&gt;。&lt;/p&gt;</content><category term="Java"></category></entry></feed>
+&lt;p&gt;使用泛型方法可以避免这个问题（重申通配符类型并不是泛型方法），使用无限制通配符类型可以取代其他需要表示&lt;strong&gt;包含某一种对象类型的泛型类型&lt;/strong&gt;的情况而不是使用原生态类型&lt;code&gt;List&lt;/code&gt;。&lt;/p&gt;</content><category term="java"></category></entry></feed>
