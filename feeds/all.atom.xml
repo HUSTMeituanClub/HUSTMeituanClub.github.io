@@ -1,5 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-05-18T04:37:00+08:00</updated><entry><title>使用openbox配置archlinux桌面环境w</title><link href="/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html" rel="alternate"></link><published>2017-05-18T04:37:00+08:00</published><updated>2017-05-18T04:37:00+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-05-18:/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html</id><summary type="html">&lt;h2&gt;0x01 前言&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-05-19T21:38:57+08:00</updated><entry><title>ArchLinux安装后的必须配置与图形界面安装教程</title><link href="/archlinuxan-zhuang-hou-de-bi-xu-pei-zhi-yu-tu-xing-jie-mian-an-zhuang-jiao-cheng.html" rel="alternate"></link><published>2017-05-19T21:38:57+08:00</published><updated>2017-05-19T21:38:57+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-19:/archlinuxan-zhuang-hou-de-bi-xu-pei-zhi-yu-tu-xing-jie-mian-an-zhuang-jiao-cheng.html</id><summary type="html">&lt;h2&gt;ArchLinux安装后的必须配置&lt;/h2&gt;
+&lt;p&gt;在&lt;a href="http://www.hustmeituan.club/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html"&gt;上一篇教程&lt;/a&gt;中，我们成功地安装了&lt;code&gt;ArchLinux&lt;/code&gt;，这时系统处于一个非常精简的状态，为了日常使用，我们必须进行一些配置、安装一些需要的组件，来扩展我们的系统功能，开源的组件相互协同工作也是&lt;code&gt;Linux&lt;/code&gt;的迷人之处之一。&lt;/p&gt;
+&lt;p&gt;下面的教程部分参考了官方&lt;a href="https://wiki.archlinux.org/index.php/General_recommendations"&gt;General recommendations&lt;/a&gt;。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;h3&gt;连接网络&lt;/h3&gt;
+&lt;p&gt;现在我们是在新安装的系统上进行操作，所以我们要重新联网，我们在之前安装系统时已经提前装好了相关的包。所以现在只要跟之前一样，执行&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wifi-menu
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;按界面提示进行操作就可以了（有线网用户无视这段）。&lt;/p&gt;
+&lt;p&gt;同样可以使用&lt;code&gt;ping&lt;/code&gt;命令来测试是否正常联网。&lt;/p&gt;
+&lt;h3&gt;新建用户&lt;/h3&gt;
+&lt;p&gt;在这之前所有操作都是以&lt;code&gt;root&lt;/code&gt;用户的身份进行的，由于&lt;code&gt;root&lt;/code&gt;的权限过高，日常使用&lt;code&gt;root&lt;/code&gt;用户是不安全的。&lt;code&gt;Linux&lt;/code&gt;为我们提供了强大的用户与组的权限管理，提高了整个系统的安全性。这里我们就来新建一个用户。&lt;/p&gt;
+&lt;p&gt;执行以下命令来创建一个名为&lt;code&gt;username&lt;/code&gt;的用户（请自行替换&lt;code&gt;username&lt;/code&gt;为你的用户名）：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;useradd …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h2&gt;ArchLinux安装后的必须配置&lt;/h2&gt;
+&lt;p&gt;在&lt;a href="http://www.hustmeituan.club/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html"&gt;上一篇教程&lt;/a&gt;中，我们成功地安装了&lt;code&gt;ArchLinux&lt;/code&gt;，这时系统处于一个非常精简的状态，为了日常使用，我们必须进行一些配置、安装一些需要的组件，来扩展我们的系统功能，开源的组件相互协同工作也是&lt;code&gt;Linux&lt;/code&gt;的迷人之处之一。&lt;/p&gt;
+&lt;p&gt;下面的教程部分参考了官方&lt;a href="https://wiki.archlinux.org/index.php/General_recommendations"&gt;General recommendations&lt;/a&gt;。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;h3&gt;连接网络&lt;/h3&gt;
+&lt;p&gt;现在我们是在新安装的系统上进行操作，所以我们要重新联网，我们在之前安装系统时已经提前装好了相关的包。所以现在只要跟之前一样，执行&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wifi-menu
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;按界面提示进行操作就可以了（有线网用户无视这段）。&lt;/p&gt;
+&lt;p&gt;同样可以使用&lt;code&gt;ping&lt;/code&gt;命令来测试是否正常联网。&lt;/p&gt;
+&lt;h3&gt;新建用户&lt;/h3&gt;
+&lt;p&gt;在这之前所有操作都是以&lt;code&gt;root&lt;/code&gt;用户的身份进行的，由于&lt;code&gt;root&lt;/code&gt;的权限过高，日常使用&lt;code&gt;root&lt;/code&gt;用户是不安全的。&lt;code&gt;Linux&lt;/code&gt;为我们提供了强大的用户与组的权限管理，提高了整个系统的安全性。这里我们就来新建一个用户。&lt;/p&gt;
+&lt;p&gt;执行以下命令来创建一个名为&lt;code&gt;username&lt;/code&gt;的用户（请自行替换&lt;code&gt;username&lt;/code&gt;为你的用户名）：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;useradd -m -G wheel username （请自行替换username为你的用户名）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在这里稍微解释一下各参数的含义：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;-m&lt;/code&gt;：在创建时同时在&lt;code&gt;/home&lt;/code&gt;目录下创建一个与用户名同名的文件夹，这个目录就是你的&lt;strong&gt;家目录&lt;/strong&gt;啦！家目录有一个别名是&lt;code&gt;~&lt;/code&gt;，你可以在任何地方使用&lt;code&gt;~&lt;/code&gt;来代替家目录路径。这个神奇的目录将会用于存放你所有的个人资料、配置文件等所有跟系统本身无关的资料。这种设定带来了诸多优点：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;只要家目录不变，你重装系统后只需要重新安装一下软件包（它们一般不存放在家目录），然后所有的配置都会从家目录中读取，完全不用重新设置软件着。&lt;/li&gt;
+&lt;li&gt;你可以在家目录不变的情况下更换你的发行版而不用重新配置你的环境。&lt;/li&gt;
+&lt;li&gt;切换用户后所有的设置会从新的用户的家目录中读取，将不同用户的资料与软件设置等完全隔离。&lt;/li&gt;
+&lt;li&gt;有些著名的配置文件比如&lt;code&gt;vim&lt;/code&gt;的配置文件&lt;code&gt;~/.vimrc&lt;/code&gt;，只要根据自己的使用习惯配置一次， 在另一个&lt;code&gt;Linux&lt;/code&gt;系统下（例如你的服务器）把这个文件复制到家目录下，就可以完全恢复你的配置。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;code&gt;-G wheel&lt;/code&gt;：&lt;code&gt;-G&lt;/code&gt;代表把用户加入一个组，对用户与组的概念感兴趣的同学可以自行查找有关资料学习。后面跟着的&lt;code&gt;wheel&lt;/code&gt;就是加入的组名，至于为什么要加入这个组，后面会提到。&lt;/p&gt;
+&lt;p&gt;当然记得为新用户设置一个密码，执行如下命令：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;passwd username （请自行替换username为你的用户名）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;根据提示输入两次密码就可以了，注意，这是你的用户密码，推荐与之前设置的&lt;code&gt;root&lt;/code&gt;用户的密码不同。&lt;/p&gt;
+&lt;h3&gt;配置sudo&lt;/h3&gt;
+&lt;p&gt;我们已经创建好了一个新的用户，以后我们将会使用这个用户来登录，那么如果我们需要执行一些只有&lt;code&gt;root&lt;/code&gt;用户才能执行的命令（例如修改系统文件、安装软件包）怎么办？当然我们可以通过&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;su
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;命令来切换到&lt;code&gt;root&lt;/code&gt;用户执行命令后再通过&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;exit&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;返回普通用户。&lt;/p&gt;
+&lt;p&gt;但是&lt;code&gt;sudo&lt;/code&gt;为我们提供了一个更快捷的办法，使用&lt;code&gt;sudo&lt;/code&gt;，我们只要在需要&lt;code&gt;root&lt;/code&gt;权权限执行的命令之前加上&lt;code&gt;sudo&lt;/code&gt;就可以了，例如安装软件包：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S something
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面我们就来安装并配置&lt;code&gt;sudo&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;sudo&lt;/code&gt;本身也是一个软件包，所以我们需要通过&lt;code&gt;pacman&lt;/code&gt;来安装：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pacman -S sudo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;接下来我们需要用专门的&lt;code&gt;visudo&lt;/code&gt;命令来编辑&lt;code&gt;sudo&lt;/code&gt;的配置文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;visudo
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实际上就是&lt;code&gt;vim&lt;/code&gt;的操作，使用它是为了对编辑后的文件进行检查防止格式的错误。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/arch20.jpg"&gt;&lt;/p&gt;
+&lt;p&gt;找到&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# %wheel ALL=(ALL)ALL&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这行，去掉之前的&lt;code&gt;#&lt;/code&gt;注释符，保存并退出就可以了。&lt;/p&gt;
+&lt;p&gt;这里的&lt;code&gt;%wheel&lt;/code&gt;就是代表&lt;code&gt;wheel&lt;/code&gt;组，意味着&lt;code&gt;wheel&lt;/code&gt;组中的所有用户都可以使用&lt;code&gt;sudo&lt;/code&gt;命令。&lt;/p&gt;
+&lt;p&gt;当然为了安全使用&lt;code&gt;sudo&lt;/code&gt;命令还是需要输入&lt;strong&gt;当前用户&lt;/strong&gt;的密码的。&lt;/p&gt;
+&lt;p&gt;配置好&lt;code&gt;sudo&lt;/code&gt;以后，我们进行一次重启，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;reboot
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;来重启你的电脑。&lt;/p&gt;
+&lt;p&gt;重启以后输入你&lt;strong&gt;刚创建的用户名与密码&lt;/strong&gt;来登录。&lt;/p&gt;
+&lt;h2&gt;图形界面的安装&lt;/h2&gt;
+&lt;h3&gt;显卡驱动的安装&lt;/h3&gt;
+&lt;p&gt;&lt;img alt="" src="/images/arch21.png"&gt;&lt;/p&gt;
+&lt;p&gt;参照这个表格，安装相应的包，比如你是&lt;code&gt;intel&lt;/code&gt;的集成显卡（绝大多数人的情况），执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S xf86-video-intel
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示：&lt;code&gt;Nvidia&lt;/code&gt;的独显驱动如非必要，建议只装集成显卡的驱动（省电，如果同时装也会默认使用集成显卡），不容易出现冲突问题。相反，如果集成显卡驱动有问题无法装上，可以装独显驱动，具体的版本请到下面的链接查询：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;https://wiki.archlinux.org/index.php/Xorg#Driver_installation&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3&gt;安装Xorg&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Xorg&lt;/code&gt;是&lt;code&gt;Linux&lt;/code&gt;下的一个著名的开源图形服务，我们的桌面环境需要&lt;code&gt;Xorg&lt;/code&gt;的支持。&lt;/p&gt;
+&lt;p&gt;执行如下命令安装&lt;code&gt;Xorg&lt;/code&gt;及相关组件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S xorg-server xorg-apps
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装桌面环境&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Linux&lt;/code&gt;下有很多著名的桌面环境如&lt;code&gt;Xfce&lt;/code&gt;、&lt;code&gt;KDE(Plasma)&lt;/code&gt;、&lt;code&gt;Gnome&lt;/code&gt;、&lt;code&gt;Unity&lt;/code&gt;、&lt;code&gt;Deepin&lt;/code&gt;等等，它们的外观、操作、设计理念等各方面都有所不同， 在它们之间的比较与选择网上有很多的资料可以去查。&lt;/p&gt;
+&lt;p&gt;在这里我们选择笔者使用的&lt;code&gt;Xfce&lt;/code&gt;和非常流行的&lt;code&gt;KDE(Plasma)&lt;/code&gt;作为示范，当然你也可以把它们全部装上换着用……因为&lt;code&gt;Linux&lt;/code&gt;的模块化，这样完全没有问题。&lt;/p&gt;
+&lt;p&gt;更多桌面环境的安装指南请见下面的链接：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;https://wiki.archlinux.org/index.php/Desktop_environment#List_of_desktop_environments&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;安装Xfce&lt;/h4&gt;
+&lt;p&gt;直接安装软件包组（包含了很多软件包）即可：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S xfce4 xfce4-goodies
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;安装KDE(Plasma)&lt;/h4&gt;
+&lt;p&gt;直接安装软件包组（包含了很多软件包）即可：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S plasma kde-applications kde-l10n-zh_cn
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装桌面管理器&lt;/h3&gt;
+&lt;p&gt;安装好了桌面环境包以后，我们需要安装一个图形化的桌面管理器来帮助我们登录并且选择我们使用的桌面环境，这里我推荐使用&lt;code&gt;sddm&lt;/code&gt;。&lt;/p&gt;
+&lt;h4&gt;安装sddm&lt;/h4&gt;
+&lt;p&gt;执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S sddm
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;设置开机启动sddm服务&lt;/h4&gt;
+&lt;p&gt;这里就要介绍一下&lt;code&gt;Arch&lt;/code&gt;下用于管理系统服务的命令&lt;code&gt;systemctl&lt;/code&gt;了，服务的作用就是字面意思，为我们提供特定的服务，比如&lt;code&gt;sddm&lt;/code&gt;就为我们提供了启动&lt;code&gt;xorg&lt;/code&gt;与管理桌面环境的服务。&lt;/p&gt;
+&lt;p&gt;命令的使用并不复杂：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo systemctl start   服务名 （启动一项服务）
+sudo systemctl stop    服务名 （停止一项服务）
+sudo systemctl &lt;span class="nb"&gt;enable&lt;/span&gt;  服务名 （开机启动一项服务）
+sudo systemctl disable 服务名 （取消开机启动一项服务）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;所以这里我们就执行下面命令来设置开机启动&lt;code&gt;sddm&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo systemctl &lt;span class="nb"&gt;enable&lt;/span&gt; sddm
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;提前配置网络&lt;/h3&gt;
+&lt;p&gt;到现在我们已经安装好了桌面环境，但是还有一件事情需要我们提前设置一下。由于我们之前使用的一直都是&lt;code&gt;netctl&lt;/code&gt;这个自带的网络服务，而桌面环境使用的是&lt;code&gt;NetworkManager&lt;/code&gt;这个网络服务，所以我们需要禁用&lt;code&gt;netctl&lt;/code&gt;并启用&lt;code&gt;NetworkManager&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo systemctl disable netctl
+sudo systemctl &lt;span class="nb"&gt;enable&lt;/span&gt; NetworkManager （注意大小写）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同时你可能需要安装工具栏工具来显示网络设置图标（某些桌面环境已经装了，但是为了保险可以再装一下）：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sudo pacman -S network-manager-applet
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这样开机以后我们就可以在图形界面下配置我们的网络啦。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;重新启动后，如果你看到桌面管理器的界面，选择你需要的桌面环境并输入用户名与密码登陆后，看到了熟悉而又陌生的桌面，那么恭喜你，你已经完成了桌面环境的安装！&lt;/p&gt;
+&lt;h2&gt;你可能需要知道的操作与软件包推荐&lt;/h2&gt;
+&lt;p&gt;到这里，&lt;code&gt;ArchLinux&lt;/code&gt;的安装与基本配置教程已经结束了，笔者在编写过程中基本凭着多次安装的经验与这次安装的记录完成，难免会有疏漏与不正确的地方，还请大家通过下面的评论或邮件(viseator@gmail.com)提出意见与建议。也欢迎你们与我交流安装的问题。&lt;/p&gt;
+&lt;p&gt;下面一篇文章将会介绍一些实用的配置（如中文输入法的安装）与软件包等。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry><entry><title>使用openbox配置archlinux桌面环境w</title><link href="/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html" rel="alternate"></link><published>2017-05-18T04:37:00+08:00</published><updated>2017-05-18T04:37:00+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-05-18:/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html</id><summary type="html">&lt;h2&gt;0x01 前言&lt;/h2&gt;
 
 &lt;p&gt;试用了一些 &lt;code&gt;archlinux wiki&lt;/code&gt; 上推荐的桌面环境，发现并没有什么我喜欢的。&lt;/p&gt;
 
@@ -137,7 +311,7 @@ docky &amp;amp;
 
 &lt;p&gt;但是有一个 &lt;code&gt;batterymon-clone&lt;/code&gt; 。&lt;/p&gt;
 
-&lt;p&gt;直接在 &lt;code&gt;AUR&lt;/code&gt; 上安装就好了！&lt;/p&gt;</content><category term="linux"></category><category term="desktop environment"></category><category term="openbox"></category></entry><entry><title>用官方Wiki的方式安装ArchLinux</title><link href="/yong-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html" rel="alternate"></link><published>2017-05-17T23:26:29+08:00</published><updated>2017-05-17T23:26:29+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-17:/yong-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;直接在 &lt;code&gt;AUR&lt;/code&gt; 上安装就好了！&lt;/p&gt;</content><category term="linux"></category><category term="desktop environment"></category><category term="openbox"></category></entry><entry><title>以官方Wiki的方式安装ArchLinux</title><link href="/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html" rel="alternate"></link><published>2017-05-17T23:26:29+08:00</published><updated>2017-05-17T23:26:29+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-17:/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;这可能是你能找到的最适合你的中文&lt;code&gt;ArchLinux&lt;/code&gt;安装教程。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -613,7 +787,7 @@ reboot
 &lt;p&gt;输入&lt;code&gt;root&lt;/code&gt;，再输入之前设置的密码，显示出命令提示符，恭喜你，你已经成功安装&lt;code&gt;ArchLinux&lt;/code&gt;！&lt;/p&gt;
 &lt;h2&gt;安装后配置&lt;/h2&gt;
 &lt;p&gt;虽然系统安装好了，但是还没有进行基本配置和安装图形界面，所以接下来我们要进行一些必须的配置和图形界面的安装。&lt;/p&gt;
-&lt;p&gt;请见下一篇文章。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry><entry><title>NFC与门禁卡初探</title><link href="/nfcyu-men-jin-qia-chu-tan.html" rel="alternate"></link><published>2017-05-17T11:36:21+08:00</published><updated>2017-05-17T11:36:21+08:00</updated><author><name>Lichen Zhang</name></author><id>tag:None,2017-05-17:/nfcyu-men-jin-qia-chu-tan.html</id><summary type="html">&lt;h1&gt;前言&lt;/h1&gt;
+&lt;p&gt;请见下一篇文章&lt;a href="http://www.viseator.com/2017/05/19/arch_setup/"&gt;ArchLinux安装后的必须配置与图形界面安装教程&lt;/a&gt;。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry><entry><title>NFC与门禁卡初探</title><link href="/nfcyu-men-jin-qia-chu-tan.html" rel="alternate"></link><published>2017-05-17T11:36:21+08:00</published><updated>2017-05-17T11:36:21+08:00</updated><author><name>Lichen Zhang</name></author><id>tag:None,2017-05-17:/nfcyu-men-jin-qia-chu-tan.html</id><summary type="html">&lt;h1&gt;前言&lt;/h1&gt;
 &lt;p&gt;开学之后，学校寝室和启明学院都开始使用了以校园卡为载体的门禁服务，只有刷指定人员的校园卡才能进入。我对其原理产生了好奇，就趁机进行了一些研究。&lt;/p&gt;
 &lt;h1&gt;了解NFC&lt;/h1&gt;
 &lt;p&gt;NFC，near field communication(近场通信)，是一种短距离的高频无线通信技术，允许电子设备之间进行非接触式点对点数据传输，在十厘米内交换数据。2004年，诺基亚、飞利浦以及索尼三家公司建立了NFC forum，成为了NFC的开端。&lt;/p&gt;
