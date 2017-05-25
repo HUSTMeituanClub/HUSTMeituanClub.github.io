@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>Android Google官方MVP架构分析</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="华科美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/android.atom.xml" type="application/atom+xml" rel="alternate" title="华科美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="写在前面 关于MVP模式的基本介绍与优缺点可以参见下面这篇文章： https://segmentfault.com/a/1190000003927200 本文的重点是对Google官方写的一个MVP架构实现的Demo进行简单的分析来看看谷歌实现的Android...">
+
+        <meta name="author" content="Di Wu">
+
+        <meta name="tags" content="android">
+        <meta name="tags" content="MVP">
+        <meta name="tags" content="architecture">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="华科美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/di-wu.html">
+	<meta property="og:url" content="/android-googleguan-fang-mvpjia-gou-fen-xi.html">
+	<meta property="og:title" content="Android Google官方MVP架构分析">
+	<meta property="article:published_time" content="2017-05-25 20:54:08+08:00">
+            <meta property="og:description" content="写在前面 关于MVP模式的基本介绍与优缺点可以参见下面这篇文章： https://segmentfault.com/a/1190000003927200 本文的重点是对Google官方写的一个MVP架构实现的Demo进行简单的分析来看看谷歌实现的Android...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">华科美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/categories.html">分类</a></li>
+                        <li><a href="/archives.html">归档</a></li>
+                        <li><a href="/authors.html">作者</a></li>
+                        <li><a href="/tags.html">标签</a></li>
+                        <li><a href="/pages/about/index.html">关于</a></li>
+                        <li><a href="/pages/friendlinks/index.html">友链</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>Android Google官方MVP架构分析</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/di-wu.html">Di Wu</a>
+                             on 2017年 5月25日 周四
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h2>写在前面</h2>
+<p>关于MVP模式的基本介绍与优缺点可以参见下面这篇文章：</p>
+<blockquote>
+<p>https://segmentfault.com/a/1190000003927200</p>
+</blockquote>
+<p>本文的重点是对Google官方写的一个MVP架构实现的Demo进行简单的分析来看看谷歌实现的Android MVP架构是怎么搭建的。</p>
+<p>谷歌官方的架构Demo地址：</p>
+<blockquote>
+<p>https://github.com/googlesamples/android-architecture</p>
+</blockquote>
+<p>本文所讲解的为：</p>
+<blockquote>
+<p>https://github.com/googlesamples/android-architecture/tree/todo-mvp</p>
+</blockquote>
+<p>需要读者参照源码查看本文。</p>
+<p>我将这个todo应用的框架提炼出来（同时也意味着丢失了很多的实现细节，但可以将架构看得更加清晰），制作了一张伪<code>UML</code>图（为了简化，没有遵循<code>UML</code>的规范），下面我们参照着表中的内容进行分析：</p>
+<!--more-->
+
+<p><img src="/images/android_mvp_uml.jpg"></p>
+<h2>BaseView与BasePresenter</h2>
+<p>可以看到它们是独立于包外的两个基础接口，之后的所有<code>View</code>与<code>Presenter</code>接口都将继承它们，所以应该将一些通用的方法写在这两个<code>Base</code>接口中。</p>
+<h2>tasks包</h2>
+<p>整个app中<code>tasks</code>、<code>taskdetail</code>、<code>statistics</code>三个包对应着的就是三个<code>Activity</code>，可以看到每一个包中包含了对应的<code>Activity</code>、<code>View</code> 、<code>Presenter</code>与<code>Contract</code>类和其他工具组件，通过这样的方式构成了应用的一个组成单元（每一个<code>Activity</code>与其对应的<code>View</code>和实现逻辑的<code>Presenter</code>）。</p>
+<p>图中我只展现了<code>tasks</code>这一个包，其他的包内部的结构也是一样的。</p>
+<h3>TasksContract接口</h3>
+<p><code>TasksContract</code>接口包含两个接口，分别是继承了<code>BaseView</code>与<code>BasePresenter</code>的<code>View</code>与<code>Presenter</code>。</p>
+<p>我们可以将<code>Contract</code>接口视为管理<code>View</code>与<code>Presenter</code>需要实现的方法的汇总接口，这些方法在实例类中实际上都是通过接口来进行调用的，这样就可以避免依赖于某一个特定类的方法来进行处理，从而可以有多种实现<code>View</code>与<code>Presenter</code>的方式，便于进行单元测试（可以看到源代码中就有很多单元测试的内容，但是在这篇文章中我们将它们忽略）。</p>
+<p>一切与更新UI有关的逻辑都应该放在<code>TasksContract.View</code>接口中。</p>
+<p>一切与业务有关的逻辑都应该放在<code>TaskContract.Presenter</code>接口中。</p>
+<h3>TasksFragment与TasksPresenter</h3>
+<p><code>TasksFragment</code>与<code>TaskPresenter</code>分别是<code>TasksContract.View</code>与<code>TaskContract.Presenter</code>接口的实例。</p>
+<p><code>TaskActivity</code>在初始化时会先创建<code>TasksFragment</code>实例，再将其作为构造参数传递给<code>TaskPresenter</code>，<code>TaskPresenter</code>在构造方法中又会调用<code>TasksFragment</code>的<code>setPresenter</code>方法将自身传递给<code>TasksFragment</code>。这样<code>Presenter</code>与<code>View</code>就分别存有了一份对方的引用。</p>
+<p>构造完成后，当用户与UI进行交互，<code>View</code>一律调用<code>Presenter</code>的相关方法来进行交互事件的处理或请求数据更新。如果有新的内容需要呈现在UI上，则由<code>Presenter</code>调用<code>View</code>的相关方法来进行更新。<code>Presenter</code>则负责与上一级的数据存储池进行交互来更新数据或是获取新的数据。</p>
+<p>可以看到<code>Presenter</code>充当了一个“中介”，<code>View</code>的所有请求都将交由<code>Presenter</code>进行处理，而<code>View</code>现在需要做的只有提供相应方法供<code>Presenter</code>进行调用，避免了将大量业务逻辑写在<code>View</code>中。同时也避免了<code>View</code>与数据的直接交互，而是由<code>Presenter</code>“单线操作”，降低了耦合度。</p>
+<h2>Data包</h2>
+<h3>Task</h3>
+<p>这里的<code>Task</code>是一个<a href="https://en.wikipedia.org/wiki/Plain_old_Java_object"><code>POJO</code></a>类，用于表示储存的数据。</p>
+<h3>source包</h3>
+<h4>TaskDataSource接口</h4>
+<p><code>TaskDataSource</code>接口定义了所有可以的用于操作数据的对象的方法，换句话说，无论数据的来源是什么，我们都可以通过调用实现了这个接口的对象的方法来操纵数据。</p>
+<h4>GetTaskCallback与LoadTasksCallback</h4>
+<p>注意到用于获取数据的方法的参数都利用了<code>callback</code>进行回调来传递数据。这样做主要因为数据的获取有可能是异步的，使用回调机制可以避免线程因为等待数据而阻塞。</p>
+<h4>local包与remote包</h4>
+<p>这两个包分别存放着一个实现了<code>TaskDataSource</code>接口的类，他们就代表了从本地缓存获取数据与从远端获取数据。当然与获取数据有关的其他类也应该放在这个包下。</p>
+<h4>TaskRepository</h4>
+<p>有了从本地与远端获取数据的类，那么就应该有一个类对它们进行管理，我们希望的是有本地缓存时读取本地缓存，没有时就从远端的获取数据。在更为复杂的情况下，我们需要处理来自远端的请求并与本地的数据进行同步。</p>
+<p><code>TaskRepository</code>就是用于管理所有的这些数据来源并统一成一个<code>TaskDataSource</code>暴露给<code>Presenter</code>来操作数据，而这些数据管理逻辑就被隐藏在了<code>TaskRepository</code>中。</p>
+<p>值得注意的是，源码中在<code>TaskRepository</code>中还实现了一个内存缓存，可以避免从其他两个低速来源中获取数据。</p>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/android.html">android</a>, <a href="/tag/mvp.html">MVP</a>, <a href="/tag/architecture.html">architecture</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

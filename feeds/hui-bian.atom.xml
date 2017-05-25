@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>美团点评技术俱乐部 - 汇编</title><link href="/" rel="alternate"></link><link href="/feeds/hui-bian.atom.xml" rel="self"></link><id>/</id><updated>2017-03-10T10:35:37+08:00</updated><entry><title>汇编语言综合研究</title><link href="/hui-bian-yu-yan-zong-he-yan-jiu.html" rel="alternate"></link><published>2017-03-10T10:35:37+08:00</published><updated>2017-03-10T10:35:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-10:/hui-bian-yu-yan-zong-he-yan-jiu.html</id><summary type="html">&lt;h2&gt;研究试验1 搭建一个精简的C语言开发环境&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部 - 汇编</title><link href="/" rel="alternate"></link><link href="/feeds/hui-bian.atom.xml" rel="self"></link><id>/</id><updated>2017-03-10T10:35:37+08:00</updated><entry><title>汇编语言综合研究</title><link href="/hui-bian-yu-yan-zong-he-yan-jiu.html" rel="alternate"></link><published>2017-03-10T10:35:37+08:00</published><updated>2017-03-10T10:35:37+08:00</updated><author><name>Zhihao Chen</name></author><id>tag:None,2017-03-10:/hui-bian-yu-yan-zong-he-yan-jiu.html</id><summary type="html">&lt;h2&gt;研究试验1 搭建一个精简的C语言开发环境&lt;/h2&gt;
 &lt;p&gt;TC进行连接需要如下的文件：&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;C0S.OBJ&lt;/li&gt;
