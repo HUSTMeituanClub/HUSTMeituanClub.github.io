@@ -12,10 +12,16 @@
 
 &lt;p&gt;按界面提示进行操作就可以了（有线网用户无视这段）。&lt;/p&gt;
 &lt;p&gt;同样可以使用&lt;code&gt;ping&lt;/code&gt;命令来测试是否正常联网。&lt;/p&gt;
-&lt;h3&gt;新建用户&lt;/h3&gt;
-&lt;p&gt;在这之前所有操作都是以&lt;code&gt;root&lt;/code&gt;用户的身份进行的，由于&lt;code&gt;root&lt;/code&gt;的权限过高，日常使用&lt;code&gt;root&lt;/code&gt;用户是不安全的。&lt;code&gt;Linux&lt;/code&gt;为我们提供了强大的用户与组的权限管理，提高了整个系统的安全性。这里我们就来新建一个用户。&lt;/p&gt;
-&lt;p&gt;执行以下命令来创建一个名为&lt;code&gt;username&lt;/code&gt;的用户（请自行替换&lt;code&gt;username&lt;/code&gt;为你的用户名）：&lt;/p&gt;
-&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;useradd …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h2&gt;ArchLinux安装后的必须配置&lt;/h2&gt;
+&lt;h3&gt;创建交换文件&lt;/h3&gt;
+&lt;p&gt;交换文件可以在物理内存不足的时候将部分内存暂存到交换文件中，避免系统由于内存不足而完全停止工作。&lt;/p&gt;
+&lt;p&gt;之前我们通常采用单独一个分区的方式作为交换分区，现在更推荐采用交换文件的方式，更便于我们的管理。&lt;/p&gt;
+&lt;p&gt;分配一块空间用于交换文件，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;fallocate -l 512M /swapfile （请将512M换成需要的大小，只能以M或G为单位）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;交换文件的大小可以自己决定，推荐4G以下的物理内存，交换文件与物理内存一致，4G以上的物理内存，交换文件4-8G。&lt;/p&gt;
+&lt;p&gt;更改权限，执行 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;ArchLinux安装后的必须配置&lt;/h2&gt;
 &lt;p&gt;在&lt;a href="http://www.hustmeituan.club/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html"&gt;上一篇教程&lt;/a&gt;中，我们成功地安装了&lt;code&gt;ArchLinux&lt;/code&gt;，这时系统处于一个非常精简的状态，为了日常使用，我们必须进行一些配置、安装一些需要的组件，来扩展我们的系统功能，开源的组件相互协同工作也是&lt;code&gt;Linux&lt;/code&gt;的迷人之处之一。&lt;/p&gt;
 &lt;p&gt;下面的教程部分参考了官方&lt;a href="https://wiki.archlinux.org/index.php/General_recommendations"&gt;General recommendations&lt;/a&gt;。&lt;/p&gt;
 &lt;!--more--&gt;
@@ -28,6 +34,40 @@
 
 &lt;p&gt;按界面提示进行操作就可以了（有线网用户无视这段）。&lt;/p&gt;
 &lt;p&gt;同样可以使用&lt;code&gt;ping&lt;/code&gt;命令来测试是否正常联网。&lt;/p&gt;
+&lt;h3&gt;创建交换文件&lt;/h3&gt;
+&lt;p&gt;交换文件可以在物理内存不足的时候将部分内存暂存到交换文件中，避免系统由于内存不足而完全停止工作。&lt;/p&gt;
+&lt;p&gt;之前我们通常采用单独一个分区的方式作为交换分区，现在更推荐采用交换文件的方式，更便于我们的管理。&lt;/p&gt;
+&lt;p&gt;分配一块空间用于交换文件，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;fallocate -l 512M /swapfile （请将512M换成需要的大小，只能以M或G为单位）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;交换文件的大小可以自己决定，推荐4G以下的物理内存，交换文件与物理内存一致，4G以上的物理内存，交换文件4-8G。&lt;/p&gt;
+&lt;p&gt;更改权限，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;chmod &lt;span class="m"&gt;600&lt;/span&gt; /swapfile
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;设置交换文件，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkswap /swapfile
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;启用交换文件，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;swapon /swapfile
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;最后我们需要编辑&lt;code&gt;/etc/fstab&lt;/code&gt;为交换文件设置一个入口，使用&lt;code&gt;vim&lt;/code&gt;打开文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;vim /etc/fstab
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;strong&gt;注意编辑&lt;code&gt;fstab&lt;/code&gt;文件的时候要格外注意不要修改之前的内容，直接在最后新起一行加入以下内容&lt;/strong&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;/swapfile none swap defaults &lt;span class="m"&gt;0&lt;/span&gt; &lt;span class="m"&gt;0&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;h3&gt;新建用户&lt;/h3&gt;
 &lt;p&gt;在这之前所有操作都是以&lt;code&gt;root&lt;/code&gt;用户的身份进行的，由于&lt;code&gt;root&lt;/code&gt;的权限过高，日常使用&lt;code&gt;root&lt;/code&gt;用户是不安全的。&lt;code&gt;Linux&lt;/code&gt;为我们提供了强大的用户与组的权限管理，提高了整个系统的安全性。这里我们就来新建一个用户。&lt;/p&gt;
 &lt;p&gt;执行以下命令来创建一个名为&lt;code&gt;username&lt;/code&gt;的用户（请自行替换&lt;code&gt;username&lt;/code&gt;为你的用户名）：&lt;/p&gt;
@@ -350,46 +390,42 @@ docky &amp;amp;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;如果是&lt;code&gt;Linux&lt;/code&gt;系统下制作安装介质，推荐使用&lt;code&gt;dd&lt;/code&gt;命令，教程：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;http://blog.topspeedsnail.com/archives/404&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;如果是&lt;code&gt;windows&lt;/code&gt;系统下制作安装介质，推荐使用&lt;code&gt;usbwriter&lt;/code&gt;这款轻量级的工具，下载链接：&lt;/p&gt;
-&lt;blockquote&gt;
-&lt;p&gt;https://sourceforge.net/projects/usbwriter/&lt;/p&gt;
-&lt;/blockquote&gt;
-&lt;/li&gt;
+&lt;li&gt;如果是&lt;code&gt;Linux&lt;/code&gt;系统下制作安装介质，推荐使用&lt;code&gt;dd&lt;/code&gt;命令，教程：&lt;/li&gt;
 &lt;/ul&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;blockquote&gt;
+&lt;p&gt;http://blog.topspeedsnail.com/archives/404&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;如果是&lt;code&gt;windows&lt;/code&gt;系统下制作安装介质，推荐使用&lt;code&gt;usbwriter&lt;/code&gt;这款轻量级的工具，下载链接：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;https://sourceforge.net/projects/usbwriter/&lt;/p&gt;
+&lt;/blockquote&gt;
 &lt;h4&gt;磁盘准备&lt;/h4&gt;
 &lt;p&gt;我们需要有一块空闲的磁盘区域来进行安装，这里的空闲指的是&lt;strong&gt;没有被分区&lt;/strong&gt;的空间。下面来介绍如何准备这块空间。&lt;/p&gt;
 &lt;ul&gt;
 &lt;li&gt;
 &lt;p&gt;在&lt;code&gt;windows&lt;/code&gt;下空出一块分区来安装：利用&lt;code&gt;windows&lt;/code&gt;自带的磁盘管理工具就可以：&lt;/p&gt;
-&lt;ol&gt;
+&lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;右击&lt;code&gt;windows&lt;/code&gt;图标，在弹出菜单中选择磁盘管理（其他版本的&lt;code&gt;windows&lt;/code&gt;请自行找到打开磁盘管理的方式）：&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch01.jpeg"&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;右击想要删除的分区，选择删除卷（注意这步之后这个分区的所有数据将会丢失）：&lt;/p&gt;
-&lt;p&gt;&lt;img alt="" src="/images/arch02.jpeg"&gt;&lt;/p&gt;
-&lt;/li&gt;
+&lt;ol&gt;
+&lt;li&gt;右击想要删除的分区，选择删除卷（注意这步之后这个分区的所有数据将会丢失）：&lt;/li&gt;
 &lt;/ol&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;在&lt;code&gt;linux&lt;/code&gt;下分出一块区域安装：使用&lt;code&gt;fdisk&lt;/code&gt;进行，教程请见链接中的删除分区：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/arch02.jpeg"&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在&lt;code&gt;linux&lt;/code&gt;下分出一块区域安装：使用&lt;code&gt;fdisk&lt;/code&gt;进行，教程请见链接中的删除分区：&lt;/li&gt;
+&lt;/ul&gt;
 &lt;blockquote&gt;
 &lt;p&gt;http://www.liusuping.com/ubuntu-linux/linux-fdisk-disk.html&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;空闲的磁盘（新磁盘）：不需要进行任何操作。&lt;/p&gt;
-&lt;/li&gt;
+&lt;ul&gt;
+&lt;li&gt;空闲的磁盘（新磁盘）：不需要进行任何操作。&lt;/li&gt;
 &lt;/ul&gt;
 &lt;h3&gt;U盘安装&lt;/h3&gt;
 &lt;p&gt;下面的过程实际上都在刚刚准备好的U盘启动介质上的&lt;code&gt;Linux&lt;/code&gt;系统下进行，所以&lt;strong&gt;启动时都应该选择U盘&lt;/strong&gt;。&lt;/p&gt;
@@ -402,22 +438,20 @@ docky &amp;amp;
 &lt;p&gt;一般来说现在的主板都可以不用进入BIOS而快速地切换启动顺序，只要找到相应的快捷键就可以了。&lt;/p&gt;
 &lt;h4&gt;进入U盘下的Linux系统&lt;/h4&gt;
 &lt;ol&gt;
-&lt;li&gt;
-&lt;p&gt;按上一步设置好启动顺序，启动之后会看到如下界面：&lt;/p&gt;
+&lt;li&gt;按上一步设置好启动顺序，启动之后会看到如下界面：&lt;/li&gt;
+&lt;/ol&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch03.jpeg"&gt;&lt;/p&gt;
 &lt;p&gt;如果直接进入&lt;code&gt;windows&lt;/code&gt;，请检查启动顺序是否设置成功，U盘是否在制作启动介质时成功写入。&lt;/p&gt;
 &lt;p&gt;如果没有看到这个界面，请检查U盘是否制作成功，如果多次遇到问题可以考虑换一个U盘。&lt;/p&gt;
 &lt;p&gt;选择第一个选项。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;这时&lt;code&gt;Arch&lt;/code&gt;开始加载，你将会看到屏幕显示如下内容：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;这时&lt;code&gt;Arch&lt;/code&gt;开始加载，你将会看到屏幕显示如下内容：&lt;/li&gt;
+&lt;/ol&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch04.jpeg"&gt;&lt;/p&gt;
 &lt;p&gt;加载完成后你将会进入一个有命令提示符的界面：&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch05.jpeg"&gt;&lt;/p&gt;
 &lt;p&gt;如果出现&lt;code&gt;FAIL&lt;/code&gt;或是其他错误信息导致无法启动请自行搜索错误信息来获得解决方法。&lt;/p&gt;
 &lt;p&gt;这就是&lt;code&gt;Linux&lt;/code&gt;的终端界面了，接下来我们将通过在这个界面执行一系列命令来将&lt;code&gt;Arch&lt;/code&gt;安装到我们的磁盘上。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ol&gt;
 &lt;hr&gt;
 &lt;p&gt;下面进行的过程是按照官方&lt;a href="https://wiki.archlinux.org/index.php/installation_guide"&gt;Installation guide&lt;/a&gt;为依据进行的，出现的任何问题都可以到链接中的相应部分查找原文找到解决方式。&lt;/p&gt;
 &lt;h4&gt;检查引导方式&lt;/h4&gt;
@@ -449,27 +483,29 @@ docky &amp;amp;
 &lt;h4&gt;联网&lt;/h4&gt;
 &lt;p&gt;&lt;code&gt;arch&lt;/code&gt;并不能离线安装，因为我们需要联网来下载需要的组件，所以我们首先要连接网络。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;如果你是有线网并且路由器支持DHCP的话插上网线后应该已经是联网状态了，可以执行以下命令来进行判断：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-ping www.baidu.com&lt;/code&gt;&lt;/p&gt;
+&lt;li&gt;如果你是有线网并且路由器支持DHCP的话插上网线后应该已经是联网状态了，可以执行以下命令来进行判断：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ping www.baidu.com
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;如果可以看到类似下面的内容就说明连上了网络：&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch05.jpg"&gt;&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;再次提示用快捷键Ctrl-C可以终止当前正在执行的命令&lt;/p&gt;
 &lt;/blockquote&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;如果你是无线网，请执行以下命令：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-wifi-menu&lt;/code&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如果你是无线网，请执行以下命令：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;wifi-menu
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;这是一个实用的命令行下联网工具，有字符形式的图形化界面，利用它可以方便地联网，如果它没能起作用，需要进入以下页面查找解决方式：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;https://wiki.archlinux.org/index.php/Wireless_network_configuration&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;连接以后同样可以通过上面的&lt;code&gt;ping&lt;/code&gt;命令来进行测试。&lt;/p&gt;
-&lt;/li&gt;
-&lt;/ul&gt;
 &lt;h4&gt;更新系统时间&lt;/h4&gt;
 &lt;p&gt;执行如下命令：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;timedatectl set-ntp &lt;span class="nb"&gt;true&lt;/span&gt;
@@ -523,10 +559,12 @@ wifi-menu&lt;/code&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;输入以下命令来格式化刚刚创建的引导分区：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-mkfs.fat -F32 /dev/sdxY （请将的sdxY替换为刚创建的分区）&lt;/code&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkfs.fat -F32 /dev/sdxY （请将的sdxY替换为刚创建的分区）
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;现在引导分区就创建好了。&lt;/p&gt;
 &lt;h5&gt;创建根分区&lt;/h5&gt;
 &lt;p&gt;输入命令：&lt;/p&gt;
@@ -549,10 +587,12 @@ mkfs.fat -F32 /dev/sdxY （请将的sdxY替换为刚创建的分区）&lt;/code&
 &lt;/li&gt;
 &lt;li&gt;
 &lt;p&gt;输入以下命令来格式化刚刚创建的根分区：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-mkfs.ext4 /dev/sdxY （请将的sdxY替换为刚创建的分区）&lt;/code&gt;&lt;/p&gt;
 &lt;/li&gt;
 &lt;/ol&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkfs.ext4 /dev/sdxY （请将的sdxY替换为刚创建的分区）
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;这是我的分区过程供参考：&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch07.jpg"&gt;&lt;/p&gt;
 &lt;p&gt;&lt;img alt="" src="/images/arch08.jpg"&gt;&lt;/p&gt;
@@ -565,7 +605,7 @@ mkfs.ext4 /dev/sdxY （请将的sdxY替换为刚创建的分区）&lt;/code&gt;&
 &lt;hr&gt;
 &lt;p&gt;&lt;strong&gt;如果你是EFI/GPT引导方式&lt;/strong&gt;，执行以下命令创建/boot文件夹并将引导分区挂载到上面。&lt;strong&gt;BIOS/MBR引导方式无需进行这步。&lt;/strong&gt;&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;mkdir /mnt/boot
-mkdir /dev/sdxY /mnt/boot （请将sdxY替换为之前创建或是已经存在的引导分区）
+mount /dev/sdxY /mnt/boot （请将sdxY替换为之前创建或是已经存在的引导分区）
 &lt;/pre&gt;&lt;/div&gt;
 
 
@@ -725,53 +765,61 @@ hwclock --systohc
 &lt;p&gt;经常听说很多人因为引导问题导致系统安装失败，多数是因为教程没有统一或是过时的教程引起的，这里只要按照步骤来其实是不难的。&lt;/p&gt;
 &lt;p&gt;这里我们安装最流行的&lt;code&gt;Grub2&lt;/code&gt;。&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;首先安装&lt;code&gt;os-prober&lt;/code&gt;这个包，它可以配合&lt;code&gt;Grub&lt;/code&gt;检测已经存在的系统，自动设置启动选项。&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-pacman -S os-prober&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;首先安装&lt;code&gt;os-prober&lt;/code&gt;这个包，它可以配合&lt;code&gt;Grub&lt;/code&gt;检测已经存在的系统，自动设置启动选项。&lt;/li&gt;
 &lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pacman -S os-prober
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;hr&gt;
 &lt;p&gt;&lt;strong&gt;如果为BIOS/MBR引导方式：&lt;/strong&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;安装&lt;code&gt;grub&lt;/code&gt;包：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-pacman -S grub&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;部署&lt;code&gt;grub&lt;/code&gt;：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-grub-install --target=i386-pc /dev/sdx （将sdx换成你安装的硬盘）&lt;/code&gt;&lt;/p&gt;
-&lt;p&gt;注意这里的&lt;code&gt;sdx&lt;/code&gt;应该为硬盘（例如&lt;code&gt;/dev/sda&lt;/code&gt;），&lt;strong&gt;而不是&lt;/strong&gt;形如&lt;code&gt;/dev/sda1&lt;/code&gt;这样的分区。&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;生成配置文件：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-grub-mkconfig -o /boot/grub/grub.cfg&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;安装&lt;code&gt;grub&lt;/code&gt;包：&lt;/li&gt;
 &lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pacman -S grub
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;部署&lt;code&gt;grub&lt;/code&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;grub-install --target&lt;span class="o"&gt;=&lt;/span&gt;i386-pc /dev/sdx （将sdx换成你安装的硬盘）
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;注意这里的&lt;code&gt;sdx&lt;/code&gt;应该为硬盘（例如&lt;code&gt;/dev/sda&lt;/code&gt;），&lt;strong&gt;而不是&lt;/strong&gt;形如&lt;code&gt;/dev/sda1&lt;/code&gt;这样的分区。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;生成配置文件：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;grub-mkconfig -o /boot/grub/grub.cfg
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;&lt;img alt="" src="/images/arch18.jpg"&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;如果你没有看到如图所示的提示信息，请仔细检查是否正确完成上面的过程。&lt;/strong&gt;&lt;/p&gt;
 &lt;hr&gt;
 &lt;p&gt;&lt;strong&gt;如果为EFI/GPT引导方式：&lt;/strong&gt;&lt;/p&gt;
 &lt;ul&gt;
-&lt;li&gt;
-&lt;p&gt;安装&lt;code&gt;grub&lt;/code&gt;与&lt;code&gt;efibootmgr&lt;/code&gt;两个包：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-pacman -S grub efibootmgr&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;部署&lt;code&gt;grub&lt;/code&gt;：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
-&lt;li&gt;
-&lt;p&gt;生成配置文件：&lt;/p&gt;
-&lt;p&gt;&lt;code&gt;bash
-grub-mkconfig -o /boot/grub/grub.cfg&lt;/code&gt;&lt;/p&gt;
-&lt;/li&gt;
+&lt;li&gt;安装&lt;code&gt;grub&lt;/code&gt;与&lt;code&gt;efibootmgr&lt;/code&gt;两个包：&lt;/li&gt;
 &lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;pacman -S grub efibootmgr
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;部署&lt;code&gt;grub&lt;/code&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;grub-install --target&lt;span class="o"&gt;=&lt;/span&gt;x86_64-efi --efi-directory&lt;span class="o"&gt;=&lt;/span&gt;/boot --bootloader-id&lt;span class="o"&gt;=&lt;/span&gt;grub
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;ul&gt;
+&lt;li&gt;生成配置文件：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;grub-mkconfig -o /boot/grub/grub.cfg
+&lt;/pre&gt;&lt;/div&gt;
+
+
 &lt;p&gt;&lt;strong&gt;提示信息应与上面的图类似，如果你发现错误，请仔细检查是否正确完成上面的过程。&lt;/strong&gt;&lt;/p&gt;
 &lt;hr&gt;
 &lt;p&gt;接下来，你需要进行重启来启动已经安装好的系统，执行如下命令：&lt;/p&gt;
@@ -787,4 +835,4 @@ reboot
 &lt;p&gt;输入&lt;code&gt;root&lt;/code&gt;，再输入之前设置的密码，显示出命令提示符，恭喜你，你已经成功安装&lt;code&gt;ArchLinux&lt;/code&gt;！&lt;/p&gt;
 &lt;h2&gt;安装后配置&lt;/h2&gt;
 &lt;p&gt;虽然系统安装好了，但是还没有进行基本配置和安装图形界面，所以接下来我们要进行一些必须的配置和图形界面的安装。&lt;/p&gt;
-&lt;p&gt;请见下一篇文章&lt;a href="http://www.viseator.com/2017/05/19/arch_setup/"&gt;ArchLinux安装后的必须配置与图形界面安装教程&lt;/a&gt;。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry></feed>
+&lt;p&gt;请见下一篇文章：&lt;a href="http://www.hustmeituan.club/archlinuxan-zhuang-hou-de-bi-xu-pei-zhi-yu-tu-xing-jie-mian-an-zhuang-jiao-cheng.html"&gt;ArchLinux安装后的必须配置与图形界面安装教程&lt;/a&gt;。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry></feed>

@@ -140,46 +140,42 @@
 </li>
 <li>
 <ul>
-<li>
-<p>如果是<code>Linux</code>系统下制作安装介质，推荐使用<code>dd</code>命令，教程：</p>
-<blockquote>
-<p>http://blog.topspeedsnail.com/archives/404</p>
-</blockquote>
-</li>
-<li>
-<p>如果是<code>windows</code>系统下制作安装介质，推荐使用<code>usbwriter</code>这款轻量级的工具，下载链接：</p>
-<blockquote>
-<p>https://sourceforge.net/projects/usbwriter/</p>
-</blockquote>
-</li>
+<li>如果是<code>Linux</code>系统下制作安装介质，推荐使用<code>dd</code>命令，教程：</li>
 </ul>
 </li>
 </ol>
+<blockquote>
+<p>http://blog.topspeedsnail.com/archives/404</p>
+</blockquote>
+<ul>
+<li>如果是<code>windows</code>系统下制作安装介质，推荐使用<code>usbwriter</code>这款轻量级的工具，下载链接：</li>
+</ul>
+<blockquote>
+<p>https://sourceforge.net/projects/usbwriter/</p>
+</blockquote>
 <h4>磁盘准备</h4>
 <p>我们需要有一块空闲的磁盘区域来进行安装，这里的空闲指的是<strong>没有被分区</strong>的空间。下面来介绍如何准备这块空间。</p>
 <ul>
 <li>
 <p>在<code>windows</code>下空出一块分区来安装：利用<code>windows</code>自带的磁盘管理工具就可以：</p>
-<ol>
+</li>
 <li>
 <p>右击<code>windows</code>图标，在弹出菜单中选择磁盘管理（其他版本的<code>windows</code>请自行找到打开磁盘管理的方式）：</p>
+</li>
+</ul>
 <p><img alt="" src="/images/arch01.jpeg"></p>
-</li>
-<li>
-<p>右击想要删除的分区，选择删除卷（注意这步之后这个分区的所有数据将会丢失）：</p>
-<p><img alt="" src="/images/arch02.jpeg"></p>
-</li>
+<ol>
+<li>右击想要删除的分区，选择删除卷（注意这步之后这个分区的所有数据将会丢失）：</li>
 </ol>
-</li>
-<li>
-<p>在<code>linux</code>下分出一块区域安装：使用<code>fdisk</code>进行，教程请见链接中的删除分区：</p>
+<p><img alt="" src="/images/arch02.jpeg"></p>
+<ul>
+<li>在<code>linux</code>下分出一块区域安装：使用<code>fdisk</code>进行，教程请见链接中的删除分区：</li>
+</ul>
 <blockquote>
 <p>http://www.liusuping.com/ubuntu-linux/linux-fdisk-disk.html</p>
 </blockquote>
-</li>
-<li>
-<p>空闲的磁盘（新磁盘）：不需要进行任何操作。</p>
-</li>
+<ul>
+<li>空闲的磁盘（新磁盘）：不需要进行任何操作。</li>
 </ul>
 <h3>U盘安装</h3>
 <p>下面的过程实际上都在刚刚准备好的U盘启动介质上的<code>Linux</code>系统下进行，所以<strong>启动时都应该选择U盘</strong>。</p>
@@ -192,22 +188,20 @@
 <p>一般来说现在的主板都可以不用进入BIOS而快速地切换启动顺序，只要找到相应的快捷键就可以了。</p>
 <h4>进入U盘下的Linux系统</h4>
 <ol>
-<li>
-<p>按上一步设置好启动顺序，启动之后会看到如下界面：</p>
+<li>按上一步设置好启动顺序，启动之后会看到如下界面：</li>
+</ol>
 <p><img alt="" src="/images/arch03.jpeg"></p>
 <p>如果直接进入<code>windows</code>，请检查启动顺序是否设置成功，U盘是否在制作启动介质时成功写入。</p>
 <p>如果没有看到这个界面，请检查U盘是否制作成功，如果多次遇到问题可以考虑换一个U盘。</p>
 <p>选择第一个选项。</p>
-</li>
-<li>
-<p>这时<code>Arch</code>开始加载，你将会看到屏幕显示如下内容：</p>
+<ol>
+<li>这时<code>Arch</code>开始加载，你将会看到屏幕显示如下内容：</li>
+</ol>
 <p><img alt="" src="/images/arch04.jpeg"></p>
 <p>加载完成后你将会进入一个有命令提示符的界面：</p>
 <p><img alt="" src="/images/arch05.jpeg"></p>
 <p>如果出现<code>FAIL</code>或是其他错误信息导致无法启动请自行搜索错误信息来获得解决方法。</p>
 <p>这就是<code>Linux</code>的终端界面了，接下来我们将通过在这个界面执行一系列命令来将<code>Arch</code>安装到我们的磁盘上。</p>
-</li>
-</ol>
 <hr>
 <p>下面进行的过程是按照官方<a href="https://wiki.archlinux.org/index.php/installation_guide">Installation guide</a>为依据进行的，出现的任何问题都可以到链接中的相应部分查找原文找到解决方式。</p>
 <h4>检查引导方式</h4>
@@ -239,27 +233,29 @@
 <h4>联网</h4>
 <p><code>arch</code>并不能离线安装，因为我们需要联网来下载需要的组件，所以我们首先要连接网络。</p>
 <ul>
-<li>
-<p>如果你是有线网并且路由器支持DHCP的话插上网线后应该已经是联网状态了，可以执行以下命令来进行判断：</p>
-<p><code>bash
-ping www.baidu.com</code></p>
+<li>如果你是有线网并且路由器支持DHCP的话插上网线后应该已经是联网状态了，可以执行以下命令来进行判断：</li>
+</ul>
+<div class="highlight"><pre><span></span>ping www.baidu.com
+</pre></div>
+
+
 <p>如果可以看到类似下面的内容就说明连上了网络：</p>
 <p><img alt="" src="/images/arch05.jpg"></p>
 <blockquote>
 <p>再次提示用快捷键Ctrl-C可以终止当前正在执行的命令</p>
 </blockquote>
-</li>
-<li>
-<p>如果你是无线网，请执行以下命令：</p>
-<p><code>bash
-wifi-menu</code></p>
+<ul>
+<li>如果你是无线网，请执行以下命令：</li>
+</ul>
+<div class="highlight"><pre><span></span>wifi-menu
+</pre></div>
+
+
 <p>这是一个实用的命令行下联网工具，有字符形式的图形化界面，利用它可以方便地联网，如果它没能起作用，需要进入以下页面查找解决方式：</p>
 <blockquote>
 <p>https://wiki.archlinux.org/index.php/Wireless_network_configuration</p>
 </blockquote>
 <p>连接以后同样可以通过上面的<code>ping</code>命令来进行测试。</p>
-</li>
-</ul>
 <h4>更新系统时间</h4>
 <p>执行如下命令：</p>
 <div class="highlight"><pre><span></span>timedatectl set-ntp <span class="nb">true</span>
@@ -313,10 +309,12 @@ wifi-menu</code></p>
 </li>
 <li>
 <p>输入以下命令来格式化刚刚创建的引导分区：</p>
-<p><code>bash
-mkfs.fat -F32 /dev/sdxY （请将的sdxY替换为刚创建的分区）</code></p>
 </li>
 </ol>
+<div class="highlight"><pre><span></span>mkfs.fat -F32 /dev/sdxY （请将的sdxY替换为刚创建的分区）
+</pre></div>
+
+
 <p>现在引导分区就创建好了。</p>
 <h5>创建根分区</h5>
 <p>输入命令：</p>
@@ -339,10 +337,12 @@ mkfs.fat -F32 /dev/sdxY （请将的sdxY替换为刚创建的分区）</code></p
 </li>
 <li>
 <p>输入以下命令来格式化刚刚创建的根分区：</p>
-<p><code>bash
-mkfs.ext4 /dev/sdxY （请将的sdxY替换为刚创建的分区）</code></p>
 </li>
 </ol>
+<div class="highlight"><pre><span></span>mkfs.ext4 /dev/sdxY （请将的sdxY替换为刚创建的分区）
+</pre></div>
+
+
 <p>这是我的分区过程供参考：</p>
 <p><img alt="" src="/images/arch07.jpg"></p>
 <p><img alt="" src="/images/arch08.jpg"></p>
@@ -355,7 +355,7 @@ mkfs.ext4 /dev/sdxY （请将的sdxY替换为刚创建的分区）</code></p>
 <hr>
 <p><strong>如果你是EFI/GPT引导方式</strong>，执行以下命令创建/boot文件夹并将引导分区挂载到上面。<strong>BIOS/MBR引导方式无需进行这步。</strong></p>
 <div class="highlight"><pre><span></span>mkdir /mnt/boot
-mkdir /dev/sdxY /mnt/boot （请将sdxY替换为之前创建或是已经存在的引导分区）
+mount /dev/sdxY /mnt/boot （请将sdxY替换为之前创建或是已经存在的引导分区）
 </pre></div>
 
 
@@ -515,53 +515,61 @@ hwclock --systohc
 <p>经常听说很多人因为引导问题导致系统安装失败，多数是因为教程没有统一或是过时的教程引起的，这里只要按照步骤来其实是不难的。</p>
 <p>这里我们安装最流行的<code>Grub2</code>。</p>
 <ul>
-<li>
-<p>首先安装<code>os-prober</code>这个包，它可以配合<code>Grub</code>检测已经存在的系统，自动设置启动选项。</p>
-<p><code>bash
-pacman -S os-prober</code></p>
-</li>
+<li>首先安装<code>os-prober</code>这个包，它可以配合<code>Grub</code>检测已经存在的系统，自动设置启动选项。</li>
 </ul>
+<div class="highlight"><pre><span></span>pacman -S os-prober
+</pre></div>
+
+
 <hr>
 <p><strong>如果为BIOS/MBR引导方式：</strong></p>
 <ul>
-<li>
-<p>安装<code>grub</code>包：</p>
-<p><code>bash
-pacman -S grub</code></p>
-</li>
-<li>
-<p>部署<code>grub</code>：</p>
-<p><code>bash
-grub-install --target=i386-pc /dev/sdx （将sdx换成你安装的硬盘）</code></p>
-<p>注意这里的<code>sdx</code>应该为硬盘（例如<code>/dev/sda</code>），<strong>而不是</strong>形如<code>/dev/sda1</code>这样的分区。</p>
-</li>
-<li>
-<p>生成配置文件：</p>
-<p><code>bash
-grub-mkconfig -o /boot/grub/grub.cfg</code></p>
-</li>
+<li>安装<code>grub</code>包：</li>
 </ul>
+<div class="highlight"><pre><span></span>pacman -S grub
+</pre></div>
+
+
+<ul>
+<li>部署<code>grub</code>：</li>
+</ul>
+<div class="highlight"><pre><span></span>grub-install --target<span class="o">=</span>i386-pc /dev/sdx （将sdx换成你安装的硬盘）
+</pre></div>
+
+
+<p>注意这里的<code>sdx</code>应该为硬盘（例如<code>/dev/sda</code>），<strong>而不是</strong>形如<code>/dev/sda1</code>这样的分区。</p>
+<ul>
+<li>生成配置文件：</li>
+</ul>
+<div class="highlight"><pre><span></span>grub-mkconfig -o /boot/grub/grub.cfg
+</pre></div>
+
+
 <p><img alt="" src="/images/arch18.jpg"></p>
 <p><strong>如果你没有看到如图所示的提示信息，请仔细检查是否正确完成上面的过程。</strong></p>
 <hr>
 <p><strong>如果为EFI/GPT引导方式：</strong></p>
 <ul>
-<li>
-<p>安装<code>grub</code>与<code>efibootmgr</code>两个包：</p>
-<p><code>bash
-pacman -S grub efibootmgr</code></p>
-</li>
-<li>
-<p>部署<code>grub</code>：</p>
-<p><code>bash
-grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=grub</code></p>
-</li>
-<li>
-<p>生成配置文件：</p>
-<p><code>bash
-grub-mkconfig -o /boot/grub/grub.cfg</code></p>
-</li>
+<li>安装<code>grub</code>与<code>efibootmgr</code>两个包：</li>
 </ul>
+<div class="highlight"><pre><span></span>pacman -S grub efibootmgr
+</pre></div>
+
+
+<ul>
+<li>部署<code>grub</code>：</li>
+</ul>
+<div class="highlight"><pre><span></span>grub-install --target<span class="o">=</span>x86_64-efi --efi-directory<span class="o">=</span>/boot --bootloader-id<span class="o">=</span>grub
+</pre></div>
+
+
+<ul>
+<li>生成配置文件：</li>
+</ul>
+<div class="highlight"><pre><span></span>grub-mkconfig -o /boot/grub/grub.cfg
+</pre></div>
+
+
 <p><strong>提示信息应与上面的图类似，如果你发现错误，请仔细检查是否正确完成上面的过程。</strong></p>
 <hr>
 <p>接下来，你需要进行重启来启动已经安装好的系统，执行如下命令：</p>
@@ -577,7 +585,7 @@ reboot
 <p>输入<code>root</code>，再输入之前设置的密码，显示出命令提示符，恭喜你，你已经成功安装<code>ArchLinux</code>！</p>
 <h2>安装后配置</h2>
 <p>虽然系统安装好了，但是还没有进行基本配置和安装图形界面，所以接下来我们要进行一些必须的配置和图形界面的安装。</p>
-<p>请见下一篇文章<a href="http://www.viseator.com/2017/05/19/arch_setup/">ArchLinux安装后的必须配置与图形界面安装教程</a>。</p>
+<p>请见下一篇文章：<a href="http://www.hustmeituan.club/archlinuxan-zhuang-hou-de-bi-xu-pei-zhi-yu-tu-xing-jie-mian-an-zhuang-jiao-cheng.html">ArchLinux安装后的必须配置与图形界面安装教程</a>。</p>
     </article>
 
         <div class="tags">
