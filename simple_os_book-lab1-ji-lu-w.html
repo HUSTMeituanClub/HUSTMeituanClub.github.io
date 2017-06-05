@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+            <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+        <title>simple_os_book lab1 记录w</title>
+
+            <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="华科美团点评技术俱乐部 Full Atom Feed" />
+            <link href="/feeds/os.atom.xml" type="application/atom+xml" rel="alternate" title="华科美团点评技术俱乐部 Categories Atom Feed" />
+        <!-- Bootstrap Core CSS -->
+        <link href="/theme/css/bootstrap.min.css" rel="stylesheet">
+
+        <!-- Custom CSS -->
+        <link href="/theme/css/clean-blog.min.css" rel="stylesheet">
+
+        <!-- Code highlight color scheme -->
+            <link href="/theme/css/code_blocks/darkly.css" rel="stylesheet">
+
+
+        <!-- Custom Fonts -->
+        <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
+        <link href='https://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+
+        <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+
+
+
+        <meta name="description" content="ucore OS lab 1 ucore os 实验一 0x01 Setting up Environment 使用的 Linux 发行版是 Arch Linux 。 安装 qemu 以及附带的多平台支持： # pacman -S qemu qemu-arch-extra...">
+
+        <meta name="author" content="Huatian Zhou">
+
+        <meta name="tags" content="os">
+
+	                <meta property="og:locale" content="zh_CN.UTF-8">
+		<meta property="og:site_name" content="华科美团点评技术俱乐部">
+
+	<meta property="og:type" content="article">
+            <meta property="article:author" content="/author/huatian-zhou.html">
+	<meta property="og:url" content="/simple_os_book-lab1-ji-lu-w.html">
+	<meta property="og:title" content="simple_os_book lab1 记录w">
+	<meta property="article:published_time" content="2017-06-02 10:37:00+08:00">
+            <meta property="og:description" content="ucore OS lab 1 ucore os 实验一 0x01 Setting up Environment 使用的 Linux 发行版是 Arch Linux 。 安装 qemu 以及附带的多平台支持： # pacman -S qemu qemu-arch-extra...">
+
+            <meta property="og:image" content="//images/bg.jpg">
+</head>
+
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header page-scroll">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">华科美团点评技术俱乐部</a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                        <li><a href="/categories.html">分类</a></li>
+                        <li><a href="/archives.html">归档</a></li>
+                        <li><a href="/authors.html">作者</a></li>
+                        <li><a href="/tags.html">标签</a></li>
+                        <li><a href="/pages/about/index.html">关于</a></li>
+                        <li><a href="/pages/friendlinks/index.html">友链</a></li>
+
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Page Header -->
+        <header class="intro-header" style="background-image: url('/images/bg.jpg')">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <div class="post-heading">
+                        <h1>simple_os_book lab1 记录w</h1>
+                        <span class="meta">Posted by
+                                <a href="/author/huatian-zhou.html">Huatian Zhou</a>
+                             on 2017年 6月02日 周五
+                        </span>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+    <!-- Post Content -->
+    <article>
+        <h1>ucore OS lab 1</h1>
+<p>ucore os 实验一</p>
+<h3>0x01 Setting up Environment</h3>
+<p>使用的 Linux 发行版是 <code>Arch Linux</code> 。</p>
+<p>安装 <code>qemu</code> 以及附带的多平台支持：</p>
+<div class="highlight"><pre><span></span><span class="c1"># pacman -S qemu qemu-arch-extra</span>
+</pre></div>
+
+
+<p>安装完毕之后，就可以使用<code>qemu-system-i386</code>模拟器了。</p>
+<p>注意要安装<code>gcc-multilib</code>，否则无法交叉编译<code>i386</code>的可执行文件。</p>
+<div class="highlight"><pre><span></span><span class="c1"># pacman -S gcc-multilib</span>
+</pre></div>
+
+
+<p>提示 <code>Replace gcc</code> 的时候，可以放心大胆地选择<code>yes</code>。</p>
+<p>这样，在lab01文件夹下直接<code>make</code>，就可以直接编译了。</p>
+<h3>0x02 Makefile (Makefile)</h3>
+<p>环境设置直接略过，直接跳到具体生成<code>img</code>文件的指令：</p>
+<div class="highlight"><pre><span></span>gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Ilibs/ -Os -nostdinc -c boot/bootasm.S -o obj/boot/bootasm.o
+gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Ilibs/ -Os -nostdinc -c boot/bootmain.c -o obj/boot/bootmain.o
+ld -m    elf_i386 -nostdlib -N -e start -Ttext 0x7C00 obj/boot/bootasm.o obj/boot/bootmain.o -o obj/bootblock.o
+</pre></div>
+
+
+<p>编译、链接 bootloader 。注意这里的<code>-nostdlib</code>和<code>-e start -Ttext 0x7c00</code>是使得链接结果能够作为 bootloader 的关键。</p>
+<div class="highlight"><pre><span></span>dd <span class="k">if</span><span class="o">=</span>/dev/zero <span class="nv">of</span><span class="o">=</span>bin/ucore.img <span class="nv">count</span><span class="o">=</span><span class="m">10000</span>
+dd <span class="k">if</span><span class="o">=</span>bin/bootblock <span class="nv">of</span><span class="o">=</span>bin/ucore.img <span class="nv">conv</span><span class="o">=</span>notrunc
+</pre></div>
+
+
+<p>将 bootloader 复制到前512个字节（第一扇区）中。系统在启动前会把这里的代码读到0x7c00处，然后 CPU 从此处开始执行。</p>
+<h3>0x03 Bootloader Code (bootasm.S)</h3>
+<p>第 15 行：</p>
+<div class="highlight"><pre><span></span><span class="na">.code16</span>    <span class="c"># Assemble for 16-bit mode</span>
+</pre></div>
+
+
+<p>指示 <code>gas</code> 编译器生成16位代码。</p>
+<p>当<code>BIOS</code>刚刚将控制权转交给加载到地址<code>0x7c00</code>的<code>bootloader</code>的时候，CPU 仍然运转在16位模式。在这种情况下，由于所有寄存器仍然是32位的，所以你不得不在每个指令后加长度限定符。但是通过使用<code>.code16</code>，<code>gas</code>编译器会认为你正在试图生成一段在16位模式下运行的32位程序，所以会自动帮你加上长度限定符。</p>
+<p>第 16,17 行：</p>
+<div class="highlight"><pre><span></span>cli      # Disable interrupts
+cld      # String operations increment
+</pre></div>
+
+
+<p>开始启动流程。<code>cli</code>指令关闭中断，以免初始化过程出现异常。<code>cld</code>指令将<code>DF</code>清0。</p>
+<p><code>DF</code>指示多字节操作时的操作顺序，是从低字节到高字节（increment,clear） 还是高字节到低字节(decrement,set)。</p>
+<p>C 运行环境假设<code>DF</code>处于被清零状态。所以若要试图载入 C 运行环境，需要把<code>DF</code>清零。</p>
+<p>第 20~23 行：</p>
+<div class="highlight"><pre><span></span>xorw %ax, %ax
+movw %ax, %ds
+movw %ax, %es
+movw %ax, %ss
+</pre></div>
+
+
+<p>初始化数据段寄存器。首先对自身<code>xor</code>将自己的值变为0,然后使用<code>ax</code>依次清空<code>DS</code>,<code>ES</code>和<code>SS</code>。</p>
+<p>第 29～43 行：</p>
+<div class="highlight"><pre><span></span>seta20.1:
+    inb $0x64, %al
+    testb $0x2, %al
+    jnz seta20.1
+
+    movb $0xd1, %al
+    outb %al, $0x64
+
+seta20.2:
+    inb $0x64, %al                                 
+    testb $0x2, %al
+    jnz seta20.2
+
+    movb $0xdf, %al   
+    outb %al, $0x60
+</pre></div>
+
+
+<p>关闭 Intel 的 8086 兼容模式，使得 CPU 能够寻址 1MB 以上的内存空间。</p>
+<p>关闭的方式是 Intel 规定的，所以没什么好说。值得一提的是按端口 I/O 操作的方式：</p>
+<p>读取端口状态-查看是否繁忙-繁忙则等待-不繁忙则输出。</p>
+<p>第 49~52 行：</p>
+<div class="highlight"><pre><span></span>lgdt gdtdesc
+movl %cr0, %eax
+orl $CR0_PE_ON, %eax
+movl %eax, %cr0
+</pre></div>
+
+
+<p>对应的代码段：第78~86行：</p>
+<div class="highlight"><pre><span></span><span class="na">.p2align</span> <span class="mi">2</span>
+<span class="nl">gdt:</span>
+    <span class="nf">SEG_NULLASM</span>
+    <span class="nf">SEG_ASM</span><span class="p">(</span><span class="no">STA_X</span><span class="err">|</span><span class="no">STA_R</span><span class="p">,</span><span class="mi">0x0</span><span class="p">,</span><span class="mi">0xffffffff</span><span class="p">)</span>
+    <span class="nf">SEG_ASM</span><span class="p">(</span><span class="no">STA_W</span><span class="p">,</span><span class="mi">0x0</span><span class="p">,</span><span class="mi">0xffffffff</span><span class="p">)</span>
+
+<span class="nl">gdtdesc:</span>
+    <span class="na">.word</span> <span class="mi">0x17</span>
+    <span class="na">.long</span> <span class="no">gdt</span>
+</pre></div>
+
+
+<p>使用<code>lgdt</code>指令加载全局描述符表。</p>
+<p><code>.p2align x</code>指示<code>gdt</code>按2^<em>x</em>字节对齐。<code>gdt</code>段使用宏定义了三个全局描述符： NULL , CODE 和 DATA ，后两个段分别具有 X<em>(eXecute)</em>|R<em>(Read)</em> 和 W<em>(Write)</em>|R<em>(Read)</em> 权限。注意后一个只需要声明 W 就可以了。</p>
+<p><code>gdtdesc</code>指示<code>lgdt</code>指令应该如何读入全局描述符表。其中<code>.word a</code>的a是<code>gdt</code>的长度-1（<code>sizeof(gdt)-1</code>）。注意这里的<code>.word 0x17</code>即是十进制的<code>23</code> 。参考了一下<code>xv6</code>的 bootloader 之后，建议使用如下这种写法：</p>
+<div class="highlight"><pre><span></span>    .word (gdtdesc - gdt - 1)
+</pre></div>
+
+
+<p>第 50~52 行将 <em>保护模式的开启位</em> 置为1。至此，CPU 已经做好了进入保护模式的准备。</p>
+<p>第 56 行：</p>
+<div class="highlight"><pre><span></span>    ljmp $PROT_MODE_CSEG, $protcseg
+</pre></div>
+
+
+<p>使用<code>ljmp</code><em>(长跳转)</em>指令进入保护模式。其中：</p>
+<p><code>$PROT_MODE_CSEG</code>是保护模式下代码段对应的段选择子(定义位于<code>asm.h</code>，值为<code>0x8</code>)，这个选择子在<code>ljmp</code>指令下将被放置到<code>CS</code>中，<code>$protcseg</code>的值将被放置到<code>EIP</code>中。</p>
+<p>值得注意的是段选择子的结构：</p>
+<p>长度为<code>16</code>位<em>(<code>word</code>)</em>，<em>(从后往前)</em>第0-1位是请求特权级<em>(RPL)</em>，第3位是[0:全局描述符表,1:局部描述符表]<em>(注意局部描述符表在实验中没有涉及)</em></p>
+<p>第 58~71 行：</p>
+<div class="highlight"><pre><span></span><span class="na">.code32</span>
+<span class="nl">protcseg:</span>
+    <span class="nf">movw</span> <span class="no">$PROT_MODE_DSEG</span><span class="p">,</span><span class="nv">%ax</span>
+    <span class="nf">movw</span> <span class="nv">%ax</span><span class="p">,</span><span class="nv">%ds</span>
+    <span class="nf">movw</span> <span class="nv">%ax</span><span class="p">,</span><span class="nv">%es</span>
+    <span class="nf">movw</span> <span class="nv">%ax</span><span class="p">,</span><span class="nv">%fs</span>
+    <span class="nf">movw</span> <span class="nv">%ax</span><span class="p">,</span><span class="nv">%gs</span>
+    <span class="nf">movw</span> <span class="nv">%ax</span><span class="p">,</span><span class="nv">%ss</span>
+
+
+    <span class="nf">movl</span> <span class="no">$0x0</span><span class="p">,</span><span class="nv">%ebp</span>
+    <span class="nf">movl</span> <span class="no">$start</span><span class="p">,</span><span class="nv">%esp</span>
+    <span class="nf">call</span> <span class="no">bootmain</span>
+</pre></div>
+
+
+<p>这段代码初始化栈寄存器并跳转到<code>C</code>代码。</p>
+<p>第 62~66 行：使用数据段选择子初始化所有数据栈寄存器。</p>
+<p>第 69 行：将<code>EBP</code>置 0 。因为<code>C</code>代码仍然是 bootloader 的一部分，所以栈仍然使用 bootloader 的栈。由内存模型，bootloader 的栈位于0x0到0x7c00(<code>$start</code>，第一条指令)之间。</p>
+<p>第 70 行：将<code>$start</code>放入<code>ESP</code>。</p>
+<p>第 71 行：进入<code>C</code>代码。</p>
+<h3>0x04 Bootloader Code(bootmain.c)</h3>
+<p>这段代码阐述 bootloader 如何从硬盘中读取 ELF 格式的 kernel 并且载入内存中执行的。</p>
+<p>首先，将 kernel 写入硬盘 ：</p>
+<p><code>Makefile</code> :</p>
+<div class="highlight"><pre><span></span>dd <span class="k">if</span><span class="o">=</span>bin/kernel <span class="nv">of</span><span class="o">=</span>bin/ucore.img <span class="nv">seek</span><span class="o">=</span><span class="m">1</span> <span class="nv">conv</span><span class="o">=</span>notrunc
+</pre></div>
+
+
+<p>注意参数 <code>seek=1</code> 代表跳过 <code>of</code> 指定文件的第一个 <code>block</code> 。<code>dd</code> 命令默认 <code>block</code> 大小为 <code>512 Bytes</code> 。</p>
+<p>注意：bootloader 被放置在硬盘的前 <code>512 Bytes</code> 中。</p>
+<p><code>conv=notrunc</code> 参数防止了 <code>of</code> 指定的文件被清空。</p>
+<p><code>bootmain.c</code> :</p>
+<p>ln 89:</p>
+<div class="highlight"><pre><span></span><span class="n">readseg</span><span class="p">((</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="n">ELFHDR</span><span class="p">,</span> <span class="n">SECTSIZE</span> <span class="o">*</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+
+
+<p>readseg 函数定义：</p>
+<div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">void</span> <span class="nf">readseg</span><span class="p">(</span><span class="kt">uintptr_t</span> <span class="n">va</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">count</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">offset</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">uintptr_t</span> <span class="n">end_va</span> <span class="o">=</span> <span class="n">va</span> <span class="o">+</span> <span class="n">count</span><span class="p">;</span>
+
+    <span class="n">va</span> <span class="o">-=</span> <span class="n">offset</span> <span class="o">%</span> <span class="n">SECTSIZE</span><span class="p">;</span>
+
+    <span class="kt">uint32_t</span> <span class="n">secno</span> <span class="o">=</span> <span class="p">(</span><span class="n">offset</span> <span class="o">/</span> <span class="n">SECTSIZE</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+
+    <span class="k">for</span> <span class="p">(;</span> <span class="n">va</span> <span class="o">&lt;</span> <span class="n">end_va</span><span class="p">;</span> <span class="n">va</span> <span class="o">+=</span> <span class="n">SECTSIZE</span><span class="p">,</span> <span class="n">secno</span> <span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">readsect</span><span class="p">((</span><span class="kt">void</span> <span class="o">*</span><span class="p">)</span><span class="n">va</span><span class="p">,</span> <span class="n">secno</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>readsect 函数定义：</p>
+<div class="highlight"><pre><span></span><span class="k">static</span> <span class="kt">void</span>
+<span class="nf">readsect</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">dst</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">secno</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">waitdisk</span><span class="p">();</span>
+
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F2</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>                         
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F3</span><span class="p">,</span> <span class="n">secno</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span>
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F4</span><span class="p">,</span> <span class="p">(</span><span class="n">secno</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span>
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F5</span><span class="p">,</span> <span class="p">(</span><span class="n">secno</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">);</span>
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F6</span><span class="p">,</span> <span class="p">((</span><span class="n">secno</span> <span class="o">&gt;&gt;</span> <span class="mi">24</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xF</span><span class="p">)</span> <span class="o">|</span> <span class="mh">0xE0</span><span class="p">);</span>
+    <span class="n">outb</span><span class="p">(</span><span class="mh">0x1F7</span><span class="p">,</span> <span class="mh">0x20</span><span class="p">);</span>                      
+
+    <span class="n">waitdisk</span><span class="p">();</span>
+
+    <span class="n">insl</span><span class="p">(</span><span class="mh">0x1F0</span><span class="p">,</span> <span class="n">dst</span><span class="p">,</span> <span class="n">SECTSIZE</span> <span class="o">/</span> <span class="mi">4</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>首先解释 <code>readsect</code> 函数。一系列的 <code>outb</code> 指令都是对 <code>IDE</code> 硬盘的读写操作，是规定的。</p>
+<p><code>insl(a,b,c)</code> 指令将 c 个 <code>dword</code> (即 <code>c*4</code> 个 <code>byte</code> )从端口 a 读入到 b 指向的内存中。</p>
+<p>接着是 <code>readseg</code> 函数。</p>
+<p>注意 <code>va-=offset%SECTSIZE</code> 语句。这一行将 <code>va</code> 与扇区边界对齐，然后在读取时一次读入一个扇区。</p>
+<p>再由原来未修改过的 <code>va</code> 指针访问内存，<code>offset</code> 就自动加上了。</p>
+<p>下一行计算出<code>offset</code> 对应的扇区编号。注意这里已经跳过了 bootloader 所在的 <code>sect 0</code> 。</p>
+<p>然后就是循环调用 <code>readsect</code> 读取磁盘内容了。</p>
+<p>回到 <code>bootmain</code> 的 89 行。<code>readseg((uintptr_t)ELFHDR, SECTSIZE*8, 0)</code> 从硬盘中读取 8 个 sect 到内存地址 <code>ELFHDR</code> (0x10000，内核放置位置)中。</p>
+<p>ln 92 ~ 94:</p>
+<div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">ELFHDR</span><span class="o">-&gt;</span><span class="n">e_magic</span> <span class="o">!=</span> <span class="n">ELF_MAGIC</span><span class="p">){</span>
+  <span class="k">goto</span> <span class="n">bad</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>(struct好评 magic number go die)</p>
+<p>测试是否与 <code>ELF_MAGIC</code> 相同(即 是不是 ELF 可执行文件)</p>
+<p>ln 99~103</p>
+<div class="highlight"><pre><span></span><span class="n">ph</span> <span class="o">=</span> <span class="p">(</span><span class="k">struct</span> <span class="n">proghdr</span><span class="o">*</span><span class="p">)((</span><span class="kt">uintptr_t</span><span class="p">)</span><span class="n">ELFHDR</span><span class="o">+</span><span class="n">ELFHDR</span><span class="o">-&gt;</span><span class="n">e_phoff</span><span class="p">);</span>
+<span class="n">eph</span> <span class="o">=</span> <span class="n">ph</span> <span class="o">+</span> <span class="n">ELFHDR</span><span class="o">-&gt;</span><span class="n">e_phnum</span><span class="p">;</span>
+<span class="k">for</span><span class="p">(;</span><span class="n">ph</span><span class="o">&lt;</span><span class="n">eph</span><span class="p">;</span><span class="n">ph</span><span class="o">++</span><span class="p">){</span>
+  <span class="n">readseg</span><span class="p">(</span><span class="n">ph</span><span class="o">-&gt;</span><span class="n">p_va</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFF</span><span class="p">,</span><span class="n">ph</span><span class="o">-&gt;</span><span class="n">p_memsz</span><span class="p">,</span><span class="n">ph</span><span class="o">-&gt;</span><span class="n">p_offset</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>依次将各个程序段读入内存中相应位置。</p>
+<p>ln 107</p>
+<div class="highlight"><pre><span></span><span class="p">((</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="kt">void</span><span class="p">))(</span><span class="n">ELFHDR</span><span class="o">-&gt;</span><span class="n">e_entry</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFF</span><span class="p">))();</span>
+</pre></div>
+
+
+<p>将入口点转换为 <code>void (*)(void)</code> 类型的函数指针，然后调用之，进入内核。</p>
+<h3>0x05 print_stackframe (kdebug.c)</h3>
+<p>先上我的实现：</p>
+<div class="highlight"><pre><span></span>    <span class="kt">uint32_t</span> <span class="n">ebpv</span> <span class="o">=</span> <span class="n">read_ebp</span><span class="p">();</span>
+    <span class="kt">uint32_t</span> <span class="n">eipv</span> <span class="o">=</span> <span class="n">read_eip</span><span class="p">();</span>
+    <span class="k">while</span><span class="p">(</span><span class="n">ebpv</span><span class="p">){</span>
+        <span class="n">cprintf</span><span class="p">(</span><span class="s">&quot;EBP %08x:EIP %08x:args &quot;</span><span class="p">,</span><span class="n">ebpv</span><span class="p">,</span><span class="n">eipv</span><span class="p">);</span>
+        <span class="kt">uint32_t</span> <span class="n">iter</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+        <span class="k">for</span><span class="p">(;</span><span class="n">iter</span><span class="o">&lt;</span><span class="mi">4</span><span class="p">;</span><span class="n">iter</span><span class="o">++</span><span class="p">){</span>
+            <span class="n">cprintf</span><span class="p">(</span><span class="s">&quot;%d &quot;</span><span class="p">,</span><span class="o">*</span><span class="p">(((</span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)</span><span class="n">ebpv</span><span class="p">)</span><span class="o">+</span><span class="n">iter</span><span class="o">+</span><span class="mi">2</span><span class="p">));</span>
+        <span class="p">}</span>
+        <span class="n">cprintf</span><span class="p">(</span><span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">);</span>
+        <span class="n">print_debuginfo</span><span class="p">(</span><span class="n">eipv</span><span class="o">-</span><span class="mi">1</span><span class="p">);</span>
+        <span class="c1">// pop</span>
+        <span class="n">eipv</span><span class="o">=*</span><span class="p">((</span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)</span><span class="n">ebpv</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+        <span class="n">ebpv</span><span class="o">=*</span><span class="p">(</span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)</span><span class="n">ebpv</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>只要熟悉调用栈结构就可以轻易写出。注意这里我写的时候脑子抽了一下，调用栈是由上往下增长的，最高位地址是栈顶，所以访问之前压栈的东西必是<code>+</code>。最后一个的 <code>EBP</code> 对应位置为0 ，它是 <code>bootmain.c</code> 里面的第一个 C 环境函数，C 编译器为它生成的第一个语句 <code>push ebp</code> 将在 <code>bootasm.S</code> 中初始化的 <code>movl $0x0, %ebp</code> 压入栈中。所以<code>ebpv==0</code> 为退出条件。</p>
+<h3>0x06 Interrupt (IDT Structure/Gate Descriptors)</h3>
+<p>每一个中断门描述符由 64 bits (8 bytes) 组成。</p>
+<h4>80386 Task Gate Descriptor</h4>
+<p><code>Task Gate</code> 主要用于任务切换。</p>
+<p>00-15 <code>NOT USED</code></p>
+<p>16-31 <code>段选择子 Selector</code></p>
+<p>32-39 <code>NOT USED</code></p>
+<p>40-44 二进制序列 <code>10100</code></p>
+<p>45-46 DPL (Descriptor Privilege Level)</p>
+<p>47 Present</p>
+<p>48-63 <code>NOT USED</code></p>
+<h4>80306 Interrupt Gate Descriptor</h4>
+<p><code>Interrupt Gate</code> 主要用于中断处理</p>
+<p>00-15 <code>Offset 段内偏移</code></p>
+<p>16-31 <code>段选择子 Selector</code></p>
+<p>32-36 <code>NOT USED</code></p>
+<p>37-44 二进制序列 <code>00001110</code></p>
+<p>45-46 DPL (Descriptor Privilege Level)</p>
+<p>47 Present</p>
+<p>48-63 <code>Offset 段内偏移</code></p>
+<h4>80386 Trap Gate Descriptor</h4>
+<p><code>Trap Gate</code> 主要用于系统调用</p>
+<p>00-15 Offset 段内偏移</p>
+<p>16-31 段选择子 Selector</p>
+<p>32-36 NOT USED</p>
+<p>37-44 二进制序列 00011110</p>
+<p>45-46 DPL (Descriptor Privilege Level)</p>
+<p>47 Present</p>
+<p>48-63 Offset 段内偏移</p>
+<h3>0x07 Interrupt (Initialize IDT)</h3>
+<div class="highlight"><pre><span></span><span class="k">extern</span> <span class="kt">uintptr_t</span> <span class="n">__vectors</span><span class="p">[];</span>
+<span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+<span class="k">for</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span><span class="o">&lt;</span><span class="mi">256</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">){</span>
+    <span class="n">SETGATE</span><span class="p">(</span><span class="n">idt</span><span class="p">[</span><span class="n">i</span><span class="p">],(</span><span class="n">i</span><span class="o">==</span><span class="n">T_SYSCALL</span><span class="p">),</span><span class="n">GD_KTEXT</span><span class="p">,</span><span class="n">__vectors</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="mi">3</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">==</span><span class="n">T_SYSCALL</span><span class="p">));</span>
+<span class="p">}</span>
+<span class="n">lidt</span><span class="p">(</span><span class="o">&amp;</span><span class="n">idt_pd</span><span class="p">);</span>
+</pre></div>
+
+
+<p>直接上实现。</p>
+<p>注意 <code>SETGATE</code> 宏的 <code>seg</code> 参数指的是段选择子。所以直接使用 <code>GD_KTEXT</code> 。</p>
+<p>这里判断 <code>i==T_SYSCALL</code> 用于设置用于系统调用的陷阱门描述符。</p>
+<p>最后 <code>lidt</code> 指令加上 <code>idt_pd</code> 的地址加载 <code>IDT</code></p>
+<h3>0x08 Interrupt (Clock Interrupt Lab)</h3>
+<p>实现没有什么好说的。这里说一下这个东西的流程吧。</p>
+<p>中断描述符表初始化完毕后，所有中断例程最后都指向了 <code>trapentry.S</code> 里的 <code>__alltraps:</code> 标签。</p>
+<p><code>__alltraps</code> 进行一些信息压栈后，通过 <code>push esp</code> 将当前栈顶指针变成函数参数(回想：调用栈)。注意由于压栈操作，当前栈顶指针可以视作一个结构体指针。最后调用 <code>trap.c</code> 中的函数 <code>trap(tf)</code> 。</p>
+<p>而 <code>trap</code> 调用函数 <code>trap_dispatch</code> 进行分发 (蛇计模式 (笑。</p>
+<h3>0x09 Extend-1 Switching from Kernel Mode to User Mode</h3>
+<p>先上一手实现。</p>
+<div class="highlight"><pre><span></span><span class="k">if</span><span class="p">(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span> <span class="o">!=</span> <span class="n">USER_CS</span><span class="p">){</span>
+            <span class="k">struct</span> <span class="n">trapframe</span> <span class="n">tmp</span><span class="o">=*</span><span class="n">tf</span><span class="p">;</span>
+            <span class="n">tmp</span><span class="p">.</span><span class="n">tf_cs</span><span class="o">=</span><span class="n">USER_CS</span><span class="p">;</span>
+            <span class="n">tmp</span><span class="p">.</span><span class="n">tf_ds</span><span class="o">=</span><span class="n">tmp</span><span class="p">.</span><span class="n">tf_es</span><span class="o">=</span><span class="n">tmp</span><span class="p">.</span><span class="n">tf_ss</span><span class="o">=</span><span class="n">USER_DS</span><span class="p">;</span>
+            <span class="n">tmp</span><span class="p">.</span><span class="n">tf_esp</span><span class="o">=</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">tf</span><span class="o">+</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">trapframe</span><span class="p">)</span><span class="o">-</span><span class="mi">8</span><span class="p">;</span>
+            <span class="n">tmp</span><span class="p">.</span><span class="n">tf_eflags</span> <span class="o">|=</span> <span class="p">(</span><span class="mi">3</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">);</span>
+            <span class="o">*</span><span class="p">((</span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)</span><span class="n">tf</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="o">&amp;</span><span class="n">tmp</span><span class="p">;</span>
+        <span class="p">}</span>
+</pre></div>
+
+
+<p>解释一下这个过程：</p>
+<p>首先我们建立临时数据结构 <code>tmp</code> 。</p>
+<p>之所以不直接在 <code>tf</code> 上魔改，是因为 <code>tf</code> 本身没有我们需要的 <code>tf_esp</code> 和 <code>tf_ss</code> 。</p>
+<p>没有的原因是中断处于 <code>Ring 0</code> ，而触发中断的代码也在 <code>Ring 0</code> 。</p>
+<p>接下来改变 <code>cs</code> 和 <code>ds es ss</code> 寄存器到相应的用户段。</p>
+<p>接下来设置用户栈栈顶 <code>esp</code> 。在这里我们把它放在压入 <code>tf</code> 之前的位置。</p>
+<p>如果不这样做，<code>tf</code> 这块数据就会释放不掉。</p>
+<p>接下来改变 <code>eflags</code> 的 <code>I/O</code> 特权位。这使得用户权限可以使用 <code>I/O</code> 指令。</p>
+<p>最后一步改变原先的 <code>tf</code> 指针。要理解这一步的原因，需要观察 <code>trapentry.S</code> 。</p>
+<div class="highlight"><pre><span></span><span class="c"># push %esp to pass a pointer to the trapframe as an argument to trap()</span>
+    <span class="nf">pushl</span> <span class="nv">%esp</span>
+
+    <span class="c"># call trap(tf), where tf=%esp</span>
+    <span class="nf">call</span> <span class="no">trap</span>
+
+    <span class="c"># pop the pushed stack pointer</span>
+    <span class="nf">popl</span> <span class="nv">%esp</span>
+
+    <span class="c"># return falls through to trapret...</span>
+<span class="na">.globl</span> <span class="no">__trapret</span>
+<span class="nl">__trapret:</span>
+    <span class="c"># restore registers from stack</span>
+    <span class="nf">popal</span>
+
+    <span class="c"># restore %ds, %es, %fs and %gs</span>
+    <span class="nf">popl</span> <span class="nv">%gs</span>
+    <span class="nf">popl</span> <span class="nv">%fs</span>
+    <span class="nf">popl</span> <span class="nv">%es</span>
+    <span class="nf">popl</span> <span class="nv">%ds</span>
+
+    <span class="c"># get rid of the trap number and error code</span>
+    <span class="nf">addl</span> <span class="no">$0x8</span><span class="p">,</span> <span class="nv">%esp</span>
+    <span class="nf">iret</span>
+</pre></div>
+
+
+<p>这里，在 <code>call trap</code> 之前，把 <code>esp</code> 压栈作为<code>trap()</code> 的参数传给 <code>trap()</code> 。</p>
+<p>在调用过程结束后，把压栈的参数弹栈变为 <code>esp</code> 的值。</p>
+<p>此时，我们如果改变栈顶内容，那么这里弹栈，就会将我们的 <code>tmp</code> 结构当作栈顶，从而从我们的 <code>tmp</code> 结构恢复各寄存器值。</p>
+<p>最后，CPU 检测到特权级转换，再从我们的 <code>tmp</code> 结构中弹出 <code>esp</code> 和 <code>ss</code> 。这时，我们修改过的 <code>tf_esp</code> 产生作用，将 <code>esp</code> 寄存器设定在我们想要的值上。</p>
+<p>至此，整个特权级转换的过程就完成了。</p>
+<h3>0x0A Extend-1 Switching from User Mode to Kernel Mode</h3>
+<p>照例来一手实现。</p>
+<div class="highlight"><pre><span></span><span class="k">if</span><span class="p">(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span> <span class="o">!=</span> <span class="n">KERNEL_CS</span><span class="p">){</span>
+            <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span><span class="o">=</span><span class="n">KERNEL_CS</span><span class="p">;</span>
+            <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_ds</span> <span class="o">=</span> <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_es</span> <span class="o">=</span> <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_ss</span> <span class="o">=</span> <span class="n">KERNEL_DS</span><span class="p">;</span>
+            <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_eflags</span> <span class="o">&amp;=</span> <span class="o">~</span><span class="p">(</span><span class="mi">3</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">);</span>
+            <span class="k">struct</span> <span class="n">trapframe</span> <span class="o">*</span><span class="n">tmp</span><span class="o">=</span><span class="p">(</span><span class="k">struct</span> <span class="n">trapframe</span><span class="o">*</span><span class="p">)(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_esp</span><span class="o">-</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">trapframe</span><span class="p">)</span><span class="o">+</span><span class="mi">8</span><span class="p">);</span>
+            <span class="n">memmove</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span><span class="n">tf</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="k">struct</span> <span class="n">trapframe</span><span class="p">)</span><span class="o">-</span><span class="mi">8</span><span class="p">);</span>
+            <span class="o">*</span><span class="p">((</span><span class="kt">uint32_t</span><span class="o">*</span><span class="p">)</span><span class="n">tf</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">tmp</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">break</span><span class="p">;</span>
+</pre></div>
+
+
+<p>首先可以看到，和上一个不一样，这次 <code>tf</code> 已经包含了我们需要的所有信息。所以可以直接修改 <code>tf</code> 的值。</p>
+<p>这里 <code>tmp</code> 指针的位置是用户栈上分配了一块内存。这里需要注意的是，由于后一步没有特权转换，所以不需要最后两个值。</p>
+<p>之后把需要的数据 <code>memmove</code> 到需要的位置。这里不直接使用 <code>tf</code> 的原因是不好确定 <code>tf</code> 和 <code>tf_esp</code> 的位置。</p>
+<h3>0x0B Extend-1 Notice</h3>
+<p>增加中断处理代码后，要把中断 <code>T_SWITCH_TOK</code> 的特权级设为 <code>Ring 0</code> ，否则无法触发中断。</p>
+<h3>0x0C Extend-2 Trigger Switching by Keyboard Input</h3>
+<div class="highlight"><pre><span></span><span class="k">case</span> <span class="n">IRQ_OFFSET</span> <span class="o">+</span> <span class="nl">IRQ_KBD</span><span class="p">:</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">cons_getc</span><span class="p">();</span>
+        <span class="n">cprintf</span><span class="p">(</span><span class="s">&quot;kbd [%03d] %c</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">);</span>
+        <span class="k">switch</span><span class="p">(</span><span class="n">c</span><span class="p">){</span>
+            <span class="k">case</span> <span class="sc">&#39;3&#39;</span><span class="o">:</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span> <span class="o">!=</span> <span class="n">USER_CS</span><span class="p">){</span>
+                    <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span><span class="o">=</span><span class="n">USER_CS</span><span class="p">;</span>
+                    <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_ds</span><span class="o">=</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_es</span><span class="o">=</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_ss</span><span class="o">=</span><span class="n">USER_DS</span><span class="p">;</span>
+                    <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_eflags</span><span class="o">|=</span><span class="p">(</span><span class="mi">3</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">);</span>
+                    <span class="n">print_trapframe</span><span class="p">(</span><span class="n">tf</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="k">break</span><span class="p">;</span>
+            <span class="k">case</span> <span class="sc">&#39;0&#39;</span><span class="o">:</span>
+                <span class="k">if</span><span class="p">(</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span> <span class="o">!=</span> <span class="n">KERNEL_CS</span><span class="p">){</span>
+                    <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_cs</span><span class="o">=</span><span class="n">KERNEL_CS</span><span class="p">;</span>
+                    <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_ds</span><span class="o">=</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_es</span><span class="o">=</span><span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_ss</span><span class="o">=</span><span class="n">KERNEL_DS</span><span class="p">;</span>
+                    <span class="n">tf</span><span class="o">-&gt;</span><span class="n">tf_eflags</span><span class="o">&amp;=~</span><span class="p">(</span><span class="mi">3</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">);</span>
+                    <span class="n">print_trapframe</span><span class="p">(</span><span class="n">tf</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="k">break</span><span class="p">;</span>
+            <span class="k">default</span><span class="o">:</span><span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">break</span><span class="p">;</span>
+</pre></div>
+
+
+<p>没什么好说的。注意硬件中断是在内核态触发的，所以直接魔改 <code>tf</code> 应该就可以了。</p>
+    </article>
+
+        <div class="tags">
+            <p>tags: <a href="/tag/os.html">os</a></p>
+        </div>
+
+    <hr>
+
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+                    <ul class="list-inline text-center">
+                            <li>
+                                <a href="https://github.com/HUSTMeituanClub">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-github fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="mailto:@hustmeituan.club">
+                                    <span class="fa-stack fa-lg">
+                                        <i class="fa fa-circle fa-stack-2x"></i>
+                                        <i class="fa fa-envelope fa-stack-1x fa-inverse"></i>
+                                    </span>
+                                </a>
+                            </li>
+                    </ul>
+<p class="copyright text-muted">
+    Blog powered by <a href="http://getpelican.com">Pelican</a>,
+    which takes great advantage of <a href="http://python.org">Python</a>.
+</p>                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="/theme/js/jquery.min.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="/theme/js/bootstrap.min.js"></script>
+
+        <!-- Custom Theme JavaScript -->
+        <script src="/theme/js/clean-blog.min.js"></script>
+
+</body>
+
+</html>

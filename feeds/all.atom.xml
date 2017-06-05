@@ -1,5 +1,415 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-05-25T20:54:08+08:00</updated><entry><title>Android Google官方MVP架构分析</title><link href="/android-googleguan-fang-mvpjia-gou-fen-xi.html" rel="alternate"></link><published>2017-05-25T20:54:08+08:00</published><updated>2017-05-25T20:54:08+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-25:/android-googleguan-fang-mvpjia-gou-fen-xi.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-06-02T10:37:00+08:00</updated><entry><title>simple_os_book lab1 记录w</title><link href="/simple_os_book-lab1-ji-lu-w.html" rel="alternate"></link><published>2017-06-02T10:37:00+08:00</published><updated>2017-06-02T10:37:00+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-06-02:/simple_os_book-lab1-ji-lu-w.html</id><summary type="html">&lt;h1&gt;ucore OS lab 1&lt;/h1&gt;
+&lt;p&gt;ucore os 实验一&lt;/p&gt;
+&lt;h3&gt;0x01 Setting up Environment&lt;/h3&gt;
+&lt;p&gt;使用的 Linux 发行版是 &lt;code&gt;Arch Linux&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;安装 &lt;code&gt;qemu&lt;/code&gt; 以及附带的多平台支持：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# pacman -S qemu qemu-arch-extra&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;安装完毕之后，就可以使用&lt;code&gt;qemu-system-i386&lt;/code&gt;模拟器了。&lt;/p&gt;
+&lt;p&gt;注意要安装&lt;code&gt;gcc-multilib&lt;/code&gt;，否则无法交叉编译&lt;code&gt;i386&lt;/code&gt;的可执行文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# pacman -S gcc-multilib&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示 &lt;code&gt;Replace gcc&lt;/code&gt; 的时候，可以放心大胆地选择&lt;code&gt;yes&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这样，在lab01文件夹下直接&lt;code&gt;make&lt;/code&gt;，就可以直接编译了。&lt;/p&gt;
+&lt;h3&gt;0x02 Makefile (Makefile)&lt;/h3&gt;
+&lt;p&gt;环境设置直接略过，直接跳到具体生成 …&lt;/p&gt;</summary><content type="html">&lt;h1&gt;ucore OS lab 1&lt;/h1&gt;
+&lt;p&gt;ucore os 实验一&lt;/p&gt;
+&lt;h3&gt;0x01 Setting up Environment&lt;/h3&gt;
+&lt;p&gt;使用的 Linux 发行版是 &lt;code&gt;Arch Linux&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;安装 &lt;code&gt;qemu&lt;/code&gt; 以及附带的多平台支持：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# pacman -S qemu qemu-arch-extra&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;安装完毕之后，就可以使用&lt;code&gt;qemu-system-i386&lt;/code&gt;模拟器了。&lt;/p&gt;
+&lt;p&gt;注意要安装&lt;code&gt;gcc-multilib&lt;/code&gt;，否则无法交叉编译&lt;code&gt;i386&lt;/code&gt;的可执行文件。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c1"&gt;# pacman -S gcc-multilib&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;提示 &lt;code&gt;Replace gcc&lt;/code&gt; 的时候，可以放心大胆地选择&lt;code&gt;yes&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;这样，在lab01文件夹下直接&lt;code&gt;make&lt;/code&gt;，就可以直接编译了。&lt;/p&gt;
+&lt;h3&gt;0x02 Makefile (Makefile)&lt;/h3&gt;
+&lt;p&gt;环境设置直接略过，直接跳到具体生成&lt;code&gt;img&lt;/code&gt;文件的指令：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Ilibs/ -Os -nostdinc -c boot/bootasm.S -o obj/boot/bootasm.o
+gcc -Iboot/ -fno-builtin -Wall -ggdb -m32 -gstabs -nostdinc  -fno-stack-protector -Ilibs/ -Os -nostdinc -c boot/bootmain.c -o obj/boot/bootmain.o
+ld -m    elf_i386 -nostdlib -N -e start -Ttext 0x7C00 obj/boot/bootasm.o obj/boot/bootmain.o -o obj/bootblock.o
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;编译、链接 bootloader 。注意这里的&lt;code&gt;-nostdlib&lt;/code&gt;和&lt;code&gt;-e start -Ttext 0x7c00&lt;/code&gt;是使得链接结果能够作为 bootloader 的关键。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dd &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;/dev/zero &lt;span class="nv"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;bin/ucore.img &lt;span class="nv"&gt;count&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;10000&lt;/span&gt;
+dd &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;bin/bootblock &lt;span class="nv"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;bin/ucore.img &lt;span class="nv"&gt;conv&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;notrunc
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将 bootloader 复制到前512个字节（第一扇区）中。系统在启动前会把这里的代码读到0x7c00处，然后 CPU 从此处开始执行。&lt;/p&gt;
+&lt;h3&gt;0x03 Bootloader Code (bootasm.S)&lt;/h3&gt;
+&lt;p&gt;第 15 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="na"&gt;.code16&lt;/span&gt;    &lt;span class="c"&gt;# Assemble for 16-bit mode&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;指示 &lt;code&gt;gas&lt;/code&gt; 编译器生成16位代码。&lt;/p&gt;
+&lt;p&gt;当&lt;code&gt;BIOS&lt;/code&gt;刚刚将控制权转交给加载到地址&lt;code&gt;0x7c00&lt;/code&gt;的&lt;code&gt;bootloader&lt;/code&gt;的时候，CPU 仍然运转在16位模式。在这种情况下，由于所有寄存器仍然是32位的，所以你不得不在每个指令后加长度限定符。但是通过使用&lt;code&gt;.code16&lt;/code&gt;，&lt;code&gt;gas&lt;/code&gt;编译器会认为你正在试图生成一段在16位模式下运行的32位程序，所以会自动帮你加上长度限定符。&lt;/p&gt;
+&lt;p&gt;第 16,17 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;cli      # Disable interrupts
+cld      # String operations increment
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;开始启动流程。&lt;code&gt;cli&lt;/code&gt;指令关闭中断，以免初始化过程出现异常。&lt;code&gt;cld&lt;/code&gt;指令将&lt;code&gt;DF&lt;/code&gt;清0。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;DF&lt;/code&gt;指示多字节操作时的操作顺序，是从低字节到高字节（increment,clear） 还是高字节到低字节(decrement,set)。&lt;/p&gt;
+&lt;p&gt;C 运行环境假设&lt;code&gt;DF&lt;/code&gt;处于被清零状态。所以若要试图载入 C 运行环境，需要把&lt;code&gt;DF&lt;/code&gt;清零。&lt;/p&gt;
+&lt;p&gt;第 20~23 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;xorw %ax, %ax
+movw %ax, %ds
+movw %ax, %es
+movw %ax, %ss
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;初始化数据段寄存器。首先对自身&lt;code&gt;xor&lt;/code&gt;将自己的值变为0,然后使用&lt;code&gt;ax&lt;/code&gt;依次清空&lt;code&gt;DS&lt;/code&gt;,&lt;code&gt;ES&lt;/code&gt;和&lt;code&gt;SS&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;第 29～43 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;seta20.1:
+    inb $0x64, %al
+    testb $0x2, %al
+    jnz seta20.1
+
+    movb $0xd1, %al
+    outb %al, $0x64
+
+seta20.2:
+    inb $0x64, %al                                 
+    testb $0x2, %al
+    jnz seta20.2
+
+    movb $0xdf, %al   
+    outb %al, $0x60
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;关闭 Intel 的 8086 兼容模式，使得 CPU 能够寻址 1MB 以上的内存空间。&lt;/p&gt;
+&lt;p&gt;关闭的方式是 Intel 规定的，所以没什么好说。值得一提的是按端口 I/O 操作的方式：&lt;/p&gt;
+&lt;p&gt;读取端口状态-查看是否繁忙-繁忙则等待-不繁忙则输出。&lt;/p&gt;
+&lt;p&gt;第 49~52 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;lgdt gdtdesc
+movl %cr0, %eax
+orl $CR0_PE_ON, %eax
+movl %eax, %cr0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;对应的代码段：第78~86行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="na"&gt;.p2align&lt;/span&gt; &lt;span class="mi"&gt;2&lt;/span&gt;
+&lt;span class="nl"&gt;gdt:&lt;/span&gt;
+    &lt;span class="nf"&gt;SEG_NULLASM&lt;/span&gt;
+    &lt;span class="nf"&gt;SEG_ASM&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="no"&gt;STA_X&lt;/span&gt;&lt;span class="err"&gt;|&lt;/span&gt;&lt;span class="no"&gt;STA_R&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0x0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0xffffffff&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+    &lt;span class="nf"&gt;SEG_ASM&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="no"&gt;STA_W&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0x0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="mi"&gt;0xffffffff&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="nl"&gt;gdtdesc:&lt;/span&gt;
+    &lt;span class="na"&gt;.word&lt;/span&gt; &lt;span class="mi"&gt;0x17&lt;/span&gt;
+    &lt;span class="na"&gt;.long&lt;/span&gt; &lt;span class="no"&gt;gdt&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用&lt;code&gt;lgdt&lt;/code&gt;指令加载全局描述符表。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;.p2align x&lt;/code&gt;指示&lt;code&gt;gdt&lt;/code&gt;按2^&lt;em&gt;x&lt;/em&gt;字节对齐。&lt;code&gt;gdt&lt;/code&gt;段使用宏定义了三个全局描述符： NULL , CODE 和 DATA ，后两个段分别具有 X&lt;em&gt;(eXecute)&lt;/em&gt;|R&lt;em&gt;(Read)&lt;/em&gt; 和 W&lt;em&gt;(Write)&lt;/em&gt;|R&lt;em&gt;(Read)&lt;/em&gt; 权限。注意后一个只需要声明 W 就可以了。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;gdtdesc&lt;/code&gt;指示&lt;code&gt;lgdt&lt;/code&gt;指令应该如何读入全局描述符表。其中&lt;code&gt;.word a&lt;/code&gt;的a是&lt;code&gt;gdt&lt;/code&gt;的长度-1（&lt;code&gt;sizeof(gdt)-1&lt;/code&gt;）。注意这里的&lt;code&gt;.word 0x17&lt;/code&gt;即是十进制的&lt;code&gt;23&lt;/code&gt; 。参考了一下&lt;code&gt;xv6&lt;/code&gt;的 bootloader 之后，建议使用如下这种写法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    .word (gdtdesc - gdt - 1)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第 50~52 行将 &lt;em&gt;保护模式的开启位&lt;/em&gt; 置为1。至此，CPU 已经做好了进入保护模式的准备。&lt;/p&gt;
+&lt;p&gt;第 56 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    ljmp $PROT_MODE_CSEG, $protcseg
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;使用&lt;code&gt;ljmp&lt;/code&gt;&lt;em&gt;(长跳转)&lt;/em&gt;指令进入保护模式。其中：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;$PROT_MODE_CSEG&lt;/code&gt;是保护模式下代码段对应的段选择子(定义位于&lt;code&gt;asm.h&lt;/code&gt;，值为&lt;code&gt;0x8&lt;/code&gt;)，这个选择子在&lt;code&gt;ljmp&lt;/code&gt;指令下将被放置到&lt;code&gt;CS&lt;/code&gt;中，&lt;code&gt;$protcseg&lt;/code&gt;的值将被放置到&lt;code&gt;EIP&lt;/code&gt;中。&lt;/p&gt;
+&lt;p&gt;值得注意的是段选择子的结构：&lt;/p&gt;
+&lt;p&gt;长度为&lt;code&gt;16&lt;/code&gt;位&lt;em&gt;(&lt;code&gt;word&lt;/code&gt;)&lt;/em&gt;，&lt;em&gt;(从后往前)&lt;/em&gt;第0-1位是请求特权级&lt;em&gt;(RPL)&lt;/em&gt;，第3位是[0:全局描述符表,1:局部描述符表]&lt;em&gt;(注意局部描述符表在实验中没有涉及)&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;第 58~71 行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="na"&gt;.code32&lt;/span&gt;
+&lt;span class="nl"&gt;protcseg:&lt;/span&gt;
+    &lt;span class="nf"&gt;movw&lt;/span&gt; &lt;span class="no"&gt;$PROT_MODE_DSEG&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%ax&lt;/span&gt;
+    &lt;span class="nf"&gt;movw&lt;/span&gt; &lt;span class="nv"&gt;%ax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%ds&lt;/span&gt;
+    &lt;span class="nf"&gt;movw&lt;/span&gt; &lt;span class="nv"&gt;%ax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%es&lt;/span&gt;
+    &lt;span class="nf"&gt;movw&lt;/span&gt; &lt;span class="nv"&gt;%ax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%fs&lt;/span&gt;
+    &lt;span class="nf"&gt;movw&lt;/span&gt; &lt;span class="nv"&gt;%ax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%gs&lt;/span&gt;
+    &lt;span class="nf"&gt;movw&lt;/span&gt; &lt;span class="nv"&gt;%ax&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%ss&lt;/span&gt;
+
+
+    &lt;span class="nf"&gt;movl&lt;/span&gt; &lt;span class="no"&gt;$0x0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%ebp&lt;/span&gt;
+    &lt;span class="nf"&gt;movl&lt;/span&gt; &lt;span class="no"&gt;$start&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="nv"&gt;%esp&lt;/span&gt;
+    &lt;span class="nf"&gt;call&lt;/span&gt; &lt;span class="no"&gt;bootmain&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这段代码初始化栈寄存器并跳转到&lt;code&gt;C&lt;/code&gt;代码。&lt;/p&gt;
+&lt;p&gt;第 62~66 行：使用数据段选择子初始化所有数据栈寄存器。&lt;/p&gt;
+&lt;p&gt;第 69 行：将&lt;code&gt;EBP&lt;/code&gt;置 0 。因为&lt;code&gt;C&lt;/code&gt;代码仍然是 bootloader 的一部分，所以栈仍然使用 bootloader 的栈。由内存模型，bootloader 的栈位于0x0到0x7c00(&lt;code&gt;$start&lt;/code&gt;，第一条指令)之间。&lt;/p&gt;
+&lt;p&gt;第 70 行：将&lt;code&gt;$start&lt;/code&gt;放入&lt;code&gt;ESP&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;第 71 行：进入&lt;code&gt;C&lt;/code&gt;代码。&lt;/p&gt;
+&lt;h3&gt;0x04 Bootloader Code(bootmain.c)&lt;/h3&gt;
+&lt;p&gt;这段代码阐述 bootloader 如何从硬盘中读取 ELF 格式的 kernel 并且载入内存中执行的。&lt;/p&gt;
+&lt;p&gt;首先，将 kernel 写入硬盘 ：&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Makefile&lt;/code&gt; :&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;dd &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;bin/kernel &lt;span class="nv"&gt;of&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;bin/ucore.img &lt;span class="nv"&gt;seek&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="m"&gt;1&lt;/span&gt; &lt;span class="nv"&gt;conv&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;notrunc
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;注意参数 &lt;code&gt;seek=1&lt;/code&gt; 代表跳过 &lt;code&gt;of&lt;/code&gt; 指定文件的第一个 &lt;code&gt;block&lt;/code&gt; 。&lt;code&gt;dd&lt;/code&gt; 命令默认 &lt;code&gt;block&lt;/code&gt; 大小为 &lt;code&gt;512 Bytes&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;注意：bootloader 被放置在硬盘的前 &lt;code&gt;512 Bytes&lt;/code&gt; 中。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;conv=notrunc&lt;/code&gt; 参数防止了 &lt;code&gt;of&lt;/code&gt; 指定的文件被清空。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;bootmain.c&lt;/code&gt; :&lt;/p&gt;
+&lt;p&gt;ln 89:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;readseg&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="kt"&gt;uintptr_t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;ELFHDR&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;SECTSIZE&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;readseg 函数定义：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;readseg&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;uintptr_t&lt;/span&gt; &lt;span class="n"&gt;va&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;offset&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;uintptr_t&lt;/span&gt; &lt;span class="n"&gt;end_va&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;va&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;count&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;va&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="n"&gt;offset&lt;/span&gt; &lt;span class="o"&gt;%&lt;/span&gt; &lt;span class="n"&gt;SECTSIZE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;secno&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;offset&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="n"&gt;SECTSIZE&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(;&lt;/span&gt; &lt;span class="n"&gt;va&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;end_va&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;va&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="n"&gt;SECTSIZE&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;secno&lt;/span&gt; &lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;readsect&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;va&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;secno&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;readsect 函数定义：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt;
+&lt;span class="nf"&gt;readsect&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;secno&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;waitdisk&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+
+    &lt;span class="n"&gt;outb&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F2&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;                         
+    &lt;span class="n"&gt;outb&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F3&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;secno&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mh"&gt;0xFF&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;outb&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F4&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;secno&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mh"&gt;0xFF&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;outb&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F5&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;secno&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;16&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mh"&gt;0xFF&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;outb&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F6&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;secno&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;24&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mh"&gt;0xF&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="mh"&gt;0xE0&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;outb&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F7&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mh"&gt;0x20&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;                      
+
+    &lt;span class="n"&gt;waitdisk&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+
+    &lt;span class="n"&gt;insl&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mh"&gt;0x1F0&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;dst&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;SECTSIZE&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;首先解释 &lt;code&gt;readsect&lt;/code&gt; 函数。一系列的 &lt;code&gt;outb&lt;/code&gt; 指令都是对 &lt;code&gt;IDE&lt;/code&gt; 硬盘的读写操作，是规定的。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;insl(a,b,c)&lt;/code&gt; 指令将 c 个 &lt;code&gt;dword&lt;/code&gt; (即 &lt;code&gt;c*4&lt;/code&gt; 个 &lt;code&gt;byte&lt;/code&gt; )从端口 a 读入到 b 指向的内存中。&lt;/p&gt;
+&lt;p&gt;接着是 &lt;code&gt;readseg&lt;/code&gt; 函数。&lt;/p&gt;
+&lt;p&gt;注意 &lt;code&gt;va-=offset%SECTSIZE&lt;/code&gt; 语句。这一行将 &lt;code&gt;va&lt;/code&gt; 与扇区边界对齐，然后在读取时一次读入一个扇区。&lt;/p&gt;
+&lt;p&gt;再由原来未修改过的 &lt;code&gt;va&lt;/code&gt; 指针访问内存，&lt;code&gt;offset&lt;/code&gt; 就自动加上了。&lt;/p&gt;
+&lt;p&gt;下一行计算出&lt;code&gt;offset&lt;/code&gt; 对应的扇区编号。注意这里已经跳过了 bootloader 所在的 &lt;code&gt;sect 0&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;然后就是循环调用 &lt;code&gt;readsect&lt;/code&gt; 读取磁盘内容了。&lt;/p&gt;
+&lt;p&gt;回到 &lt;code&gt;bootmain&lt;/code&gt; 的 89 行。&lt;code&gt;readseg((uintptr_t)ELFHDR, SECTSIZE*8, 0)&lt;/code&gt; 从硬盘中读取 8 个 sect 到内存地址 &lt;code&gt;ELFHDR&lt;/code&gt; (0x10000，内核放置位置)中。&lt;/p&gt;
+&lt;p&gt;ln 92 ~ 94:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ELFHDR&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;e_magic&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="n"&gt;ELF_MAGIC&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+  &lt;span class="k"&gt;goto&lt;/span&gt; &lt;span class="n"&gt;bad&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;(struct好评 magic number go die)&lt;/p&gt;
+&lt;p&gt;测试是否与 &lt;code&gt;ELF_MAGIC&lt;/code&gt; 相同(即 是不是 ELF 可执行文件)&lt;/p&gt;
+&lt;p&gt;ln 99~103&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ph&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;proghdr&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)((&lt;/span&gt;&lt;span class="kt"&gt;uintptr_t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;ELFHDR&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;ELFHDR&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;e_phoff&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;eph&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;ph&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;ELFHDR&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;e_phnum&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="p"&gt;(;&lt;/span&gt;&lt;span class="n"&gt;ph&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;eph&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="n"&gt;ph&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+  &lt;span class="n"&gt;readseg&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ph&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;p_va&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mh"&gt;0xFFFFFF&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;ph&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;p_memsz&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;ph&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;p_offset&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;依次将各个程序段读入内存中相应位置。&lt;/p&gt;
+&lt;p&gt;ln 107&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="p"&gt;))(&lt;/span&gt;&lt;span class="n"&gt;ELFHDR&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;e_entry&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="mh"&gt;0xFFFFFF&lt;/span&gt;&lt;span class="p"&gt;))();&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将入口点转换为 &lt;code&gt;void (*)(void)&lt;/code&gt; 类型的函数指针，然后调用之，进入内核。&lt;/p&gt;
+&lt;h3&gt;0x05 print_stackframe (kdebug.c)&lt;/h3&gt;
+&lt;p&gt;先上我的实现：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;    &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;ebpv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;read_ebp&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;eipv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;read_eip&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ebpv&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+        &lt;span class="n"&gt;cprintf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;EBP %08x:EIP %08x:args &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;ebpv&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;eipv&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;iter&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="p"&gt;(;&lt;/span&gt;&lt;span class="n"&gt;iter&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="mi"&gt;4&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="n"&gt;iter&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+            &lt;span class="n"&gt;cprintf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%d &amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;(((&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;ebpv&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="n"&gt;iter&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;2&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;cprintf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;print_debuginfo&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;eipv&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="c1"&gt;// pop&lt;/span&gt;
+        &lt;span class="n"&gt;eipv&lt;/span&gt;&lt;span class="o"&gt;=*&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;ebpv&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;ebpv&lt;/span&gt;&lt;span class="o"&gt;=*&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;ebpv&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;只要熟悉调用栈结构就可以轻易写出。注意这里我写的时候脑子抽了一下，调用栈是由上往下增长的，最高位地址是栈顶，所以访问之前压栈的东西必是&lt;code&gt;+&lt;/code&gt;。最后一个的 &lt;code&gt;EBP&lt;/code&gt; 对应位置为0 ，它是 &lt;code&gt;bootmain.c&lt;/code&gt; 里面的第一个 C 环境函数，C 编译器为它生成的第一个语句 &lt;code&gt;push ebp&lt;/code&gt; 将在 &lt;code&gt;bootasm.S&lt;/code&gt; 中初始化的 &lt;code&gt;movl $0x0, %ebp&lt;/code&gt; 压入栈中。所以&lt;code&gt;ebpv==0&lt;/code&gt; 为退出条件。&lt;/p&gt;
+&lt;h3&gt;0x06 Interrupt (IDT Structure/Gate Descriptors)&lt;/h3&gt;
+&lt;p&gt;每一个中断门描述符由 64 bits (8 bytes) 组成。&lt;/p&gt;
+&lt;h4&gt;80386 Task Gate Descriptor&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;Task Gate&lt;/code&gt; 主要用于任务切换。&lt;/p&gt;
+&lt;p&gt;00-15 &lt;code&gt;NOT USED&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;16-31 &lt;code&gt;段选择子 Selector&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;32-39 &lt;code&gt;NOT USED&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;40-44 二进制序列 &lt;code&gt;10100&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;45-46 DPL (Descriptor Privilege Level)&lt;/p&gt;
+&lt;p&gt;47 Present&lt;/p&gt;
+&lt;p&gt;48-63 &lt;code&gt;NOT USED&lt;/code&gt;&lt;/p&gt;
+&lt;h4&gt;80306 Interrupt Gate Descriptor&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;Interrupt Gate&lt;/code&gt; 主要用于中断处理&lt;/p&gt;
+&lt;p&gt;00-15 &lt;code&gt;Offset 段内偏移&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;16-31 &lt;code&gt;段选择子 Selector&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;32-36 &lt;code&gt;NOT USED&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;37-44 二进制序列 &lt;code&gt;00001110&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;45-46 DPL (Descriptor Privilege Level)&lt;/p&gt;
+&lt;p&gt;47 Present&lt;/p&gt;
+&lt;p&gt;48-63 &lt;code&gt;Offset 段内偏移&lt;/code&gt;&lt;/p&gt;
+&lt;h4&gt;80386 Trap Gate Descriptor&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;Trap Gate&lt;/code&gt; 主要用于系统调用&lt;/p&gt;
+&lt;p&gt;00-15 Offset 段内偏移&lt;/p&gt;
+&lt;p&gt;16-31 段选择子 Selector&lt;/p&gt;
+&lt;p&gt;32-36 NOT USED&lt;/p&gt;
+&lt;p&gt;37-44 二进制序列 00011110&lt;/p&gt;
+&lt;p&gt;45-46 DPL (Descriptor Privilege Level)&lt;/p&gt;
+&lt;p&gt;47 Present&lt;/p&gt;
+&lt;p&gt;48-63 Offset 段内偏移&lt;/p&gt;
+&lt;h3&gt;0x07 Interrupt (Initialize IDT)&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;extern&lt;/span&gt; &lt;span class="kt"&gt;uintptr_t&lt;/span&gt; &lt;span class="n"&gt;__vectors&lt;/span&gt;&lt;span class="p"&gt;[];&lt;/span&gt;
+&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="k"&gt;for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="mi"&gt;256&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+    &lt;span class="n"&gt;SETGATE&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;idt&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;],(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;==&lt;/span&gt;&lt;span class="n"&gt;T_SYSCALL&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt;&lt;span class="n"&gt;GD_KTEXT&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;__vectors&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;],&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;==&lt;/span&gt;&lt;span class="n"&gt;T_SYSCALL&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="n"&gt;lidt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;idt_pd&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;直接上实现。&lt;/p&gt;
+&lt;p&gt;注意 &lt;code&gt;SETGATE&lt;/code&gt; 宏的 &lt;code&gt;seg&lt;/code&gt; 参数指的是段选择子。所以直接使用 &lt;code&gt;GD_KTEXT&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;这里判断 &lt;code&gt;i==T_SYSCALL&lt;/code&gt; 用于设置用于系统调用的陷阱门描述符。&lt;/p&gt;
+&lt;p&gt;最后 &lt;code&gt;lidt&lt;/code&gt; 指令加上 &lt;code&gt;idt_pd&lt;/code&gt; 的地址加载 &lt;code&gt;IDT&lt;/code&gt;&lt;/p&gt;
+&lt;h3&gt;0x08 Interrupt (Clock Interrupt Lab)&lt;/h3&gt;
+&lt;p&gt;实现没有什么好说的。这里说一下这个东西的流程吧。&lt;/p&gt;
+&lt;p&gt;中断描述符表初始化完毕后，所有中断例程最后都指向了 &lt;code&gt;trapentry.S&lt;/code&gt; 里的 &lt;code&gt;__alltraps:&lt;/code&gt; 标签。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;__alltraps&lt;/code&gt; 进行一些信息压栈后，通过 &lt;code&gt;push esp&lt;/code&gt; 将当前栈顶指针变成函数参数(回想：调用栈)。注意由于压栈操作，当前栈顶指针可以视作一个结构体指针。最后调用 &lt;code&gt;trap.c&lt;/code&gt; 中的函数 &lt;code&gt;trap(tf)&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;而 &lt;code&gt;trap&lt;/code&gt; 调用函数 &lt;code&gt;trap_dispatch&lt;/code&gt; 进行分发 (蛇计模式 (笑。&lt;/p&gt;
+&lt;h3&gt;0x09 Extend-1 Switching from Kernel Mode to User Mode&lt;/h3&gt;
+&lt;p&gt;先上一手实现。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="n"&gt;USER_CS&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+            &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;trapframe&lt;/span&gt; &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;=*&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;USER_CS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tf_ds&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tf_es&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tf_ss&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;USER_DS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tf_esp&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;trapframe&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;tf_eflags&lt;/span&gt; &lt;span class="o"&gt;|=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;解释一下这个过程：&lt;/p&gt;
+&lt;p&gt;首先我们建立临时数据结构 &lt;code&gt;tmp&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;之所以不直接在 &lt;code&gt;tf&lt;/code&gt; 上魔改，是因为 &lt;code&gt;tf&lt;/code&gt; 本身没有我们需要的 &lt;code&gt;tf_esp&lt;/code&gt; 和 &lt;code&gt;tf_ss&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;没有的原因是中断处于 &lt;code&gt;Ring 0&lt;/code&gt; ，而触发中断的代码也在 &lt;code&gt;Ring 0&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;接下来改变 &lt;code&gt;cs&lt;/code&gt; 和 &lt;code&gt;ds es ss&lt;/code&gt; 寄存器到相应的用户段。&lt;/p&gt;
+&lt;p&gt;接下来设置用户栈栈顶 &lt;code&gt;esp&lt;/code&gt; 。在这里我们把它放在压入 &lt;code&gt;tf&lt;/code&gt; 之前的位置。&lt;/p&gt;
+&lt;p&gt;如果不这样做，&lt;code&gt;tf&lt;/code&gt; 这块数据就会释放不掉。&lt;/p&gt;
+&lt;p&gt;接下来改变 &lt;code&gt;eflags&lt;/code&gt; 的 &lt;code&gt;I/O&lt;/code&gt; 特权位。这使得用户权限可以使用 &lt;code&gt;I/O&lt;/code&gt; 指令。&lt;/p&gt;
+&lt;p&gt;最后一步改变原先的 &lt;code&gt;tf&lt;/code&gt; 指针。要理解这一步的原因，需要观察 &lt;code&gt;trapentry.S&lt;/code&gt; 。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="c"&gt;# push %esp to pass a pointer to the trapframe as an argument to trap()&lt;/span&gt;
+    &lt;span class="nf"&gt;pushl&lt;/span&gt; &lt;span class="nv"&gt;%esp&lt;/span&gt;
+
+    &lt;span class="c"&gt;# call trap(tf), where tf=%esp&lt;/span&gt;
+    &lt;span class="nf"&gt;call&lt;/span&gt; &lt;span class="no"&gt;trap&lt;/span&gt;
+
+    &lt;span class="c"&gt;# pop the pushed stack pointer&lt;/span&gt;
+    &lt;span class="nf"&gt;popl&lt;/span&gt; &lt;span class="nv"&gt;%esp&lt;/span&gt;
+
+    &lt;span class="c"&gt;# return falls through to trapret...&lt;/span&gt;
+&lt;span class="na"&gt;.globl&lt;/span&gt; &lt;span class="no"&gt;__trapret&lt;/span&gt;
+&lt;span class="nl"&gt;__trapret:&lt;/span&gt;
+    &lt;span class="c"&gt;# restore registers from stack&lt;/span&gt;
+    &lt;span class="nf"&gt;popal&lt;/span&gt;
+
+    &lt;span class="c"&gt;# restore %ds, %es, %fs and %gs&lt;/span&gt;
+    &lt;span class="nf"&gt;popl&lt;/span&gt; &lt;span class="nv"&gt;%gs&lt;/span&gt;
+    &lt;span class="nf"&gt;popl&lt;/span&gt; &lt;span class="nv"&gt;%fs&lt;/span&gt;
+    &lt;span class="nf"&gt;popl&lt;/span&gt; &lt;span class="nv"&gt;%es&lt;/span&gt;
+    &lt;span class="nf"&gt;popl&lt;/span&gt; &lt;span class="nv"&gt;%ds&lt;/span&gt;
+
+    &lt;span class="c"&gt;# get rid of the trap number and error code&lt;/span&gt;
+    &lt;span class="nf"&gt;addl&lt;/span&gt; &lt;span class="no"&gt;$0x8&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nv"&gt;%esp&lt;/span&gt;
+    &lt;span class="nf"&gt;iret&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里，在 &lt;code&gt;call trap&lt;/code&gt; 之前，把 &lt;code&gt;esp&lt;/code&gt; 压栈作为&lt;code&gt;trap()&lt;/code&gt; 的参数传给 &lt;code&gt;trap()&lt;/code&gt; 。&lt;/p&gt;
+&lt;p&gt;在调用过程结束后，把压栈的参数弹栈变为 &lt;code&gt;esp&lt;/code&gt; 的值。&lt;/p&gt;
+&lt;p&gt;此时，我们如果改变栈顶内容，那么这里弹栈，就会将我们的 &lt;code&gt;tmp&lt;/code&gt; 结构当作栈顶，从而从我们的 &lt;code&gt;tmp&lt;/code&gt; 结构恢复各寄存器值。&lt;/p&gt;
+&lt;p&gt;最后，CPU 检测到特权级转换，再从我们的 &lt;code&gt;tmp&lt;/code&gt; 结构中弹出 &lt;code&gt;esp&lt;/code&gt; 和 &lt;code&gt;ss&lt;/code&gt; 。这时，我们修改过的 &lt;code&gt;tf_esp&lt;/code&gt; 产生作用，将 &lt;code&gt;esp&lt;/code&gt; 寄存器设定在我们想要的值上。&lt;/p&gt;
+&lt;p&gt;至此，整个特权级转换的过程就完成了。&lt;/p&gt;
+&lt;h3&gt;0x0A Extend-1 Switching from User Mode to Kernel Mode&lt;/h3&gt;
+&lt;p&gt;照例来一手实现。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="n"&gt;KERNEL_CS&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+            &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;KERNEL_CS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_ds&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_es&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_ss&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;KERNEL_DS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_eflags&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;=&lt;/span&gt; &lt;span class="o"&gt;~&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;trapframe&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;trapframe&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_esp&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;trapframe&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;memmove&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;&lt;span class="k"&gt;sizeof&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;trapframe&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;8&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;首先可以看到，和上一个不一样，这次 &lt;code&gt;tf&lt;/code&gt; 已经包含了我们需要的所有信息。所以可以直接修改 &lt;code&gt;tf&lt;/code&gt; 的值。&lt;/p&gt;
+&lt;p&gt;这里 &lt;code&gt;tmp&lt;/code&gt; 指针的位置是用户栈上分配了一块内存。这里需要注意的是，由于后一步没有特权转换，所以不需要最后两个值。&lt;/p&gt;
+&lt;p&gt;之后把需要的数据 &lt;code&gt;memmove&lt;/code&gt; 到需要的位置。这里不直接使用 &lt;code&gt;tf&lt;/code&gt; 的原因是不好确定 &lt;code&gt;tf&lt;/code&gt; 和 &lt;code&gt;tf_esp&lt;/code&gt; 的位置。&lt;/p&gt;
+&lt;h3&gt;0x0B Extend-1 Notice&lt;/h3&gt;
+&lt;p&gt;增加中断处理代码后，要把中断 &lt;code&gt;T_SWITCH_TOK&lt;/code&gt; 的特权级设为 &lt;code&gt;Ring 0&lt;/code&gt; ，否则无法触发中断。&lt;/p&gt;
+&lt;h3&gt;0x0C Extend-2 Trigger Switching by Keyboard Input&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;IRQ_OFFSET&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nl"&gt;IRQ_KBD&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;c&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;cons_getc&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;cprintf&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;kbd [%03d] %c&lt;/span&gt;&lt;span class="se"&gt;\n&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;switch&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;c&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;3&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="n"&gt;USER_CS&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+                    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;USER_CS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_ds&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_es&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_ss&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;USER_DS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_eflags&lt;/span&gt;&lt;span class="o"&gt;|=&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                    &lt;span class="n"&gt;print_trapframe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="sc"&gt;&amp;#39;0&amp;#39;&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="n"&gt;KERNEL_CS&lt;/span&gt;&lt;span class="p"&gt;){&lt;/span&gt;
+                    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_cs&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;KERNEL_CS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_ds&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_es&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_ss&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;KERNEL_DS&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                    &lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;tf_eflags&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;=~&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;3&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class="mi"&gt;12&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                    &lt;span class="n"&gt;print_trapframe&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;tf&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="k"&gt;default&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;&lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;没什么好说的。注意硬件中断是在内核态触发的，所以直接魔改 &lt;code&gt;tf&lt;/code&gt; 应该就可以了。&lt;/p&gt;</content><category term="os"></category></entry><entry><title>Android Google官方MVP架构分析</title><link href="/android-googleguan-fang-mvpjia-gou-fen-xi.html" rel="alternate"></link><published>2017-05-25T20:54:08+08:00</published><updated>2017-05-25T20:54:08+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-25:/android-googleguan-fang-mvpjia-gou-fen-xi.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
 &lt;p&gt;关于MVP模式的基本介绍与优缺点可以参见下面这篇文章：&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;https://segmentfault.com/a/1190000003927200&lt;/p&gt;
