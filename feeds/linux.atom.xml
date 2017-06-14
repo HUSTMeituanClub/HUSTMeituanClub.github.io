@@ -772,7 +772,7 @@ hwclock --systohc
 
 
 &lt;hr&gt;
-&lt;p&gt;&lt;strong&gt;如果为BIOS/MBR引导方式：&lt;/strong&gt;&lt;/p&gt;
+&lt;h5&gt;&lt;strong&gt;如果为BIOS/MBR引导方式：&lt;/strong&gt;&lt;/h5&gt;
 &lt;ul&gt;
 &lt;li&gt;安装&lt;code&gt;grub&lt;/code&gt;包：&lt;/li&gt;
 &lt;/ul&gt;
@@ -798,7 +798,7 @@ hwclock --systohc
 &lt;p&gt;&lt;img alt="" src="/images/arch18.jpg"&gt;&lt;/p&gt;
 &lt;p&gt;&lt;strong&gt;如果你没有看到如图所示的提示信息，请仔细检查是否正确完成上面的过程。&lt;/strong&gt;&lt;/p&gt;
 &lt;hr&gt;
-&lt;p&gt;&lt;strong&gt;如果为EFI/GPT引导方式：&lt;/strong&gt;&lt;/p&gt;
+&lt;h5&gt;&lt;strong&gt;如果为EFI/GPT引导方式：&lt;/strong&gt;&lt;/h5&gt;
 &lt;ul&gt;
 &lt;li&gt;安装&lt;code&gt;grub&lt;/code&gt;与&lt;code&gt;efibootmgr&lt;/code&gt;两个包：&lt;/li&gt;
 &lt;/ul&gt;
@@ -822,6 +822,23 @@ hwclock --systohc
 
 &lt;p&gt;&lt;strong&gt;提示信息应与上面的图类似，如果你发现错误，请仔细检查是否正确完成上面的过程。&lt;/strong&gt;&lt;/p&gt;
 &lt;hr&gt;
+&lt;h5&gt;安装后检查&lt;/h5&gt;
+&lt;p&gt;&lt;strong&gt;如果你是多系统，请注意上面一节中对&lt;code&gt;os-prober&lt;/code&gt;这个包的安装。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;强烈建议使用如下命令检查是否成功生成各系统的入口，如果没有正常生成会出现开机没有系统入口的情况：&lt;/strong&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;vim /boot/grub/grub.cfg
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;检查接近末尾的&lt;code&gt;menuentry&lt;/code&gt;部分是否有&lt;code&gt;windows&lt;/code&gt;或其他系统名入口。下图例子中是&lt;code&gt;Arch Linux&lt;/code&gt;入口与检测到的&lt;code&gt;windows10&lt;/code&gt;入口（安装在&lt;code&gt;/dev/sda1&lt;/code&gt;），具体情况可能有不同：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/arch22.jpg"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;如果你没有看到系统入口或者该文件不存在&lt;/strong&gt;，请检查上一小节内容并重新生成配置文件。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;如果你已经安装&lt;code&gt;os-prober&lt;/code&gt;包并生成配置文件后还是没有生成其他系统的入口&lt;/strong&gt;，请参照：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;a href="https://wiki.archlinux.org/index.php/GRUB/Tips_and_tricks#Combining_the_use_of_UUIDs_and_basic_scripting"&gt;https://wiki.archlinux.org/index.php/GRUB/Tips_and_tricks#Combining_the_use_of_UUIDs_and_basic_scripting&lt;/a&gt; &lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;编辑配置文件手动添加引导的分区入口。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h5&gt;重启&lt;/h5&gt;
 &lt;p&gt;接下来，你需要进行重启来启动已经安装好的系统，执行如下命令：&lt;/p&gt;
 &lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;exit&lt;/span&gt;
 reboot
@@ -835,4 +852,6 @@ reboot
 &lt;p&gt;输入&lt;code&gt;root&lt;/code&gt;，再输入之前设置的密码，显示出命令提示符，恭喜你，你已经成功安装&lt;code&gt;ArchLinux&lt;/code&gt;！&lt;/p&gt;
 &lt;h2&gt;安装后配置&lt;/h2&gt;
 &lt;p&gt;虽然系统安装好了，但是还没有进行基本配置和安装图形界面，所以接下来我们要进行一些必须的配置和图形界面的安装。&lt;/p&gt;
-&lt;p&gt;请见下一篇文章：&lt;a href="http://www.hustmeituan.club/archlinuxan-zhuang-hou-de-bi-xu-pei-zhi-yu-tu-xing-jie-mian-an-zhuang-jiao-cheng.html"&gt;ArchLinux安装后的必须配置与图形界面安装教程&lt;/a&gt;。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry></feed>
+&lt;p&gt;请见下一篇文章：&lt;a href="http://www.hustmeituan.club/archlinuxan-zhuang-hou-de-bi-xu-pei-zhi-yu-tu-xing-jie-mian-an-zhuang-jiao-cheng.html"&gt;ArchLinux安装后的必须配置与图形界面安装教程&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;特别感谢&lt;/h2&gt;
+&lt;p&gt;评论区中&lt;code&gt;Senrey_Song&lt;/code&gt;、&lt;code&gt;YKun&lt;/code&gt;对于本教程内容的指正。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry></feed>
