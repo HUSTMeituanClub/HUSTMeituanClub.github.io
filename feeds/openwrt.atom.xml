@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部 - Openwrt</title><link href="/" rel="alternate"></link><link href="/feeds/openwrt.atom.xml" rel="self"></link><id>/</id><updated>2017-09-05T20:06:16+08:00</updated><entry><title>TP-Link mr12u-v1刷openwrt+mentohust交叉编译（附文件下载）</title><link href="/tp-link-mr12u-v1shua-openwrtmentohustjiao-cha-bian-yi-fu-wen-jian-xia-zai.html" rel="alternate"></link><published>2017-09-05T20:06:16+08:00</published><updated>2017-09-05T20:06:16+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-09-05:/tp-link-mr12u-v1shua-openwrtmentohustjiao-cha-bian-yi-fu-wen-jian-xia-zai.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;开学学校启用了有线网，由于校园网存在只能单一设备登陆的限制与无线登陆限速，所以想通过路由器刷&lt;code&gt;openwrt&lt;/code&gt;再使用&lt;code&gt;mentohust&lt;/code&gt;进行校园网的锐捷认证来实现多设备与不限速使用。&lt;/p&gt;
+&lt;p&gt;在选择路由器时考虑了如下因素：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;可刷&lt;code&gt;openwrt&lt;/code&gt;：只有特定的处理器支持&lt;code&gt;openwrt&lt;/code&gt;，支持的路由器型号在官网有一个&lt;a href="https://wiki.openwrt.org/toh/start"&gt;列表&lt;/a&gt;，直接参照这个列表选就可以了。&lt;/li&gt;
+&lt;li&gt;有电源/usb供电：在寝室使用的话因为有段时间断电但不断网，所以需要自带电源或可用移动电源usb供电。&lt;/li&gt;
+&lt;li&gt;性价比高：因为只用于转发校园网，所以可以买便宜一些的。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;最终选择了&lt;code&gt;TP-Link mr12u&lt;/code&gt;这款路由器，在闲鱼上找了一家同城二手的，45元人民币拿下。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;&lt;strong&gt;注意下面需要在&lt;code&gt;linux&lt;/code&gt;终端环境下操作&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;刷不死Boot&lt;/h2&gt;
+&lt;p&gt;由于路由器固件的特殊性，一旦刷崩了或者设置错误导致无法正常登陆路由器，那么就无法对路由器进行管理，也就是所谓的变砖。&lt;/p&gt;
+&lt;p&gt;不死boot的作用就是在这种情况下提供进路由设置重新刷固件的机会。&lt;/p&gt;
+&lt;h3&gt;刷解锁固件&lt;/h3&gt;
+&lt;p&gt;由于&lt;code&gt;U-Boot&lt;/code&gt;分区默认是锁定的，所以无法刷入新的&lt;code&gt;boot&lt;/code&gt;。因此我们要先刷入一个修改过的解锁&lt;code&gt;U-Boot&lt;/code&gt;分区的固件，这个修改过的固件可以在&lt;a href="https://pan.baidu.com/s/1slWHygP"&gt;百度网盘下载&lt;/a&gt;，另外由于我手上的这个是v1版本的 …&lt;/p&gt;</summary><content type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;开学学校启用了有线网，由于校园网存在只能单一设备登陆的限制与无线登陆限速，所以想通过路由器刷&lt;code&gt;openwrt&lt;/code&gt;再使用&lt;code&gt;mentohust&lt;/code&gt;进行校园网的锐捷认证来实现多设备与不限速使用。&lt;/p&gt;
+&lt;p&gt;在选择路由器时考虑了如下因素：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;可刷&lt;code&gt;openwrt&lt;/code&gt;：只有特定的处理器支持&lt;code&gt;openwrt&lt;/code&gt;，支持的路由器型号在官网有一个&lt;a href="https://wiki.openwrt.org/toh/start"&gt;列表&lt;/a&gt;，直接参照这个列表选就可以了。&lt;/li&gt;
+&lt;li&gt;有电源/usb供电：在寝室使用的话因为有段时间断电但不断网，所以需要自带电源或可用移动电源usb供电。&lt;/li&gt;
+&lt;li&gt;性价比高：因为只用于转发校园网，所以可以买便宜一些的。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;最终选择了&lt;code&gt;TP-Link mr12u&lt;/code&gt;这款路由器，在闲鱼上找了一家同城二手的，45元人民币拿下。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;&lt;strong&gt;注意下面需要在&lt;code&gt;linux&lt;/code&gt;终端环境下操作&lt;/strong&gt;&lt;/p&gt;
+&lt;h2&gt;刷不死Boot&lt;/h2&gt;
+&lt;p&gt;由于路由器固件的特殊性，一旦刷崩了或者设置错误导致无法正常登陆路由器，那么就无法对路由器进行管理，也就是所谓的变砖。&lt;/p&gt;
+&lt;p&gt;不死boot的作用就是在这种情况下提供进路由设置重新刷固件的机会。&lt;/p&gt;
+&lt;h3&gt;刷解锁固件&lt;/h3&gt;
+&lt;p&gt;由于&lt;code&gt;U-Boot&lt;/code&gt;分区默认是锁定的，所以无法刷入新的&lt;code&gt;boot&lt;/code&gt;。因此我们要先刷入一个修改过的解锁&lt;code&gt;U-Boot&lt;/code&gt;分区的固件，这个修改过的固件可以在&lt;a href="https://pan.baidu.com/s/1slWHygP"&gt;百度网盘下载&lt;/a&gt;，另外由于我手上的这个是v1版本的，与v2版本的硬件不同，所以需要使用的是&lt;code&gt;mr11u-v2&lt;/code&gt;的解锁固件（即&lt;code&gt;openwr-ar71xx-generic-tl-mr11u-v2-squashfs-factory.bin&lt;/code&gt;）。下载完以后先长按复位键复位路由器，连接上以后直接进入&lt;code&gt;192.168.1.1&lt;/code&gt; &lt;code&gt;TP-Link&lt;/code&gt;默认的管理界面，在下图这里选择刚下好的固件刷入即可：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/mr11u-1.png"&gt;&lt;/p&gt;
+&lt;p&gt;（图源网络）&lt;/p&gt;
+&lt;h3&gt;刷不死boot&lt;/h3&gt;
+&lt;p&gt;先下载不死&lt;code&gt;boot&lt;/code&gt;：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;http://viseator.com/file/breed-ar9331-mr12u.bin&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;路由器自动重启以后使用网线连接电脑与路由器，先用浏览器登陆&lt;code&gt;192.168.1.1&lt;/code&gt;，用户名为&lt;code&gt;root&lt;/code&gt;密码为空，然后设置&lt;code&gt;ssh&lt;/code&gt;密码并保存。&lt;/p&gt;
+&lt;p&gt;现在就可以使用&lt;code&gt;ssh&lt;/code&gt;用&lt;code&gt;root&lt;/code&gt;与刚刚设置的密码登陆路由器了：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ssh root@192.168.1.1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;登陆以后先查看并记下&lt;code&gt;mac&lt;/code&gt;地址，之后要用到：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;ifconfig eth0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;img alt="" src="/images/mr12u-2.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://xzper.com/2015/07/11/TP-MR12U%E5%88%B7openwrt-%E4%B8%8D%E6%AD%BBboot/"&gt;图片来源&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;然后&lt;code&gt;exit&lt;/code&gt;退出&lt;code&gt;ssh&lt;/code&gt;，使用&lt;code&gt;scp&lt;/code&gt;命令传送下载好的&lt;code&gt;boot&lt;/code&gt;包：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;scp breed-ar9331-mr12u.bin root@192.168.1.1:/tmp/
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;再次登陆路由器，刷入&lt;code&gt;U-Boot&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;ssh&lt;/span&gt; &lt;span class="n"&gt;root&lt;/span&gt;&lt;span class="mf"&gt;@192.168.1.1&lt;/span&gt;
+&lt;span class="n"&gt;cd&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt;&lt;span class="n"&gt;tmp&lt;/span&gt;
+&lt;span class="n"&gt;mtd&lt;/span&gt; &lt;span class="n"&gt;write&lt;/span&gt; &lt;span class="n"&gt;breed&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;ar9331&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;mr12u&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;bin&lt;/span&gt; &lt;span class="n"&gt;u&lt;/span&gt;&lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="n"&gt;boot&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;等待命令返回后直接将路由器关机。&lt;/p&gt;
+&lt;p&gt;想要进入不死&lt;code&gt;boot&lt;/code&gt;，只需按住&lt;code&gt;reset&lt;/code&gt;复位键不放，再开机，等待个十几秒后松开，再有线连接电脑与路由器，浏览器输入&lt;code&gt;192.168.1.1&lt;/code&gt;就可以进入管理界面了，以后变砖了只要这样都可以重新刷固件，所以称不死。&lt;/p&gt;
+&lt;p&gt;进入不死&lt;code&gt;boot&lt;/code&gt;以后，先进入下图界面设置之前记录的&lt;code&gt;mac&lt;/code&gt;地址：&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/mr12u-3.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;a href="http://xzper.com/2015/07/11/TP-MR12U%E5%88%B7openwrt-%E4%B8%8D%E6%AD%BBboot/"&gt;图片来源&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;刷入最新固件（可选）&lt;/h2&gt;
+&lt;p&gt;下面就可以直接在不死&lt;code&gt;boot&lt;/code&gt;里面选择固件更新刷入最新的固件了，最新固件的下载可以到&lt;a href="https://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/"&gt;这里&lt;/a&gt;找到。&lt;/p&gt;
+&lt;p&gt;但是&lt;code&gt;mr12u&lt;/code&gt;的闪存只有可怜的4m，如果安装最新的&lt;code&gt;openwrt&lt;/code&gt;就没有空间放下&lt;code&gt;mentohust&lt;/code&gt;了，所以还不如就直接用这个解锁用的固件。&lt;/p&gt;
+&lt;h2&gt;交叉编译mentohust&lt;/h2&gt;
+&lt;p&gt;在网上找了一圈愣是没找到&lt;code&gt;ar71xx&lt;/code&gt;处理器已经编译好的&lt;code&gt;mentohust&lt;/code&gt;，只能选择自己交叉编译了。没有条件自己编译的可以使用我编译好的&lt;strong&gt;只适用于ar71xx&lt;/strong&gt;处理器的&lt;code&gt;mentohust&lt;/code&gt;: http://www.viseator.com/file/mentohust 。&lt;/p&gt;
+&lt;h3&gt;依赖包的安装&lt;/h3&gt;
+&lt;p&gt;可以到https://wiki.openwrt.org/zh-cn/doc/howto/buildroot.exigence 根据自己的发行版安装必要的软件包。&lt;/p&gt;
+&lt;h3&gt;下载编译工具链&lt;/h3&gt;
+&lt;p&gt;首先到https://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/ 页面下载 &lt;a href="https://downloads.openwrt.org/snapshots/trunk/ar71xx/generic/OpenWrt-SDK-ar71xx-generic_gcc-5.3.0_musl-1.1.16.Linux-x86_64.tar.bz2"&gt;OpenWrt-SDK-ar71xx-generic_gcc-5.3.0_musl-1.1.16.Linux-x86_64.tar.bz2&lt;/a&gt; 处理器&lt;code&gt;SDK&lt;/code&gt;，解压后进入目录下的&lt;code&gt;./staging_dir/toolchain-mips_34kc_gcc-5.3.0_musl-1.1.16/bin&lt;/code&gt;。&lt;/p&gt;
+&lt;h3&gt;配置环境变量&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;PATH&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="nv"&gt;$PATH&lt;/span&gt;:到上述/staging_dir/toolchain-mips_34kc_gcc-5.3.0_musl-1.1.16/bin 目录的完整路径
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;CC&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux-gcc  
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;CPP&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux-cpp  
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;GCC&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux-gcc  
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;CXX&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux-g++  
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;RANLIB&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux-uclibc-ranlib
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;LDFLAGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;-static&amp;quot;&lt;/span&gt;  
+&lt;span class="nb"&gt;export&lt;/span&gt; &lt;span class="nv"&gt;CFLAGS&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;-Os -s&amp;quot;&lt;/span&gt;  
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;编译libpcap动态链接库&lt;/h3&gt;
+&lt;p&gt;到 http://www.tcpdump.org/ 下载&lt;a href="http://www.tcpdump.org/release/libpcap-1.8.1.tar.gz"&gt;libpcap-1.8.1.tar.gz&lt;/a&gt;，解压以后进入目录，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;./configure --host&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux --prefix&lt;span class="o"&gt;=&lt;/span&gt;自已设定路径/ --with-pcap&lt;span class="o"&gt;=&lt;/span&gt;linux
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;make
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;会报错误，但是不影响我们需要的&lt;code&gt;libpcap.a&lt;/code&gt;文件，在当前目录下找到这个文件复制出来备用。&lt;/p&gt;
+&lt;h3&gt;编译mentohust&lt;/h3&gt;
+&lt;p&gt;克隆&lt;code&gt;mentohust&lt;/code&gt;源码：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;git clone https://github.com/hyrathb/mentohust
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;进入目录，首先生成&lt;code&gt;configure&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;sh autogen.sh
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后配置：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;./configure --host&lt;span class="o"&gt;=&lt;/span&gt;mipsel-openwrt-linux   --disable-encodepass --disable-notify --prefix&lt;span class="o"&gt;=&lt;/span&gt;自设目录 --with-pcap&lt;span class="o"&gt;=&lt;/span&gt;前面保存的libpcap.a文件路径
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;编译：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;make
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;成功以后就可以在&lt;code&gt;src&lt;/code&gt;目录下找到编译好的&lt;code&gt;mentohust&lt;/code&gt;文件了。&lt;/p&gt;
+&lt;h2&gt;部署&lt;/h2&gt;
+&lt;p&gt;我们把编译好的文件传送到路由器中：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;scp mentohust root@192.168.1.1:/root
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;安装libpcap&lt;/h3&gt;
+&lt;p&gt;路由器中默认没有我们依赖的&lt;code&gt;libpcap&lt;/code&gt;库，我们要手动安装，先下载：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;http://www.viseator.com/file/libpcap_1.0.0-2_ar71xx.ipk&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;然后传送到路由器中：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;scp libpcap_1.0.0-2_ar71xx.ipk root@192.168.1.1:/tmp
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面登陆路由器，进入&lt;code&gt;/tmp&lt;/code&gt;目录，执行：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;opkg install libpcap_1.0.0-2_ar71xx.ipk
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;新建wifi与桥接配置&lt;/h3&gt;
+&lt;p&gt;新刷的路由器只有一个默认接入点，我们先到路由器管理界面修改接入点。增加访问密码等等。这一步的配置就不多说了网上都有。&lt;/p&gt;
+&lt;p&gt;由于这个路由器只有一个接口，我们现在是将它作为&lt;code&gt;lan&lt;/code&gt;口在用的，但是实际上我们需要使用它作为&lt;code&gt;wan&lt;/code&gt;口来连接校园网认证上网，并且要将&lt;code&gt;lan&lt;/code&gt;口与&lt;code&gt;wifi&lt;/code&gt;进行桥接使得我们依旧可以通过&lt;code&gt;192.168.1.1&lt;/code&gt;这个地址来管理路由器。&lt;/p&gt;
+&lt;p&gt;这步操作需要直接修改&lt;code&gt;/etc/config/network&lt;/code&gt;文件，如果使用图形界面配置可能会导致变砖。&lt;/p&gt;
+&lt;p&gt;我们登陆路由器以后直接用&lt;code&gt;vim&lt;/code&gt;修改上述文件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;vim /etc/config/network
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面提供我找到的示例文件供参考：&lt;a href="http://www.right.com.cn/forum/thread-105317-1-1.html"&gt;出处&lt;/a&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;config interface &amp;#39;loopback&amp;#39;
+        option ifname &amp;#39;lo&amp;#39;
+        option proto &amp;#39;static&amp;#39;
+        option ipaddr &amp;#39;127.0.0.1&amp;#39;
+        option netmask &amp;#39;255.0.0.0&amp;#39;
+
+config interface &amp;#39;lan&amp;#39;
+        option type &amp;#39;bridge&amp;#39;
+        option proto &amp;#39;static&amp;#39;
+        option ipaddr &amp;#39;192.168.1.1&amp;#39;
+        option netmask &amp;#39;255.255.255.0&amp;#39;
+
+config interface &amp;#39;wan&amp;#39;
+        option ifname &amp;#39;eth0&amp;#39;
+        option _orig_ifname &amp;#39;eth0&amp;#39;
+        option _orig_bridge &amp;#39;false&amp;#39;
+        option proto &amp;#39;dhcp&amp;#39;
+        option macaddr &amp;#39;xx:xx:xx:xx:xx:xx&amp;#39;替换为自己的mac
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;修改后保存，然后&lt;code&gt;reboot&lt;/code&gt;重启。&lt;/p&gt;
+&lt;p&gt;现在就不能通过有线来管理路由器了，因为管理地址已经桥接到了无线上了。所以我们要使用无线连接，有线接校园网，然后登陆到路由器。&lt;/p&gt;
+&lt;p&gt;找到我们存放&lt;code&gt;mentohust&lt;/code&gt;的&lt;code&gt;/root&lt;/code&gt;目录（默认就是），启动&lt;code&gt;mentohust&lt;/code&gt;:&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;./mentohust -u username -p password -n eth0
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果要后台运行加个&lt;code&gt;-b1&lt;/code&gt;就可以了。&lt;/p&gt;
+&lt;p&gt;如果一切正常的话现在无线就可以正常上网了。&lt;/p&gt;</content><category term="openwrt"></category></entry></feed>
