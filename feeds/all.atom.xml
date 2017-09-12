@@ -1,5 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-06-12T11:36:28+08:00</updated><entry><title>MapReduce：大规模集群上的简单数据处理方式 &amp;&amp; MIT 6.824 Lab 1</title><link href="/mapreduceda-gui-mo-ji-qun-shang-de-jian-dan-shu-ju-chu-li-fang-shi-mit-6824-lab-1.html" rel="alternate"></link><published>2017-06-12T11:36:28+08:00</published><updated>2017-06-12T11:36:28+08:00</updated><author><name>Lichen Zhang</name></author><id>tag:None,2017-06-12:/mapreduceda-gui-mo-ji-qun-shang-de-jian-dan-shu-ju-chu-li-fang-shi-mit-6824-lab-1.html</id><summary type="html">&lt;p&gt;MapReduce是Google公司的Jeffrey和Sanjay提出的一个编程模型，主要用于大规模数据集的并行运算。它吸收了函数式编程语言中的Map和Reduce，通过Map处理原始键值对生成中间键值对，通过Reduce合并相同中间键对应的值。这一特性符合很多现实生活中的场景。&lt;/p&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-09-12T16:04:00+08:00</updated><entry><title>B树w</title><link href="/bshu-w.html" rel="alternate"></link><published>2017-09-12T16:04:00+08:00</published><updated>2017-09-12T16:04:00+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-09-12:/bshu-w.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;-- 请问你是如何做到心里没有一点点B数的？&lt;/p&gt;
+&lt;p&gt;-- 不好意思，我有w&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;0x00 Overview&lt;/h2&gt;
+&lt;p&gt;B树 ( &lt;code&gt;B-tree&lt;/code&gt; ) 作为一种自平衡的树结构，同样在插入、删除、查找等操作上提供了对数级的时间复杂度。但与广泛应用于各种应用当中的红黑树不同，它虽然实现上较红黑树稍微复杂，但是由于优秀的数据访问特性（为一次性读写大块数据做了优化），所以被广泛地应用于数据库和文件系统的实现上。现有的现代硬盘文件系统（包括&lt;code&gt;NTFS&lt;/code&gt; 、&lt;code&gt;Ext4&lt;/code&gt; ）的底层结构使用的都是 &lt;code&gt;B-tree&lt;/code&gt; 。&lt;/p&gt;
+&lt;h2&gt;0x01 Structure&lt;/h2&gt;
+&lt;p&gt;在B树中，一个非叶子节点拥有复数个键 ( &lt;code&gt;key&lt;/code&gt; ) 和复数个子节点。其中能够拥有的最大子节点的个数是最大能够拥有的 &lt;code&gt;key&lt;/code&gt; 的数量 +1 。同时，它现有的子节点的个数也是它现有的 &lt;code&gt;key&lt;/code&gt; 的数量 +1 。举例来看：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+---------------+
+| 2 | 4 |   |   |
++---+---+---+---+
+|   |   |
+..--+   |   +--..
+| 1 |   |   | 5 |
+..--+   |   +--..
++--..
+| 3 |
++--..
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在上面这个节点中，它最大能够拥有 &lt;code&gt;4&lt;/code&gt; 个键，也就是说它最大能够拥有 &lt;code&gt;5&lt;/code&gt; 个子节点 …&lt;/p&gt;</summary><content type="html">&lt;blockquote&gt;
+&lt;p&gt;-- 请问你是如何做到心里没有一点点B数的？&lt;/p&gt;
+&lt;p&gt;-- 不好意思，我有w&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;0x00 Overview&lt;/h2&gt;
+&lt;p&gt;B树 ( &lt;code&gt;B-tree&lt;/code&gt; ) 作为一种自平衡的树结构，同样在插入、删除、查找等操作上提供了对数级的时间复杂度。但与广泛应用于各种应用当中的红黑树不同，它虽然实现上较红黑树稍微复杂，但是由于优秀的数据访问特性（为一次性读写大块数据做了优化），所以被广泛地应用于数据库和文件系统的实现上。现有的现代硬盘文件系统（包括&lt;code&gt;NTFS&lt;/code&gt; 、&lt;code&gt;Ext4&lt;/code&gt; ）的底层结构使用的都是 &lt;code&gt;B-tree&lt;/code&gt; 。&lt;/p&gt;
+&lt;h2&gt;0x01 Structure&lt;/h2&gt;
+&lt;p&gt;在B树中，一个非叶子节点拥有复数个键 ( &lt;code&gt;key&lt;/code&gt; ) 和复数个子节点。其中能够拥有的最大子节点的个数是最大能够拥有的 &lt;code&gt;key&lt;/code&gt; 的数量 +1 。同时，它现有的子节点的个数也是它现有的 &lt;code&gt;key&lt;/code&gt; 的数量 +1 。举例来看：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;+---------------+
+| 2 | 4 |   |   |
++---+---+---+---+
+|   |   |
+..--+   |   +--..
+| 1 |   |   | 5 |
+..--+   |   +--..
++--..
+| 3 |
++--..
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在上面这个节点中，它最大能够拥有 &lt;code&gt;4&lt;/code&gt; 个键，也就是说它最大能够拥有 &lt;code&gt;5&lt;/code&gt; 个子节点。现在它拥有 &lt;code&gt;2&lt;/code&gt; 个键，也就是说它现在拥有 &lt;code&gt;3&lt;/code&gt; 个子节点。其中，在 &lt;code&gt;key = 2&lt;/code&gt; 前面的这个子节点的所有 &lt;code&gt;key&lt;/code&gt; 都 &lt;code&gt;&amp;lt; 2&lt;/code&gt; ，在 &lt;code&gt;key = 2&lt;/code&gt; 和 &lt;code&gt;key = 4&lt;/code&gt; 之间的这个子节点所有的 &lt;code&gt;key&lt;/code&gt; 都 &lt;code&gt;&amp;gt; 2 &amp;amp;&amp;amp; &amp;lt; 4&lt;/code&gt; ，在 &lt;code&gt;key = 4&lt;/code&gt; 后面的这个子节点所有的 &lt;code&gt;key&lt;/code&gt; 都      &lt;code&gt;&amp;gt; 4&lt;/code&gt; 。在增加和删除的过程中，节点会被合并或者拆分、旋转。其中旋转的操作各位读者可能之前在红黑树当中听到过，但是看起来并不直观，但是在红黑树的等价，&lt;code&gt;2-3-4 树&lt;/code&gt; ，或者说 &lt;code&gt;3 阶 B-树&lt;/code&gt; 中，旋转的操作是很自然的。并且由于它的“同一节点多键”的特性，它的平衡操作发生得没有其余的自平衡树那么频繁，因此适用于文件系统的底层结构。&lt;/p&gt;
+&lt;h2&gt;0x02 Search&lt;/h2&gt;
+&lt;p&gt;emmm... 查询并不需要细说w。请自行根据它的特点进行查找（当然是对数时间复杂度w&lt;/p&gt;
+&lt;h2&gt;0x03 Insertion&lt;/h2&gt;
+&lt;p&gt;&lt;img alt="B-tree Insertion Example" src="https://upload.wikimedia.org/wikipedia/commons/3/33/B_tree_insertion_example.png" title="插入操作示例"&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;所有的插入操作都必须从一个叶子节点开始。也就是说，我们必须找到一个没有子节点的节点，并且父节点符合将被插入的节点的要求。&lt;/li&gt;
+&lt;li&gt;如果这个叶子节点还有空位（ &lt;code&gt;key&lt;/code&gt; 数量未达到它的最大 &lt;code&gt;key&lt;/code&gt; 数量），那么直接执行插入操作，树是平衡的。（示例中插入 值 4 ）&lt;/li&gt;
+&lt;li&gt;如果这个叶子节点已经满了，那么：&lt;/li&gt;
+&lt;li&gt;找到一个中间值，将其余值中比它小的放在它的左边，比它大的放在它的右边。&lt;/li&gt;
+&lt;li&gt;将这个中间值插入父节点。（示例中插入 值 5）&lt;/li&gt;
+&lt;li&gt;如果父节点已满，则继续拆分。在必要的情况下，更换根节点。（示例中插入 值 3 和 7）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2&gt;0x04 Deletion&lt;/h2&gt;
+&lt;p&gt;这是整个树操作中最困难的部分w..&lt;/p&gt;
+&lt;p&gt;很抱歉没有比较好的示意图w..&lt;/p&gt;
+&lt;h3&gt;从叶子节点删除一个数据&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;找到那个数据（&lt;/li&gt;
+&lt;li&gt;如果那个数据在叶子节点，将它删除。&lt;/li&gt;
+&lt;li&gt;如果删除之后，叶子节点小于它的 &lt;code&gt;key&lt;/code&gt; 数量下限（不一定是 &lt;code&gt;0个&lt;/code&gt;），那么进行平衡。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;从非叶子节点删除一个数据&lt;/h3&gt;
+&lt;p&gt;注意每一个B树的非叶子节点数据左右两边都有子树。那么：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;选择一个新的值（左子树的最大值或右子树的最小值，这样能够确保树的结构）。&lt;/li&gt;
+&lt;li&gt;移除这个新值，并把将要删除的值替换为这个新值。&lt;/li&gt;
+&lt;li&gt;这相当于从叶子节点删除了一个数据。按照从叶子节点删除数据的条件进行平衡。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;平衡&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;如果需要被平衡的节点的右兄弟存在并且拥有比数量下限至少多一个的 &lt;code&gt;key&lt;/code&gt; ，那么左旋 -- &lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;将父节点的中间值旋转到被平衡节点中（父节点失去键-左子节点得到键）&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;将右兄弟节点的最小值旋转到父节点的中间值（父节点得到键-右子节点失去键）&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;树现在是平衡的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果需要被平衡的节点的左兄弟存在并且拥有比数量下限至少多一个的 &lt;code&gt;key&lt;/code&gt; ，那么右旋 --&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;将父节点的中间值旋转到被平衡节点中&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;将左兄弟节点的最大值旋转到父节点的中间值&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;树现在是平衡的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果两边的兄弟都不能给一个 &lt;code&gt;key&lt;/code&gt; 给你，那么很抱歉w...&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;如果你是最左边的叶子节点，那么找到父节点刚好在你右边的那个值。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;其它情况下，找到父节点刚好在你左边的那个值。&lt;/li&gt;
+&lt;li&gt;以下将以找到的那个值为基准。&lt;/li&gt;
+&lt;li&gt;将这个值移动到它左边的子节点。&lt;/li&gt;
+&lt;li&gt;将这个值右边子节点的所有内容移动到左边的子节点。&lt;/li&gt;
+&lt;li&gt;现在这个值的位置和右边子节点的位置都空了下来。删除它们。&lt;/li&gt;
+&lt;li&gt;如果这个删除操作导致了这个值所在的节点的 &lt;code&gt;key&lt;/code&gt; 数量少于数量下限，那么：&lt;/li&gt;
+&lt;li&gt;如果这个节点是根节点且 &lt;code&gt;key&lt;/code&gt; 数量等于 0 ，那么重新设置根节点，并将这个节点删除。&lt;/li&gt;
+&lt;li&gt;否则，将这个节点设置为需要被平衡的节点，重复平衡操作。&lt;/li&gt;
+&lt;/ul&gt;</content><category term="算法"></category><category term="数据结构"></category></entry><entry><title>MapReduce：大规模集群上的简单数据处理方式 &amp;&amp; MIT 6.824 Lab 1</title><link href="/mapreduceda-gui-mo-ji-qun-shang-de-jian-dan-shu-ju-chu-li-fang-shi-mit-6824-lab-1.html" rel="alternate"></link><published>2017-06-12T11:36:28+08:00</published><updated>2017-06-12T11:36:28+08:00</updated><author><name>Lichen Zhang</name></author><id>tag:None,2017-06-12:/mapreduceda-gui-mo-ji-qun-shang-de-jian-dan-shu-ju-chu-li-fang-shi-mit-6824-lab-1.html</id><summary type="html">&lt;p&gt;MapReduce是Google公司的Jeffrey和Sanjay提出的一个编程模型，主要用于大规模数据集的并行运算。它吸收了函数式编程语言中的Map和Reduce，通过Map处理原始键值对生成中间键值对，通过Reduce合并相同中间键对应的值。这一特性符合很多现实生活中的场景。&lt;/p&gt;
 &lt;p&gt;这种编程模型下的程序可以并行化地在大规模集群上运行，而在这一过程中用户却不需考虑输入数据的划分、程序的运行安排、节点故障和机器间通信，只需完成对数据的处理和合并。&lt;/p&gt;
 &lt;p&gt;我阅读了MapReduce的论文，并完成了MIT 6.824的第一个Lab，对其有了更深的了解。&lt;/p&gt;
 &lt;!--more--&gt;
@@ -1076,145 +1183,7 @@ sudo systemctl &lt;span class="nb"&gt;enable&lt;/span&gt; NetworkManager （注�
 &lt;p&gt;重新启动后，如果你看到桌面管理器的界面，选择你需要的桌面环境并输入用户名与密码登陆后，看到了熟悉而又陌生的桌面，那么恭喜你，你已经完成了桌面环境的安装！&lt;/p&gt;
 &lt;h2&gt;你可能需要知道的操作与软件包推荐&lt;/h2&gt;
 &lt;p&gt;到这里，&lt;code&gt;ArchLinux&lt;/code&gt;的安装与基本配置教程已经结束了，笔者在编写过程中基本凭着多次安装的经验与这次安装的记录完成，难免会有疏漏与不正确的地方，还请大家通过下面的评论或邮件(viseator@gmail.com)提出意见与建议。也欢迎你们与我交流安装的问题。&lt;/p&gt;
-&lt;p&gt;下面一篇文章将会介绍一些实用的配置（如中文输入法的安装）与软件包等。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry><entry><title>使用openbox配置archlinux桌面环境w</title><link href="/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html" rel="alternate"></link><published>2017-05-18T04:37:00+08:00</published><updated>2017-05-18T04:37:00+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-05-18:/shi-yong-openboxpei-zhi-archlinuxzhuo-mian-huan-jing-w.html</id><summary type="html">&lt;h2&gt;0x01 前言&lt;/h2&gt;
-
-&lt;p&gt;试用了一些 &lt;code&gt;archlinux wiki&lt;/code&gt; 上推荐的桌面环境，发现并没有什么我喜欢的。&lt;/p&gt;
-
-&lt;p&gt;所以决定自己用 &lt;code&gt;openbox&lt;/code&gt; 配置一发w。&lt;/p&gt;
-
-&lt;h2&gt;0x02 安装openbox并设置为默认桌面环境&lt;/h2&gt;
-
-&lt;p&gt;安装很简单， &lt;code&gt;pacman&lt;/code&gt; 一下就好了。&lt;/p&gt;
-
-&lt;p&gt;如果你像我一样，在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 下面配置好了执行 &lt;code&gt;~/.xinitrc&lt;/code&gt; ，那么以下操作就直接编辑 &lt;code&gt;~/.xinitrc&lt;/code&gt; 就好了。&lt;/p&gt;
-
-&lt;p&gt;如果不是，那么可以在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 里写。&lt;/p&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;p&gt;首先建立 &lt;code&gt;/usr/local/bin/mydesk&lt;/code&gt; ，然后在里面加入：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;#!/bin/sh
-
-openbox
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;p&gt;然后编辑 &lt;code&gt;xinitrc&lt;/code&gt; ，把原来的桌面环境注释掉，换成&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;exec /usr/local/bin …&lt;/code&gt;&lt;/pre&gt;</summary><content type="html">&lt;h2&gt;0x01 前言&lt;/h2&gt;
-
-&lt;p&gt;试用了一些 &lt;code&gt;archlinux wiki&lt;/code&gt; 上推荐的桌面环境，发现并没有什么我喜欢的。&lt;/p&gt;
-
-&lt;p&gt;所以决定自己用 &lt;code&gt;openbox&lt;/code&gt; 配置一发w。&lt;/p&gt;
-
-&lt;h2&gt;0x02 安装openbox并设置为默认桌面环境&lt;/h2&gt;
-
-&lt;p&gt;安装很简单， &lt;code&gt;pacman&lt;/code&gt; 一下就好了。&lt;/p&gt;
-
-&lt;p&gt;如果你像我一样，在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 下面配置好了执行 &lt;code&gt;~/.xinitrc&lt;/code&gt; ，那么以下操作就直接编辑 &lt;code&gt;~/.xinitrc&lt;/code&gt; 就好了。&lt;/p&gt;
-
-&lt;p&gt;如果不是，那么可以在 &lt;code&gt;/etc/X11/xinit/xinitrc&lt;/code&gt; 里写。&lt;/p&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;p&gt;首先建立 &lt;code&gt;/usr/local/bin/mydesk&lt;/code&gt; ，然后在里面加入：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;#!/bin/sh
-
-openbox
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;p&gt;然后编辑 &lt;code&gt;xinitrc&lt;/code&gt; ，把原来的桌面环境注释掉，换成&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;exec /usr/local/bin/mydesk
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;p&gt;这样下次启动 &lt;code&gt;X&lt;/code&gt; 的时候，就会启动 &lt;code&gt;Openbox&lt;/code&gt; 了。&lt;/p&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;h2&gt;0x03 安装其他辅助工具&lt;/h2&gt;
-
-&lt;p&gt;如果只安装 &lt;code&gt;Openbox&lt;/code&gt; 的话，桌面上空空如也，连启动程序都不太容易。&lt;/p&gt;
-
-&lt;p&gt;自然会想到需要一些辅助用的程序。&lt;/p&gt;
-
-&lt;p&gt;首先，建议安装 &lt;code&gt;Docky&lt;/code&gt; 。安装方法也很简单，直接 &lt;code&gt;pacman -S docky&lt;/code&gt; 就可以了。&lt;/p&gt;
-
-&lt;p&gt;要让它开机启动的话，编辑 &lt;code&gt;/usr/local/bin/mydesk&lt;/code&gt; ，在 &lt;code&gt;openbox&lt;/code&gt; 这一行前面加入&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt; sh ~/.mydesk.conf/.autostart&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;然后建立 &lt;code&gt;~/.mydesk.conf/.autostart&lt;/code&gt; 文件，然后在里面添加：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class="shell"&gt;&lt;br /&gt;#!/bin/sh
-
-docky &amp;amp;
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;就可以开机启动 &lt;code&gt;docky&lt;/code&gt; 了。&lt;/p&gt;
-
-&lt;p&gt;桌面背景黑漆漆的是不是很难看？试试 &lt;code&gt;feh&lt;/code&gt; 吧。直接 &lt;code&gt;pacman&lt;/code&gt; 就可以安装。&lt;/p&gt;
-
-&lt;p&gt;在 &lt;code&gt;.autostart&lt;/code&gt; 里加入：&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt; feh --bg-fill /path/to/your/background/file.jpg&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;就可以设置桌面背景了。&lt;/p&gt;
-
-&lt;p&gt;还想要更多？试试桌面特效 &lt;code&gt;compton&lt;/code&gt; 如何？同样是直接 &lt;code&gt;pacman&lt;/code&gt; 就可以安装了。&lt;/p&gt;
-
-&lt;p&gt;启动的方法是在 &lt;code&gt;.autostart&lt;/code&gt; 里加入：&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt; compton --config ~/.compton.conf &amp;amp;&lt;/code&gt;&lt;/p&gt;
-
-&lt;p&gt;配置 &lt;code&gt;compton&lt;/code&gt; 的方法请自行 &lt;code&gt;google&lt;/code&gt; w！&lt;/p&gt;
-
-&lt;p&gt;这样，基本的桌面环境就已经可以使用了！&lt;/p&gt;
-
-&lt;p&gt;但是有人会问：怎么没有 &lt;code&gt;widget&lt;/code&gt; 啊？都没办法好好连 &lt;code&gt;wifi&lt;/code&gt; 了w！&lt;/p&gt;
-
-&lt;p&gt;嗯……如果可以接受命令行的话，不妨试试 &lt;code&gt;wifi_menu&lt;/code&gt; 或者给 &lt;code&gt;wpa_supplicant&lt;/code&gt; 加 &lt;code&gt;alias&lt;/code&gt; w！&lt;/p&gt;
-
-&lt;p&gt;当然了，我们要优雅的GUI！&lt;/p&gt;
-
-&lt;p&gt;安装 &lt;code&gt;tint2&lt;/code&gt; ！这东西可以在你的屏幕上方显示一行任务栏一样的东西w！&lt;/p&gt;
-
-&lt;p&gt;同样需要在 &lt;code&gt;.autostart&lt;/code&gt; 里加入 &lt;code&gt;tint2 &amp;amp;&lt;/code&gt; 来启动哦！&lt;/p&gt;
-
-&lt;p&gt;网络 &lt;code&gt;widget&lt;/code&gt; 的话，可以使用 &lt;code&gt;nm-applet&lt;/code&gt; w！&lt;/p&gt;
-
-&lt;p&gt;对了对了，还有输入法和锁定屏幕……&lt;/p&gt;
-
-&lt;p&gt;输入法的话 直接在 &lt;code&gt;.autostart&lt;/code&gt; 里加入 &lt;code&gt;fcitx &amp;amp;&lt;/code&gt; 就可以使用输入法了！&lt;/p&gt;
-
-&lt;p&gt;锁定屏幕，可以去试试 &lt;code&gt;i3lock&lt;/code&gt; ，配置教程应该可以在 &lt;code&gt;archlinux wiki&lt;/code&gt; 上找到。&lt;/p&gt;
-
-&lt;p&gt;之后就是编辑 &lt;code&gt;~/.config/openbox/rc.xml&lt;/code&gt; 增加锁定快捷键了。&lt;/p&gt;
-
-&lt;p&gt;&amp;nbsp;&lt;/p&gt;
-
-&lt;h2&gt;0x04 笔记本电脑？&lt;/h2&gt;
-
-&lt;p&gt;也没有什么特别好说的辣w&lt;/p&gt;
-
-&lt;p&gt;就是一个电池状态 &lt;code&gt;widget&lt;/code&gt; 的事情w&lt;/p&gt;
-
-&lt;p&gt;&lt;code&gt;archlinux wiki&lt;/code&gt; 上说的 &lt;code&gt;batterymon&lt;/code&gt; 在 &lt;code&gt;AUR&lt;/code&gt; 上找不到了w&lt;/p&gt;
-
-&lt;p&gt;但是有一个 &lt;code&gt;batterymon-clone&lt;/code&gt; 。&lt;/p&gt;
-
-&lt;p&gt;直接在 &lt;code&gt;AUR&lt;/code&gt; 上安装就好了！&lt;/p&gt;</content><category term="linux"></category><category term="desktop environment"></category><category term="openbox"></category></entry><entry><title>以官方Wiki的方式安装ArchLinux</title><link href="/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html" rel="alternate"></link><published>2017-05-17T23:26:29+08:00</published><updated>2017-05-17T23:26:29+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-17:/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+&lt;p&gt;下面一篇文章将会介绍一些实用的配置（如中文输入法的安装）与软件包等。&lt;/p&gt;</content><category term="arch"></category><category term="linux"></category></entry><entry><title>以官方Wiki的方式安装ArchLinux</title><link href="/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html" rel="alternate"></link><published>2017-05-17T23:26:29+08:00</published><updated>2017-05-17T23:26:29+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-05-17:/yi-guan-fang-wikide-fang-shi-an-zhuang-archlinux.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;strong&gt;这可能是你能找到的最适合你的中文&lt;code&gt;ArchLinux&lt;/code&gt;安装教程。&lt;/strong&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
