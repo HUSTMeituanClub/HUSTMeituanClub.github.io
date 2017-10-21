@@ -1,5 +1,1050 @@
 <?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-09-14T13:40:38+08:00</updated><entry><title>Android 触摸事件分发机制（一）从内核到应用 一切的开始</title><link href="/android-hong-mo-shi-jian-fen-fa-ji-zhi-yi-cong-nei-he-dao-ying-yong-yi-qie-de-kai-shi.html" rel="alternate"></link><published>2017-09-14T13:40:38+08:00</published><updated>2017-09-14T13:40:38+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-09-14:/android-hong-mo-shi-jian-fen-fa-ji-zhi-yi-cong-nei-he-dao-ying-yong-yi-qie-de-kai-shi.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
+<feed xmlns="http://www.w3.org/2005/Atom"><title>华科美团点评技术俱乐部</title><link href="/" rel="alternate"></link><link href="/feeds/all.atom.xml" rel="self"></link><id>/</id><updated>2017-10-14T21:38:57+08:00</updated><entry><title>Advancing B-trees w</title><link href="/advancing-b-trees-w.html" rel="alternate"></link><published>2017-10-14T21:38:57+08:00</published><updated>2017-10-14T21:38:57+08:00</updated><author><name>Huatian Zhou</name></author><id>tag:None,2017-10-14:/advancing-b-trees-w.html</id><summary type="html">&lt;blockquote&gt;
+&lt;p&gt;（续上文）&lt;/p&gt;
+&lt;p&gt;--  什么？B树？&lt;/p&gt;
+&lt;p&gt;--  不好意思，我不仅有B树，我还有……w&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;emmm，虽然 B 树已经提供了相当优秀的使用体验了，但是如果要真的使用它来做文件系统，我们还需要一些小小的改动w&lt;/p&gt;
+&lt;p&gt;这篇博客将介绍一部分的这些改动，下一篇博客就要用 &lt;code&gt;btrfs&lt;/code&gt; 作为例子来介绍 B 树在文件系统里的应用了w&lt;/p&gt;
+&lt;p&gt;（啊……我就在用 &lt;code&gt;btrfs&lt;/code&gt; w...&lt;/p&gt;
+&lt;h2&gt;0x00 B+ trees&lt;/h2&gt;
+&lt;p&gt;![B+ trees example](https://upload.wikimedia.org/wikipedia/commons/3/37/Bplustree.png A Example of B+ Tree)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Author&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Grundprinzip&lt;/span&gt;
+&lt;span class="n"&gt;From&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Wikipedia&lt;/span&gt; &lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;tree …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;blockquote&gt;
+&lt;p&gt;（续上文）&lt;/p&gt;
+&lt;p&gt;--  什么？B树？&lt;/p&gt;
+&lt;p&gt;--  不好意思，我不仅有B树，我还有……w&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;emmm，虽然 B 树已经提供了相当优秀的使用体验了，但是如果要真的使用它来做文件系统，我们还需要一些小小的改动w&lt;/p&gt;
+&lt;p&gt;这篇博客将介绍一部分的这些改动，下一篇博客就要用 &lt;code&gt;btrfs&lt;/code&gt; 作为例子来介绍 B 树在文件系统里的应用了w&lt;/p&gt;
+&lt;p&gt;（啊……我就在用 &lt;code&gt;btrfs&lt;/code&gt; w...&lt;/p&gt;
+&lt;h2&gt;0x00 B+ trees&lt;/h2&gt;
+&lt;p&gt;![B+ trees example](https://upload.wikimedia.org/wikipedia/commons/3/37/Bplustree.png A Example of B+ Tree)&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Author&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Grundprinzip&lt;/span&gt;
+&lt;span class="n"&gt;From&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Wikipedia&lt;/span&gt; &lt;span class="n"&gt;B&lt;/span&gt;&lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="n"&gt;tree&lt;/span&gt;
+&lt;span class="n"&gt;License&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;Creative&lt;/span&gt; &lt;span class="n"&gt;Commons&lt;/span&gt; &lt;span class="n"&gt;Attribution&lt;/span&gt; &lt;span class="mf"&gt;3.0&lt;/span&gt; &lt;span class="n"&gt;Unported&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;B+ tree&lt;/code&gt; 是 B 树的一种变种，它使用一种不同的模式来存储键值对：在非叶子节点中，仅存储键，在叶子节点中，存储键和指向值的连接（参考上图）。&lt;/p&gt;
+&lt;p&gt;由于这种设计模式，B+ 树的根节点要么是叶子节点，要么是有两个或者以上键的非叶子节点。&lt;/p&gt;
+&lt;p&gt;首先定义 &lt;code&gt;b(branching factor)&lt;/code&gt; 是 B+ 树的一个节点最大拥有的子节点的数量，那么：&lt;/p&gt;
+&lt;p&gt;非根节点的最小键数量是&lt;code&gt;上取整(b/2)-1&lt;/code&gt; （最大键数量当然是……）。根节点和 B 树一样不受限制。&lt;/p&gt;
+&lt;p&gt;B+ 树的插入、删除、查找算法都与 B 树没有较大的区别。但是有一点需要注意的是，B+ 树为了保证能够实现常数时间复杂度的前驱后继（在文件系统实现当中，这是一个非常重要的特性），所以将叶子节点的最后一个指针指向了它的紧邻的右子节点，这让整个 B+ 树的叶子节点的值形成了有序的链表。在执行操作时，务必对这些指针进行维护。&lt;/p&gt;
+&lt;h2&gt;0x01 B-link Tree&lt;/h2&gt;
+&lt;p&gt;为了解决 B 树的并行访问问题（写时读，一个成熟的文件系统不可能在写的时候不允许读取），B-link 树被设计了出来 ( &lt;code&gt;Efficient Looking for Concurrent Operations on B-Trees, 1981&lt;/code&gt; )。&lt;/p&gt;
+&lt;p&gt;B 树没有办法在写的时候读取的问题在于写入可能会导致树平衡，从而修改树的结构。&lt;/p&gt;
+&lt;p&gt;B-link 树采用了增加一个指针来解决这个问题。它在所有 B 树原来的节点上增加了一个指针，这个指针指向了它紧邻的右节点。在树结构变换时，会首先保证这个指针被更新。在这种情况下，由树结构改变导致的节点无法访问可以通过指针来访问到。&lt;/p&gt;
+&lt;p&gt;接下来将简要介绍 B-link 树的算法。由于增加了指针，它的一些算法和一般的 B 树略有区别w&lt;/p&gt;
+&lt;h3&gt;Search&lt;/h3&gt;
+&lt;ol&gt;
+&lt;li&gt;按照 B 树的方式找到它应该在的叶子节点。&lt;/li&gt;
+&lt;li&gt;如果它在那个节点，那么就查找到了&lt;/li&gt;
+&lt;li&gt;如果它不在，用指针向右遍历。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3&gt;Insertion&lt;/h3&gt;
+&lt;p&gt;注意所有修改节点和节点关系的操作都是需要加锁的。&lt;/p&gt;
+&lt;p&gt;关键的区别产生在将节点拆分的过程。&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;首先创建拆分后的右子节点，将数据复制进去，并将它的后继指针指向原先的后继。&lt;/li&gt;
+&lt;li&gt;将原先节点的后继指向新的右子节点，然后将应该复制进去的数据删除。&lt;/li&gt;
+&lt;li&gt;最后将这个右子节点连接到父节点上。如果这个连接过程使得父节点需要拆分，那么递归向上。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;注意在拆分父节点的过程中，需要向右遍历：b-link 树的结构不适合维护指向父节点的指针，因此在更新某一子节点的过程中，父节点被并行的其它操作更新了。&lt;/p&gt;
+&lt;h3&gt;Deletion&lt;/h3&gt;
+&lt;p&gt;Emmmm... B-link 树使用了一种……比较emmm的方式解决删除的并行化w&lt;/p&gt;
+&lt;p&gt;那就是仅删除键，不平衡树……&lt;/p&gt;
+&lt;h2&gt;0x02 Shadowing &amp;amp; Cloning based on B+-trees&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;B-trees, Shadowing, and Clones ,Ohad Rodeh, 2007&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;emmmm...&lt;/p&gt;
+&lt;p&gt;这篇论文说的是基于 B+ 树的 Shadowing 和 Cloning 实现（emmm 我不太清楚中文翻译过来是什么），但是实际上为了保证不会过分地 &lt;code&gt;Shadow&lt;/code&gt; 节点，将不维护指向紧邻右节点的指针。&lt;/p&gt;
+&lt;h3&gt;Shadowing&lt;/h3&gt;
+&lt;p&gt;什么是 Shadowing 呢？&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Shadowing&lt;/code&gt; 就是在要修改某一个硬盘上的页（可能是存储树节点的、文件内容的、或者其他东西的区块）的时候，首先将它复制到另外一个地址，进行修改，再把指向原地址的指针改为指向新地址。&lt;/p&gt;
+&lt;p&gt;这个机制可以有效保证在突然崩溃的情况下对文件系统的操作不会损坏原有的文件系统结构。但是它在应用到带有指向紧邻右节点的指针的 B 树的时候，会导致不得不对整棵树进行 &lt;code&gt;Shadow&lt;/code&gt; 。如果不维护这个指针，那么需要被 Shadow 的仅是从根节点到被修改节点的一条路径。&lt;/p&gt;
+&lt;h4&gt;Concurrency...?&lt;/h4&gt;
+&lt;p&gt;那么既然不维护指向紧邻右节点的指针，那么它要如何保证并行访问的性能呢？&lt;/p&gt;
+&lt;p&gt;答案是使用一种更为积极的操作策略w&lt;/p&gt;
+&lt;p&gt;相比传统的 B 树实现（在完成插入/删除操作后再进行节点的拆分/合并），为了达到较好的并行访问效率，这种结构将在寻找将要插入/删除的位置的过程中对遇到的达到上/下限的节点立即进行拆分/合并。&lt;/p&gt;
+&lt;p&gt;这样可以保证对一个写入操作，同时需要加锁的节点最多只有一个节点和它的直接子节点。&lt;/p&gt;
+&lt;h4&gt;Locking Scheme&lt;/h4&gt;
+&lt;p&gt;在整个操作过程中，加解锁是按照以下策略进行的：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不允许写时读&lt;/li&gt;
+&lt;li&gt;不允许同时写&lt;/li&gt;
+&lt;li&gt;允许同时读&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;（也就是说，读写两种锁之间互斥，写锁之间互斥，读锁之间共享。&lt;/p&gt;
+&lt;h3&gt;Clones&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;Cloning&lt;/code&gt; 指的是快速地对整个文件系统进行快照的能力。这个特性的实现旨在能够快速地备份文件系统在某个时刻的状态，并且在将来能够只读地回溯到这个状态，或者将整个文件系统重置到当时的状态。&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;Cloning&lt;/code&gt; 的可用性取决于以下四个方面：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;空间效率：快照应当通过与当前文件系统尽可能地共享页面来节省空间消耗。&lt;/li&gt;
+&lt;li&gt;速度：创建快照应当尽可能地快。&lt;/li&gt;
+&lt;li&gt;快照数量：快照数量应当尽可能地多。&lt;/li&gt;
+&lt;li&gt;操作自身：快照应当能够快照某个快照。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;为了达到以上这些特性，我们采用一种基于“引用计数”的方式。&lt;/p&gt;
+&lt;p&gt;基本的思想是使用一个空闲空间表来存储对硬盘上每一块空间的引用次数。当被 clone 的时候，那个页面的引用次数就 +1 。 当某一块空间将被修改时，如果它的引用次数大于 1 ，那么它将被复制一份。&lt;/p&gt;
+&lt;p&gt;具体的算法如下：&lt;/p&gt;
+&lt;h4&gt;Create a Clone&lt;/h4&gt;
+&lt;ul&gt;
+&lt;li&gt;复制根节点&lt;/li&gt;
+&lt;li&gt;将根节点的直接子节点的引用计数 +1 。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4&gt;Modify Keys&lt;/h4&gt;
+&lt;p&gt;将要修改一个节点时：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;如果引用次数 &amp;gt; 1，那么将它复制，并且将它的子节点的引用计数 + 1。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;通过这样的方式，使得创建 Clone 消耗的时间非常小，而且能够最大可能地利用公共的页面。&lt;/p&gt;</content><category term="OS"></category><category term="linux"></category><category term="ALG"></category></entry><entry><title>Android 触摸事件分发机制（二）原始事件消息传递与分发的开始</title><link href="/android-hong-mo-shi-jian-fen-fa-ji-zhi-er-yuan-shi-shi-jian-xiao-xi-chuan-di-yu-fen-fa-de-kai-shi.html" rel="alternate"></link><published>2017-10-07T13:00:00+08:00</published><updated>2017-10-07T13:00:00+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-10-07:/android-hong-mo-shi-jian-fen-fa-ji-zhi-er-yuan-shi-shi-jian-xiao-xi-chuan-di-yu-fen-fa-de-kai-shi.html</id><summary type="html">&lt;h2&gt;回顾&lt;/h2&gt;
+&lt;p&gt;在&lt;a href="http://www.viseator.com/2017/09/14/android_view_event_1/"&gt;上一篇文章&lt;/a&gt;中，我们探索了从内核触摸事件传递到&lt;code&gt;InputDispatcher&lt;/code&gt;线程，再与应用线程之间建立&lt;code&gt;InputChannel&lt;/code&gt;的过程，并且我们已经看到一个最原始的触摸事件被封装成一个&lt;code&gt;msg&lt;/code&gt;并通过&lt;code&gt;InputChannel&lt;/code&gt;建立的&lt;code&gt;socket&lt;/code&gt;通过&lt;code&gt;sendMessage()&lt;/code&gt;方法跨线程通信发送给了应用的UI线程。&lt;/p&gt;
+&lt;p&gt;这篇文章将会看到应用UI线程的消息队列是如何读取传递过来的触摸事件并进行处理、分发的。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;本篇文章主要参考了&lt;a href="http://gityuan.com/2016/12/31/input-ipc/"&gt;Gityuan的文章&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;消息循环&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Android&lt;/code&gt;的消息机制的具体内容在这里不详细叙述：&lt;/p&gt;
+&lt;p&gt;每个线程都可以拥有一个自己的消息队列与一个&lt;code&gt;Looper&lt;/code&gt;，在&lt;code&gt;Looper&lt;/code&gt;初始化的过程中，会启动一个循环来不断读取、处理队列中的消息，&lt;code&gt;Android&lt;/code&gt;是一个事件驱动的模型，只有源源不断的事件产生与处理才能推动应用的进行。&lt;/p&gt;
+&lt;p&gt;同时应该注意的是在&lt;code&gt;Java&lt;/code&gt;与&lt;code&gt;Native&lt;/code&gt;中各有一套消息处理的流程可以进行消息的处理。&lt;/p&gt;
+&lt;h3&gt;Looper&lt;/h3&gt;
+&lt;p&gt;当应用初始化时，会调用&lt;code&gt;Looper.prepare()&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;prepare …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h2&gt;回顾&lt;/h2&gt;
+&lt;p&gt;在&lt;a href="http://www.viseator.com/2017/09/14/android_view_event_1/"&gt;上一篇文章&lt;/a&gt;中，我们探索了从内核触摸事件传递到&lt;code&gt;InputDispatcher&lt;/code&gt;线程，再与应用线程之间建立&lt;code&gt;InputChannel&lt;/code&gt;的过程，并且我们已经看到一个最原始的触摸事件被封装成一个&lt;code&gt;msg&lt;/code&gt;并通过&lt;code&gt;InputChannel&lt;/code&gt;建立的&lt;code&gt;socket&lt;/code&gt;通过&lt;code&gt;sendMessage()&lt;/code&gt;方法跨线程通信发送给了应用的UI线程。&lt;/p&gt;
+&lt;p&gt;这篇文章将会看到应用UI线程的消息队列是如何读取传递过来的触摸事件并进行处理、分发的。&lt;/p&gt;
+&lt;!--more--&gt;
+
+&lt;p&gt;本篇文章主要参考了&lt;a href="http://gityuan.com/2016/12/31/input-ipc/"&gt;Gityuan的文章&lt;/a&gt;&lt;/p&gt;
+&lt;h2&gt;消息循环&lt;/h2&gt;
+&lt;p&gt;&lt;code&gt;Android&lt;/code&gt;的消息机制的具体内容在这里不详细叙述：&lt;/p&gt;
+&lt;p&gt;每个线程都可以拥有一个自己的消息队列与一个&lt;code&gt;Looper&lt;/code&gt;，在&lt;code&gt;Looper&lt;/code&gt;初始化的过程中，会启动一个循环来不断读取、处理队列中的消息，&lt;code&gt;Android&lt;/code&gt;是一个事件驱动的模型，只有源源不断的事件产生与处理才能推动应用的进行。&lt;/p&gt;
+&lt;p&gt;同时应该注意的是在&lt;code&gt;Java&lt;/code&gt;与&lt;code&gt;Native&lt;/code&gt;中各有一套消息处理的流程可以进行消息的处理。&lt;/p&gt;
+&lt;h3&gt;Looper&lt;/h3&gt;
+&lt;p&gt;当应用初始化时，会调用&lt;code&gt;Looper.prepare()&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;prepare&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;quitAllowed&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;sThreadLocal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;get&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;throw&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;RuntimeException&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Only one Looper may be created per thread&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;sThreadLocal&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;set&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;quitAllowed&lt;/span&gt;&lt;span class="o"&gt;));&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;会在&lt;code&gt;ThreadLocal&lt;/code&gt;区域新建一个&lt;code&gt;Looper&lt;/code&gt;对象：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="nf"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;quitAllowed&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mQueue&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;MessageQueue&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;quitAllowed&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;mThread&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Thread&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;currentThread&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;同时初始化了一个&lt;code&gt;MessageQueue&lt;/code&gt;，保存了当前的线程：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;MessageQueue&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;quitAllowed&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mQuitAllowed&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;quitAllowed&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mPtr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;nativeInit&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;nativeInit()&lt;/code&gt;方法初始化了&lt;code&gt;native&lt;/code&gt;的消息队列：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="n"&gt;jlong&lt;/span&gt; &lt;span class="nf"&gt;android_os_MessageQueue_nativeInit&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;JNIEnv&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;jclass&lt;/span&gt; &lt;span class="n"&gt;clazz&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;nativeMessageQueue&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt;&lt;span class="n"&gt;nativeMessageQueue&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;jniThrowRuntimeException&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;Unable to allocate native queue&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;nativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;incStrong&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="k"&gt;reinterpret_cast&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;jlong&lt;/span&gt;&lt;span class="o"&gt;&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;nativeMessageQueue&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;新建了一个&lt;code&gt;NativeMessageQueue&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="n"&gt;mPollEnv&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;mPollObj&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;),&lt;/span&gt; &lt;span class="n"&gt;mExceptionObj&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mLooper&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;getForThread&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mLooper&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mLooper&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;new&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nb"&gt;false&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;setForThread&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mLooper&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里进行的初始化过程与&lt;code&gt;java&lt;/code&gt;层的比较类似，都是新建了一个&lt;code&gt;Looper&lt;/code&gt;对象存放入了&lt;code&gt;ThreadLocal&lt;/code&gt;区域中。&lt;/p&gt;
+&lt;p&gt;当初始化过程完成之后，系统调用&lt;code&gt;Looper.loop()&lt;/code&gt;开始消息循环：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;loop&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt; &lt;span class="n"&gt;me&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;myLooper&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;...&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;MessageQueue&lt;/span&gt; &lt;span class="n"&gt;queue&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;me&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mQueue&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;...&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(;;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;Message&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;queue&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;next&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt; &lt;span class="c1"&gt;// might block&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;msg&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="c1"&gt;// No message indicates that the message queue is quitting.&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+
+        &lt;span class="o"&gt;...&lt;/span&gt;
+        &lt;span class="k"&gt;try&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;target&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;dispatchMessage&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;finally&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;traceTag&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;traceEnd&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;traceTag&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;...&lt;/span&gt;
+
+        &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;recycleUnchecked&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;省略了大量代码，我们看到在这个无限循环中，首先就调用了&lt;code&gt;MessageQueue&lt;/code&gt;的&lt;code&gt;next()&lt;/code&gt;方法来获取下一条消息，注意这是一个阻塞调用，在下一条消息还没到时间或者没有下一条消息时候会被阻塞。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;Message&lt;/span&gt; &lt;span class="nf"&gt;next&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="c1"&gt;// Return here if the message loop has already quit and been disposed.&lt;/span&gt;
+    &lt;span class="c1"&gt;// This can happen if the application tries to restart a looper after quit&lt;/span&gt;
+    &lt;span class="c1"&gt;// which is not supported.&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="n"&gt;ptr&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mPtr&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ptr&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;pendingIdleHandlerCount&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt; &lt;span class="c1"&gt;// -1 only during first iteration&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;nextPollTimeoutMillis&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="o"&gt;(;;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;nextPollTimeoutMillis&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;Binder&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;flushPendingCommands&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+
+        &lt;span class="n"&gt;nativePollOnce&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ptr&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;nextPollTimeoutMillis&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;...&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里我们不关心&lt;code&gt;java&lt;/code&gt;层后续对事件的处理，而是关心&lt;code&gt;java&lt;/code&gt;层是如何调用&lt;code&gt;native&lt;/code&gt;层的方法来对&lt;code&gt;native&lt;/code&gt;消息队列中的事件进行处理的，因为我们的触摸事件是在&lt;code&gt;native&lt;/code&gt;层进行处理再到&lt;code&gt;java&lt;/code&gt;层进行分发的。&lt;/p&gt;
+&lt;p&gt;在&lt;code&gt;next()&lt;/code&gt;方法中我们就调用了&lt;code&gt;nativePollOnce()&lt;/code&gt;方法先去处理&lt;code&gt;native&lt;/code&gt;中的事件：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="k"&gt;static&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;android_os_MessageQueue_nativePollOnce&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;JNIEnv&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;jobject&lt;/span&gt; &lt;span class="n"&gt;obj&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+        &lt;span class="n"&gt;jlong&lt;/span&gt; &lt;span class="n"&gt;ptr&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;jint&lt;/span&gt; &lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;nativeMessageQueue&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;reinterpret_cast&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;*&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;ptr&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;nativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;pollOnce&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;obj&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;调用了&lt;code&gt;nativeMessageQueue&lt;/code&gt;的&lt;code&gt;pollOnce()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="n"&gt;NativeMessageQueue&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;pollOnce&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;JNIEnv&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;jobject&lt;/span&gt; &lt;span class="n"&gt;pollObj&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mPollEnv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mPollObj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pollObj&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mLooper&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;pollOnce&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;mPollObj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mPollEnv&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mExceptionObj&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;Throw&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mExceptionObj&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;DeleteLocalRef&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mExceptionObj&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mExceptionObj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;调用了&lt;code&gt;native&lt;/code&gt; &lt;code&gt;Looper&lt;/code&gt;的&lt;code&gt;pollOnce()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;pollOnce&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;outFd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;outEvents&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="o"&gt;**&lt;/span&gt; &lt;span class="n"&gt;outData&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(;;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="p"&gt;...&lt;/span&gt;
+        &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;pollInner&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;忽略特殊处理的过程，最终调用了&lt;code&gt;pollInner()&lt;/code&gt;方法：（&lt;code&gt;PollInner()&lt;/code&gt;的代码比较长，省略了大部分，标记了后面讨论的三个部分）&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;pollInner&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="p"&gt;...&lt;/span&gt;&lt;span class="c1"&gt;// 省略初始化过程&lt;/span&gt;
+    &lt;span class="c1"&gt;// Poll.&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;POLL_WAKE&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mResponses&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;clear&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="n"&gt;mResponseIndex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// We are about to idle.&lt;/span&gt;
+    &lt;span class="n"&gt;mPolling&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;true&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="cm"&gt;/*-------1-------*/&lt;/span&gt;
+    &lt;span class="k"&gt;struct&lt;/span&gt; &lt;span class="n"&gt;epoll_event&lt;/span&gt; &lt;span class="n"&gt;eventItems&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;EPOLL_MAX_EVENTS&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;eventCount&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;epoll_wait&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mEpollFd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;eventItems&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;EPOLL_MAX_EVENTS&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;timeoutMillis&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+
+    &lt;span class="p"&gt;...&lt;/span&gt;
+    &lt;span class="cm"&gt;/*---------------*/&lt;/span&gt;
+    &lt;span class="cm"&gt;/*-------2-------*/&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;eventCount&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;fd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;eventItems&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;epollEvents&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;eventItems&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;mWakeEventFd&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;epollEvents&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;EPOLLIN&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;awoken&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;ALOGW&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Ignoring unexpected epoll events 0x%x on wake event fd.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;epollEvents&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="kt"&gt;ssize_t&lt;/span&gt; &lt;span class="n"&gt;requestIndex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mRequests&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;indexOfKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;requestIndex&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;epollEvents&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;EPOLLIN&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;|=&lt;/span&gt; &lt;span class="n"&gt;EVENT_INPUT&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;epollEvents&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;EPOLLOUT&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;|=&lt;/span&gt; &lt;span class="n"&gt;EVENT_OUTPUT&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;epollEvents&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;EPOLLERR&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;|=&lt;/span&gt; &lt;span class="n"&gt;EVENT_ERROR&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;epollEvents&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;EPOLLHUP&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;|=&lt;/span&gt; &lt;span class="n"&gt;EVENT_HANGUP&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="n"&gt;pushResponse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mRequests&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;valueAt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;requestIndex&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;ALOGW&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;Ignoring unexpected epoll events 0x%x on fd %d that is &amp;quot;&lt;/span&gt;
+                        &lt;span class="s"&gt;&amp;quot;no longer registered.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;epollEvents&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;span class="nl"&gt;Done&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;...&lt;/span&gt;&lt;span class="c1"&gt;// 省略native message处理过程&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// Release lock.&lt;/span&gt;
+    &lt;span class="n"&gt;mLock&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;unlock&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="cm"&gt;/*---------------*/&lt;/span&gt;
+    &lt;span class="cm"&gt;/*-------3-------*/&lt;/span&gt;
+    &lt;span class="c1"&gt;// Invoke all response callbacks.&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;size_t&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;mResponses&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;Response&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mResponses&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;editItemAt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;ident&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;POLL_CALLBACK&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;fd&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="cp"&gt;#if DEBUG_POLL_AND_WAKE || DEBUG_CALLBACKS&lt;/span&gt;
+            &lt;span class="n"&gt;ALOGD&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;%p ~ pollOnce - invoking fd event callback %p: fd=%d, events=0x%x, data=%p&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="cp"&gt;#endif&lt;/span&gt;
+            &lt;span class="c1"&gt;// Invoke the callback.  Note that the file descriptor may be closed by&lt;/span&gt;
+            &lt;span class="c1"&gt;// the callback (and potentially even reused) before the function returns so&lt;/span&gt;
+            &lt;span class="c1"&gt;// we need to be a little careful when removing the file descriptor afterwards.&lt;/span&gt;
+            &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;callbackResult&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;handleEvent&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;callbackResult&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;removeFd&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+
+            &lt;span class="c1"&gt;// Clear the callback reference in the response structure promptly because we&lt;/span&gt;
+            &lt;span class="c1"&gt;// will not clear the response vector itself until the next poll.&lt;/span&gt;
+            &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;clear&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;POLL_CALLBACK&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="cm"&gt;/*---------------*/&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第一部分中，调用了&lt;code&gt;epoll_wait()&lt;/code&gt;函数等待消息，当接收到消息或者发生超时的时候调用返回。&lt;/p&gt;
+&lt;p&gt;第二部分对返回的&lt;code&gt;events&lt;/code&gt;进行遍历，如果对应的&lt;code&gt;fd&lt;/code&gt;为唤醒专用的&lt;code&gt;mWakeEventFd&lt;/code&gt;，执行&lt;code&gt;awoken()&lt;/code&gt;函数清空管道，这个事件的作用只是为了唤醒&lt;code&gt;Looper&lt;/code&gt;对新消息进行处理。&lt;/p&gt;
+&lt;p&gt;如果不是&lt;code&gt;mWakeEventFd&lt;/code&gt;，说明为我们之前通过&lt;code&gt;addFd()&lt;/code&gt;函数添加的&lt;code&gt;fd&lt;/code&gt;，我们需要对这个&lt;code&gt;event&lt;/code&gt;进行处理，处理函数为&lt;code&gt;pushResponse()&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;ssize_t&lt;/span&gt; &lt;span class="n"&gt;requestIndex&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mRequests&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;indexOfKey&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="n"&gt;pushResponse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mRequests&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;valueAt&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;requestIndex&lt;/span&gt;&lt;span class="p"&gt;));&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们还记得在前面&lt;code&gt;addFd()&lt;/code&gt;的过程中已经将&lt;code&gt;fd&lt;/code&gt;作为索引，向&lt;code&gt;mRequest&lt;/code&gt;中保存了&lt;code&gt;request&lt;/code&gt;信息，信息中包含了&lt;code&gt;callback&lt;/code&gt;也就是&lt;code&gt;NativeInputEventReceiver&lt;/code&gt;对象。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="n"&gt;Looper&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;pushResponse&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;Request&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;Response&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mResponses&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;push&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里将&lt;code&gt;request&lt;/code&gt;对象包装成了一个&lt;code&gt;response&lt;/code&gt;，然后存入了&lt;code&gt;mResponses&lt;/code&gt;中等待后面的处理。&lt;/p&gt;
+&lt;p&gt;第三部分中就是对于&lt;code&gt;response&lt;/code&gt;的处理过程，主要就是这个调用：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;callbackResult&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;callback&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;handleEvent&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;fd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;调用了&lt;code&gt;callback&lt;/code&gt;的&lt;code&gt;handleEvent()&lt;/code&gt;，我们现在知道&lt;code&gt;callback&lt;/code&gt;是前面保存的&lt;code&gt;NativeInputEventReceiver&lt;/code&gt;对象。&lt;/p&gt;
+&lt;p&gt;现在，当原始事件通过建立好的&lt;code&gt;InputChannel&lt;/code&gt;的&lt;code&gt;sendMessage()&lt;/code&gt;函数发送触摸事件时：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;status_t&lt;/span&gt; &lt;span class="n"&gt;InputChannel&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;sendMessage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;InputMessage&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;size_t&lt;/span&gt; &lt;span class="n"&gt;msgLength&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;size&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+    &lt;span class="kt"&gt;ssize_t&lt;/span&gt; &lt;span class="n"&gt;nWrite&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;do&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;nWrite&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;send&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mFd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;msgLength&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;MSG_DONTWAIT&lt;/span&gt; &lt;span class="o"&gt;|&lt;/span&gt; &lt;span class="n"&gt;MSG_NOSIGNAL&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt; &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;nWrite&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;errno&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;EINTR&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;...&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;OK&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;会直接调用&lt;code&gt;send()&lt;/code&gt;函数向&lt;code&gt;fd&lt;/code&gt;中写入数据，同时在另一边的&lt;code&gt;epoll_wait()&lt;/code&gt;调用就会因&lt;code&gt;fd&lt;/code&gt;数据的到来而唤醒，并通过&lt;code&gt;fd&lt;/code&gt;找到注册好的&lt;code&gt;request&lt;/code&gt;，进而调用&lt;code&gt;request&lt;/code&gt;中的&lt;code&gt;NativeInputEventReceiver&lt;/code&gt;的&lt;code&gt;handleEvent()&lt;/code&gt;方法，参数就是我们接收到的事件信息与数据。&lt;/p&gt;
+&lt;h3&gt;handleEvent&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;NativeInputEventReceiver&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;handleEvent&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;receiveFd&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;events&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;data&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="p"&gt;...&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;events&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;ALOOPER_EVENT_INPUT&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;JNIEnv&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;env&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;AndroidRuntime&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;getJNIEnv&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;status_t&lt;/span&gt; &lt;span class="n"&gt;status&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;consumeEvents&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;false&lt;/span&gt; &lt;span class="cm"&gt;/*consumeBatches*/&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt;&lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nb"&gt;NULL&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;mMessageQueue&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;raiseAndClearException&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;handleReceiveCallback&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;status&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;OK&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;status&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;NO_MEMORY&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+    &lt;span class="p"&gt;...&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;调用了&lt;code&gt;consumeEvents()&lt;/code&gt;函数来处理事件，函数较长，我们拆开来看：&lt;/p&gt;
+&lt;p&gt;函数进行初始化过程之后执行了一个无限循环，循环体中的内容如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt; &lt;span class="n"&gt;InputEvent&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;inputEvent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;status_t&lt;/span&gt; &lt;span class="n"&gt;status&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mInputConsumer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;consume&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;mInputEventFactory&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                &lt;span class="n"&gt;consumeBatches&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;frameTime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;inputEvent&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;首先就调用了&lt;code&gt;mInputConsumer&lt;/code&gt;对象的&lt;code&gt;consume&lt;/code&gt;方法接收并将原始的事件转换为分发过程中标准的&lt;code&gt;MotionEvent&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;status_t&lt;/span&gt; &lt;span class="n"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mChannel&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;receiveMessage&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;mMsg&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里就直接调用了&lt;code&gt;InputChannel&lt;/code&gt;的&lt;code&gt;receiveMessage()&lt;/code&gt;函数来接收另一端发送来的消息。&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;        &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mMsg&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;header&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;type&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="n"&gt;InputMessage&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="nl"&gt;TYPE_KEY&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="p"&gt;...&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+        &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="nl"&gt;AINPUT_EVENT_TYPE_MOTION&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="p"&gt;...&lt;/span&gt;
+            &lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;motionEvent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;factory&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;createMotionEvent&lt;/span&gt;&lt;span class="p"&gt;();&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;!&lt;/span&gt; &lt;span class="n"&gt;motionEvent&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;NO_MEMORY&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+
+            &lt;span class="n"&gt;updateTouchState&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;mMsg&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="n"&gt;initializeMotionEvent&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;motionEvent&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt;&lt;span class="n"&gt;mMsg&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+            &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;outSeq&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mMsg&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;outEvent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;motionEvent&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+&lt;span class="cp"&gt;#if DEBUG_TRANSPORT_ACTIONS&lt;/span&gt;
+            &lt;span class="n"&gt;ALOGD&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;channel &amp;#39;%s&amp;#39; consumer ~ consumed motion event, seq=%u&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+                    &lt;span class="n"&gt;mChannel&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;getName&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="n"&gt;string&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;outSeq&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="cp"&gt;#endif&lt;/span&gt;
+            &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+
+            &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这里对事件的类型进行了一个判断，当类型为&lt;code&gt;MOTION&lt;/code&gt;即触摸事件时，新建了一个&lt;code&gt;MotionEvent&lt;/code&gt;，然后用&lt;code&gt;mMsg&lt;/code&gt;去进行初始化：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="n"&gt;InputConsumer&lt;/span&gt;&lt;span class="o"&gt;::&lt;/span&gt;&lt;span class="n"&gt;initializeMotionEvent&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="k"&gt;const&lt;/span&gt; &lt;span class="n"&gt;InputMessage&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+    &lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;pointerCount&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pointerCount&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;PointerProperties&lt;/span&gt; &lt;span class="n"&gt;pointerProperties&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;pointerCount&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="n"&gt;PointerCoords&lt;/span&gt; &lt;span class="n"&gt;pointerCoords&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;pointerCount&lt;/span&gt;&lt;span class="p"&gt;];&lt;/span&gt;
+    &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;uint32_t&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;&lt;/span&gt; &lt;span class="n"&gt;pointerCount&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt; &lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="o"&gt;++&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;pointerProperties&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;copyFrom&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pointers&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;properties&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+        &lt;span class="n"&gt;pointerCoords&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;copyFrom&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;pointers&lt;/span&gt;&lt;span class="p"&gt;[&lt;/span&gt;&lt;span class="n"&gt;i&lt;/span&gt;&lt;span class="p"&gt;].&lt;/span&gt;&lt;span class="n"&gt;coords&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+    &lt;span class="p"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;initialize&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;deviceId&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;source&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;action&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;actionButton&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;flags&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;edgeFlags&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;metaState&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;buttonState&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xOffset&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yOffset&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;xPrecision&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;yPrecision&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;downTime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;msg&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;body&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;motion&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;eventTime&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;pointerCount&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;pointerProperties&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;
+            &lt;span class="n"&gt;pointerCoords&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+&lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;然后在第14行把它存入了&lt;code&gt;outEvent&lt;/code&gt;（也就是&lt;code&gt;consume()&lt;/code&gt;函数中传入的&lt;code&gt;inputEvent&lt;/code&gt;）中，现在函数返回到&lt;code&gt;NativeInputEventReceiver::consumeEvents()&lt;/code&gt;继续处理：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="k"&gt;switch&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inputEvent&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;getType&lt;/span&gt;&lt;span class="p"&gt;())&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="nl"&gt;AINPUT_EVENT_TYPE_KEY&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+                &lt;span class="p"&gt;...&lt;/span&gt;
+
+            &lt;span class="k"&gt;case&lt;/span&gt; &lt;span class="nl"&gt;AINPUT_EVENT_TYPE_MOTION&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;kDebugDispatchCycle&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="n"&gt;ALOGD&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;channel &amp;#39;%s&amp;#39; ~ Received motion event.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;getInputChannelName&lt;/span&gt;&lt;span class="p"&gt;());&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+                &lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="n"&gt;motionEvent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="k"&gt;static_cast&lt;/span&gt;&lt;span class="o"&gt;&amp;lt;&lt;/span&gt;&lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;*&amp;gt;&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inputEvent&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;((&lt;/span&gt;&lt;span class="n"&gt;motionEvent&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;getAction&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;AMOTION_EVENT_ACTION_MOVE&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;outConsumedBatch&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="o"&gt;*&lt;/span&gt;&lt;span class="n"&gt;outConsumedBatch&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nb"&gt;true&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+                &lt;span class="n"&gt;inputEventObj&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;android_view_MotionEvent_obtainAsCopy&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;motionEvent&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+                &lt;span class="k"&gt;break&lt;/span&gt;&lt;span class="p"&gt;;&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+            &lt;span class="p"&gt;...&lt;/span&gt;
+            &lt;span class="p"&gt;}&lt;/span&gt;
+
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;inputEventObj&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;kDebugDispatchCycle&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="p"&gt;{&lt;/span&gt;
+                    &lt;span class="n"&gt;ALOGD&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s"&gt;&amp;quot;channel &amp;#39;%s&amp;#39; ~ Dispatching input event.&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;getInputChannelName&lt;/span&gt;&lt;span class="p"&gt;());&lt;/span&gt;
+                &lt;span class="p"&gt;}&lt;/span&gt;
+                &lt;span class="n"&gt;env&lt;/span&gt;&lt;span class="o"&gt;-&amp;gt;&lt;/span&gt;&lt;span class="n"&gt;CallVoidMethod&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;receiverObj&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(),&lt;/span&gt;
+                        &lt;span class="n"&gt;gInputEventReceiverClassInfo&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="n"&gt;dispatchInputEvent&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;inputEventObj&lt;/span&gt;&lt;span class="p"&gt;);&lt;/span&gt;
+           &lt;span class="p"&gt;...&lt;/span&gt;
+        &lt;span class="p"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;下面就对&lt;code&gt;inputEvent&lt;/code&gt;（即为&lt;code&gt;MotionEvent&lt;/code&gt;）的类型作了一个判断，对&lt;code&gt;inputEventObj&lt;/code&gt;（用于调用&lt;code&gt;java&lt;/code&gt;层方法）进行赋值。随后就通过&lt;code&gt;JNI&lt;/code&gt; 的&lt;code&gt;CallVoidMethod()&lt;/code&gt;方法来调用&lt;code&gt;java&lt;/code&gt;层的&lt;code&gt;dispatchInputEvent()&lt;/code&gt;方法。这里调用的是&lt;code&gt;java&lt;/code&gt;层&lt;code&gt;InputEventReceiver&lt;/code&gt;的&lt;code&gt;dispatchInputEvent()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;h2&gt;开始分发&lt;/h2&gt;
+&lt;h3&gt;dispatchInputEvent&lt;/h3&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;dispatchInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;InputEvent&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;mSeqMap&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;put&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSequenceNumber&lt;/span&gt;&lt;span class="o"&gt;(),&lt;/span&gt; &lt;span class="n"&gt;seq&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;onInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;&lt;code&gt;InputEventReceiver&lt;/code&gt;是一个抽象类，具体实现类是&lt;code&gt;ViewRootImpl&lt;/code&gt;的内部类&lt;code&gt;WindowInputEventReceiver&lt;/code&gt;，它覆盖了&lt;code&gt;onInputEvent()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;onInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;InputEvent&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;enqueueInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;调用了&lt;code&gt;ViewRootImpl&lt;/code&gt;的&lt;code&gt;enqueueInputEvent()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;enqueueInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;InputEvent&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;InputEventReceiver&lt;/span&gt; &lt;span class="n"&gt;receiver&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;flags&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+                       &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;processImmediately&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;adjustInputEventForCompatibility&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;obtainQueuedInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;receiver&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;flags&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// Always enqueue the input event in order, regardless of its time stamp.&lt;/span&gt;
+    &lt;span class="c1"&gt;// We do this because the application or the IME may inject key events&lt;/span&gt;
+    &lt;span class="c1"&gt;// in response to touch events and we want to ensure that the injected keys&lt;/span&gt;
+    &lt;span class="c1"&gt;// are processed in the order they were received and we cannot trust that&lt;/span&gt;
+    &lt;span class="c1"&gt;// the time stamp of injected events are monotonic.&lt;/span&gt;
+    &lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;last&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mPendingInputEventTail&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;last&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mPendingInputEventHead&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;mPendingInputEventTail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;last&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mNext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;mPendingInputEventTail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="n"&gt;mPendingInputEventCount&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;traceCounter&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;TRACE_TAG_INPUT&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mPendingInputEventQueueLengthCounterName&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+                       &lt;span class="n"&gt;mPendingInputEventCount&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;processImmediately&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;doProcessInputEvents&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;scheduleProcessInputEvents&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;将接收到的事件加入了&lt;code&gt;mPendingInutEvent&lt;/code&gt;链表的头部，注释里给出了这么做的原因：当发生事件插入的时候我们不能依赖事件的时间戳是准确的，因此必须让最新收到的事件先进行处理。&lt;/p&gt;
+&lt;p&gt;最终调用&lt;code&gt;doProcessInputEvents()&lt;/code&gt;进行事件处理：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;doProcessInputEvents&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="c1"&gt;// Deliver all pending input events in the queue.&lt;/span&gt;
+    &lt;span class="k"&gt;while&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mPendingInputEventHead&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mPendingInputEventHead&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;mPendingInputEventHead&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mNext&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mPendingInputEventHead&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;mPendingInputEventTail&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mNext&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+        &lt;span class="n"&gt;mPendingInputEventCount&lt;/span&gt; &lt;span class="o"&gt;-=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;traceCounter&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;TRACE_TAG_INPUT&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mPendingInputEventQueueLengthCounterName&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt;
+                &lt;span class="n"&gt;mPendingInputEventCount&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+        &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="n"&gt;eventTime&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getEventTimeNano&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="kt"&gt;long&lt;/span&gt; &lt;span class="n"&gt;oldestEventTime&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;eventTime&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt; &lt;span class="k"&gt;instanceof&lt;/span&gt; &lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="n"&gt;MotionEvent&lt;/span&gt; &lt;span class="n"&gt;me&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;me&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getHistorySize&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+                &lt;span class="n"&gt;oldestEventTime&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;me&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getHistoricalEventTimeNano&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+            &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+        &lt;span class="n"&gt;mChoreographer&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mFrameInfo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;updateInputEventTime&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;eventTime&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;oldestEventTime&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+
+        &lt;span class="n"&gt;deliverInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;...&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在从链表中取出事件之后，对事件的时间戳进行了更新。然后调用&lt;code&gt;deliverInputEvent()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;void&lt;/span&gt; &lt;span class="nf"&gt;deliverInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;asyncTraceBegin&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;Trace&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;TRACE_TAG_VIEW&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="s"&gt;&amp;quot;deliverInputEvent&amp;quot;&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSequenceNumber&lt;/span&gt;&lt;span class="o"&gt;());&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mInputEventConsistencyVerifier&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mInputEventConsistencyVerifier&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;onInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="n"&gt;InputStage&lt;/span&gt; &lt;span class="n"&gt;stage&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;shouldSendToSynthesizer&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;stage&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;mSyntheticInputStage&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;stage&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;shouldSkipIme&lt;/span&gt;&lt;span class="o"&gt;()&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;mFirstPostImeInputStage&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mFirstInputStage&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;stage&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;stage&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;deliver&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;finishInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;这段代码第一眼看上去比较难懂，&lt;code&gt;Stage&lt;/code&gt;让我们联想到了CPU流水线处理过程中的&lt;code&gt;Stage&lt;/code&gt;，这里就是进入了一个流水线过程来处理事件：&lt;/p&gt;
+&lt;h3&gt;流水线事件处理&lt;/h3&gt;
+&lt;p&gt;&lt;img alt="" src="/images/event2_1.png"&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/event2_2.png"&gt;&lt;/p&gt;
+&lt;p&gt;首先看到我们可以根据事件类型的需要从&lt;code&gt;mSyntheticInputStage&lt;/code&gt; &lt;code&gt;EarlyPostImeInputStage&lt;/code&gt; &lt;code&gt;NativePreImeInputStage&lt;/code&gt;三个入口进入流水线，而流水线的每一步都对事件进行了不同的处理，并可以通过&lt;code&gt;forward()&lt;/code&gt;方法传递到下一个&lt;code&gt;Stage&lt;/code&gt;进行处理。并且这里使用的流水线是一个异步流水线，可以允许多个事件同时在里面运行处理，这种架构使得事件处理流程效率非常高。&lt;/p&gt;
+&lt;p&gt;那么我们的触摸事件从&lt;code&gt;NativePreImeInputStage&lt;/code&gt;进入流水线后会经历什么处理过程呢：&lt;/p&gt;
+&lt;p&gt;我们并不是&lt;code&gt;IME&lt;/code&gt;的事件，所以直接从&lt;code&gt;EarlyPostImeInputStage&lt;/code&gt;开始：&lt;/p&gt;
+&lt;h4&gt;EarlyPostImeInputStage&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;onProcess&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt; &lt;span class="k"&gt;instanceof&lt;/span&gt; &lt;span class="n"&gt;KeyEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;processKeyEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;source&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSource&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;source&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;InputDevice&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;SOURCE_CLASS_POINTER&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;processPointerEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FORWARD&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第7行判断成立，进入&lt;code&gt;processPointerEvent()&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;processPointerEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;MotionEvent&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// Translate the pointer event for compatibility, if needed.&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mTranslator&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mTranslator&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;translateEventInScreenToAppWindow&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// Enter touch mode on down or scroll.&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;action&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getAction&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;action&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ACTION_DOWN&lt;/span&gt; &lt;span class="o"&gt;||&lt;/span&gt; &lt;span class="n"&gt;action&lt;/span&gt; &lt;span class="o"&gt;==&lt;/span&gt; &lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;ACTION_SCROLL&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;ensureTouchMode&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// Offset the scroll position.&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mCurScrollY&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;offsetLocation&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;mCurScrollY&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+
+    &lt;span class="c1"&gt;// Remember the touch position for possible drag-initiation.&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;isTouchEvent&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mLastTouchPoint&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;x&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getRawX&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;mLastTouchPoint&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;y&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getRawY&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="n"&gt;mLastTouchSource&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSource&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FORWARD&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;对事件进行处理以后继续进入下一阶段。&lt;/p&gt;
+&lt;h4&gt;NativePostImeInputStage&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;onProcess&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mInputQueue&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="n"&gt;mInputQueue&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;sendInputEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;,&lt;/span&gt; &lt;span class="k"&gt;this&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;DEFER&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;FORWARD&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果有事件等待被处理，则推迟当前事件的处理（实现异步）。否则直接进入下一个阶段：&lt;/p&gt;
+&lt;h4&gt;ViewPostImeInputStage&lt;/h4&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="nd"&gt;@Override&lt;/span&gt;
+&lt;span class="kd"&gt;protected&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;onProcess&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt; &lt;span class="k"&gt;instanceof&lt;/span&gt; &lt;span class="n"&gt;KeyEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;processKeyEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="n"&gt;source&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;getSource&lt;/span&gt;&lt;span class="o"&gt;();&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;source&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;InputDevice&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;SOURCE_CLASS_POINTER&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;processPointerEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;((&lt;/span&gt;&lt;span class="n"&gt;source&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;InputDevice&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;SOURCE_CLASS_TRACKBALL&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;processTrackballEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;processGenericMotionEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+        &lt;span class="o"&gt;}&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;第7行判断成立，调用&lt;code&gt;processPointerEvent()&lt;/code&gt;方法：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;private&lt;/span&gt; &lt;span class="kt"&gt;int&lt;/span&gt; &lt;span class="nf"&gt;processPointerEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;QueuedInputEvent&lt;/span&gt; &lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;MotionEvent&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;MotionEvent&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt;&lt;span class="n"&gt;q&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mEvent&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+
+    &lt;span class="n"&gt;mAttachInfo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mUnbufferedDispatchRequested&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;false&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="n"&gt;View&lt;/span&gt; &lt;span class="n"&gt;eventTarget&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;
+            &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;isFromSource&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;InputDevice&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;SOURCE_MOUSE&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class="n"&gt;mCapturingView&lt;/span&gt; &lt;span class="o"&gt;!=&lt;/span&gt; &lt;span class="kc"&gt;null&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt;
+                    &lt;span class="n"&gt;mCapturingView&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;mView&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="n"&gt;mAttachInfo&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;mHandlingPointerEvent&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kc"&gt;true&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+    &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="n"&gt;handled&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;eventTarget&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;dispatchPointerEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;...&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;handled&lt;/span&gt; &lt;span class="o"&gt;?&lt;/span&gt; &lt;span class="n"&gt;FINISH_HANDLED&lt;/span&gt; &lt;span class="o"&gt;:&lt;/span&gt; &lt;span class="n"&gt;FORWARD&lt;/span&gt;&lt;span class="o"&gt;;&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;判断目标是否是&lt;code&gt;mCapturingView&lt;/code&gt;，一般情况下目标就是&lt;code&gt;mView&lt;/code&gt;（也就是当前&lt;code&gt;Window&lt;/code&gt;的根&lt;code&gt;View&lt;/code&gt;也就是&lt;code&gt;DecorView&lt;/code&gt;），然后调用了它的&lt;code&gt;dispatchPointerEvent()&lt;/code&gt;方法（继承自&lt;code&gt;View&lt;/code&gt;）：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kd"&gt;public&lt;/span&gt; &lt;span class="kd"&gt;final&lt;/span&gt; &lt;span class="kt"&gt;boolean&lt;/span&gt; &lt;span class="nf"&gt;dispatchPointerEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;MotionEvent&lt;/span&gt; &lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;)&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+    &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="na"&gt;isTouchEvent&lt;/span&gt;&lt;span class="o"&gt;())&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;dispatchTouchEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt; &lt;span class="k"&gt;else&lt;/span&gt; &lt;span class="o"&gt;{&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;dispatchGenericMotionEvent&lt;/span&gt;&lt;span class="o"&gt;(&lt;/span&gt;&lt;span class="n"&gt;event&lt;/span&gt;&lt;span class="o"&gt;);&lt;/span&gt;
+    &lt;span class="o"&gt;}&lt;/span&gt;
+&lt;span class="o"&gt;}&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;到这里，我们终于看到了熟悉的&lt;code&gt;dispatchTouchEvent()&lt;/code&gt;方法，同时这也是一般事件分发机制分析的开始。&lt;/p&gt;
+&lt;h2&gt;小结&lt;/h2&gt;
+&lt;p&gt;现在，我们了解了从原始事件的产生地点到某个应用&lt;code&gt;UI&lt;/code&gt;线程事件循环再到根&lt;code&gt;view&lt;/code&gt;的&lt;code&gt;dispatchTouchEvent()&lt;/code&gt;的整个流程。分析这个过程还是要再次感谢&lt;a href="http://gityuan.com/"&gt;Gityuan的博客&lt;/a&gt;，这个过程找得到的资料只有他的文章，省了许多功夫。&lt;/p&gt;
+&lt;p&gt;下一篇文章开始就要讲解一般触摸事件分发分析的过程，也是参考资料比较多的部分。&lt;/p&gt;</content><category term="android"></category><category term="view"></category></entry><entry><title>深入理解计算机系统CacheLab-PartB实验报告</title><link href="/shen-ru-li-jie-ji-suan-ji-xi-tong-cachelab-partbshi-yan-bao-gao.html" rel="alternate"></link><published>2017-09-25T14:46:48+08:00</published><updated>2017-09-25T14:46:48+08:00</updated><author><name>HustMeituanBot</name></author><id>tag:None,2017-09-25:/shen-ru-li-jie-ji-suan-ji-xi-tong-cachelab-partbshi-yan-bao-gao.html</id><summary type="html">&lt;p&gt;实验答案托管在我的&lt;a href="https://github.com/BlackDragonF/CSAPPLabs/tree/master/CacheLab"&gt;GitHub&lt;/a&gt;上&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Cache Lab的Part B是我卡了比较久的实验，在7月份做完Pert A之后我卡在了Part B的第二个矩阵优化，之后进度一直缓慢。直到几天之前团队分享，我才把这个实验重新捡了回来，最终将第二个矩阵转置优化到了1500+的miss数（尽管仍然没有达到满分），后参考了网上的思路完成了Part B，总结如下。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;实验简介&lt;/h2&gt;
+&lt;p&gt;Cache Lab - Understanding Cache Memories主要是有关缓存的实验，对应于书本的第6章：存储器层次结构。主要阐明了缓存对于C语言程序的性能影响。&lt;/p&gt;
+&lt;p&gt;本实验的第二部分要求优化一个简单的矩阵变换函数，使其具有尽可能晓得缓存不命中数。&lt;/p&gt;
+&lt;p&gt;关于本实验的具体介绍详见&lt;a href="http://csapp.cs.cmu.edu/3e/archlab32-handout.tar"&gt;实验讲义&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;实验要求 - Part B&lt;/h2&gt;
+&lt;p&gt;在Part B中你需要在trans.c中写一个矩阵转置函数，该函数要能有尽可能少的缓存不命中(miss)数。&lt;/p&gt;
+&lt;p&gt;令A代表一个矩阵，A(i, j)代表矩阵A的第i行第j列的元素。
+那么，令B为矩阵A的转置，则对于A中的任意一个元素，满足A(i …&lt;/p&gt;</summary><content type="html">&lt;p&gt;实验答案托管在我的&lt;a href="https://github.com/BlackDragonF/CSAPPLabs/tree/master/CacheLab"&gt;GitHub&lt;/a&gt;上&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Cache Lab的Part B是我卡了比较久的实验，在7月份做完Pert A之后我卡在了Part B的第二个矩阵优化，之后进度一直缓慢。直到几天之前团队分享，我才把这个实验重新捡了回来，最终将第二个矩阵转置优化到了1500+的miss数（尽管仍然没有达到满分），后参考了网上的思路完成了Part B，总结如下。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2&gt;实验简介&lt;/h2&gt;
+&lt;p&gt;Cache Lab - Understanding Cache Memories主要是有关缓存的实验，对应于书本的第6章：存储器层次结构。主要阐明了缓存对于C语言程序的性能影响。&lt;/p&gt;
+&lt;p&gt;本实验的第二部分要求优化一个简单的矩阵变换函数，使其具有尽可能晓得缓存不命中数。&lt;/p&gt;
+&lt;p&gt;关于本实验的具体介绍详见&lt;a href="http://csapp.cs.cmu.edu/3e/archlab32-handout.tar"&gt;实验讲义&lt;/a&gt;。&lt;/p&gt;
+&lt;h2&gt;实验要求 - Part B&lt;/h2&gt;
+&lt;p&gt;在Part B中你需要在trans.c中写一个矩阵转置函数，该函数要能有尽可能少的缓存不命中(miss)数。&lt;/p&gt;
+&lt;p&gt;令A代表一个矩阵，A(i, j)代表矩阵A的第i行第j列的元素。
+那么，令B为矩阵A的转置，则对于A中的任意一个元素，满足A(i, j) = B(j, i)。&lt;/p&gt;
+&lt;p&gt;一个朴素的矩阵转置函数如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;void trans(int M, int N, int A[N][M], int B[M][N]) {
+    int i, j, tmp;
+
+    for (i = 0; i &amp;lt; N; i++) {
+        for (j = 0; j &amp;lt; M; j++) {
+            tmp = A[i][j];
+            B[j][i] = tmp;
+        }
+    }
+
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;该函数是正确的，但却并不是高效的，因为其访问模式导致了相当多的缓存不命中。&lt;/p&gt;
+&lt;p&gt;你的任务是完成一个相似的函数，并对于不同大小的矩阵块（32×32，64×64，61×67），最小化该函数的缓存不命中数。&lt;/p&gt;
+&lt;p&gt;对于Part B有以下的要求和限制：
+1. 你所写的程序在编译时不能有任何的警告
+2. 在每一个你所写的转置函数中，你最多只能定义12个int型的局部变量
+3. 你不能使用long型的变量或是使用任何的技巧来使得在一个变量中存入多余一个的值
+4. 你的转置函数不能使用递归
+5. 如果你使用辅助函数，那么在同一时刻，你的调用栈上也不能出现超过12个局部变量
+6. 你的转置函数不能修改矩阵A，但是，你能任意的修改矩阵B
+7. 你不能定义任何的数组或是任何使用malloc的变量&lt;/p&gt;
+&lt;h2&gt;实验过程 - Part B&lt;/h2&gt;
+&lt;h3&gt;缓存简介&lt;/h3&gt;
+&lt;h4&gt;局部性&lt;/h4&gt;
+&lt;p&gt;局部性分为时间局部性和空间局部性——在一个具有良好的时间局部性的程序中，被引用过一次的内存位置可能在不远的将来再被多次引用。在一个具有良好的空间局部性的程序中，如果一个内存位置被引用了，那么程序很可能在不远的将来引用附近的一个内存位置。&lt;/p&gt;
+&lt;p&gt;一般来说，有良好局部性的程序比局部性差的程序运行的更快。现代计算机系统的各个层次，设计都利用了局部性。&lt;/p&gt;
+&lt;p&gt;在硬件层，通过高速缓存存储器来保存最近被引用的代码和数据，提高对主存的访问速度。
+在操作系统层面，将虚拟内存作为主存和磁盘间高速缓存。
+在网络中，主机可以作为代理缓存经常被访问的网页，浏览器也可以缓存最近访问过的页面。&lt;/p&gt;
+&lt;h4&gt;存储器层次结构&lt;/h4&gt;
+&lt;p&gt;我们可以依次地组织不同的存储器，形成一个典型的存储器层次结构。如下图所示。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/emory-arch"&gt;&lt;/p&gt;
+&lt;p&gt;在该结构中，自高层向底层走，存储设备变得更慢、更便宜和更大。每一层的存储器都作为下一级存储器的缓存。&lt;/p&gt;
+&lt;h4&gt;高速缓存&lt;/h4&gt;
+&lt;p&gt;早期的计算机系统的存储器结构只有3层：CPU寄存器、DRAM主存储器和磁盘存储。随着CPU和主存之间不断加大的差距，系统设计者被迫在寄存器文件和主存之间加入了一个小的SRAM高速缓存处理器，称为L1高速缓存（一级缓存），L1高速缓存的访问速度几乎和寄存器一样快，典型地是约4个时钟周期。&lt;/p&gt;
+&lt;p&gt;随着CPU和主存之间的性能差距进一步增大，系统设计者在L1缓存和主存之间又加入了一个更大的高速缓存，称为L2高速缓存，可以在约10个时钟周期内被访问到。&lt;/p&gt;
+&lt;p&gt;有些现代系统还包括有一个更大的高速缓存，称为L3高速缓存，它位于L2高速缓存和主存之间，可以在大约50个时钟周期内被访问到。&lt;/p&gt;
+&lt;h5&gt;组织结构&lt;/h5&gt;
+&lt;p&gt;假定一个计算机系统，其每个存储器地址为m位，那么形成了M = 2 ^ m个不同的地址。&lt;/p&gt;
+&lt;p&gt;这样一个机器的高速缓存被组织成一个有S = 2 ^ s个高速缓存组（Cache Set）的数组，每个组包含E个高速缓存行（Cache Line）。每个行是由一个B = 2 ^ b字节的数据块（Block）组成的，一个有效位（valid bit）指明这个行是否包含有意义的信息。t = m - (b + s)个标记位（tag bit），它们唯一地标识存储在这个高速缓存行中的块。&lt;/p&gt;
+&lt;p&gt;一个通用的高速缓存组织结构可以用元组(S, E, B, m)来描述。
+高速缓存的大小C指的是所有块（不包括标记位和有效位）的大小的和，C = S × E × B。&lt;/p&gt;
+&lt;p&gt;一个m位的地址L被组织为3个部分，分别是高t位的标记位，中间s位的组索引以及低b位的块偏移。&lt;/p&gt;
+&lt;p&gt;L中的s个组索引是一个到S个组的数组的索引，从0开始。其指示了该地址所指示的字应当存储到哪个组中。
+L中的t个标记位指明了该组中的哪一行包含这个字。当且仅当有效位为1且行的标记位与地址的标记位相同时，组中的行才包含了这个字。
+块偏移b指明了在B个字节的数据块中的字偏移。&lt;/p&gt;
+&lt;h5&gt;分类&lt;/h5&gt;
+&lt;p&gt;根据每个组的高速缓存行数E，高速缓存被分为不同的类：
+&lt;em&gt; 直接映射高速缓存。直接映射高速缓存中每个组只有一行（E = 1）。
+&lt;/em&gt; 组相连高速缓存。组相连高速缓存放宽了直接映射高速缓存中每个组只有一行的限制（1 &amp;lt; E &amp;lt; C/B）。
+* 全相连高速缓存。全相连高速缓存是由一个包含了所有高速缓存行的组（E = C/B）组成的。&lt;/p&gt;
+&lt;p&gt;组相连高速缓存引入了不命中时行替换策略的问题。比较常见的策略有最不常使用（LFU）和最近最少使用（LRU）。&lt;/p&gt;
+&lt;p&gt;由于构造又大又快的相连高速缓存很困难，全相连高速缓存通常只适合做小的高速缓存，如TLB（翻译备用缓冲器）。&lt;/p&gt;
+&lt;h5&gt;高速缓存写&lt;/h5&gt;
+&lt;p&gt;高速缓存写分为直写和写回。
+&lt;em&gt; 直写，当缓存更新后立刻将相应的高速缓存块写回到下一层存储器中。直写的缺点在于每次写都会引起总线流量。
+&lt;/em&gt; 写回，尽可能地推迟更新，只有当替换算法需要驱逐更新过的块时，才执行写入操作。写回极大地降低了总线流量。但是高速缓存必须对于每一个高速缓存行维护一个额外的修改位（dirty bit）来表明这个高速缓存块是否会修改过。&lt;/p&gt;
+&lt;h3&gt;实验思路&lt;/h3&gt;
+&lt;p&gt;首先要明确，尽管矩阵的转置本身导致对于A矩阵（原始矩阵）的读和B矩阵（转置矩阵）的写不可能同时为连续的（即不可能同时存在连续读和连续写——对A矩阵行的连续读必然导致对B矩阵列的非连续写）。
+但只要矩阵的大小小于缓存的总大小，那么在理想的情况下，在最初的强制不命中（即缓存为空导致的不命中）后，整个矩阵都会被加载进入缓存。在这之后的所有对于B矩阵的不连续写的引用都会命中。&lt;/p&gt;
+&lt;p&gt;在该实验中，缓存采用的是直接映射高速缓存，s = 5，b = 5，E = 1。对于该缓存，总共存在32个组，每个组共32个字节，可以装入8个int型变量，是非常有限的缓存，主要需要解决以下两个问题：
+1. 直接映射缓存所带来的冲突不命中。观察程序中矩阵存储的位置即可以发现，矩阵A和矩阵B的同一行实际上被映射到了同一个缓存组。当进行对角线的引用时，一定会发生缓存的冲突不命中。需要仔细地处理对角线上的元素。
+2. 所需优化的矩阵的总大小超出了缓存的总大小。必然导致程序的访存效率低下。&lt;/p&gt;
+&lt;p&gt;为了解决第一个问题，我们需要仔细地考虑对于矩阵元素访问的顺序。至于第二个问题，我们采用矩阵的分块技术来降低不命中数。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;矩阵分块的目的在于将大的、不能完全加载进入缓存的大矩阵分块成小的、可以完全加载进入缓存的小矩阵块来处理。小矩阵块具有良好的局部性，性能显著增加。
+但同时也要注意，分块使得程序的可阅读性大大降低，因此一般只在常用的库函数中采用分块优化。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h4&gt;第一部分 32 × 32矩阵优化&lt;/h4&gt;
+&lt;p&gt;第一部分满分的要求是300个misses以内，misses超过600则0分。&lt;/p&gt;
+&lt;p&gt;首先对矩阵进行分块处理。为了完全利用每一个缓存快（32个字节）采用8 × 8分块。然后处理对角线的问题。这里我采用的方法是无论是哪一个矩阵分块，均从该矩阵分块的对角线开始处理。同时对于A矩阵（原始矩阵）按列优先（不连续读），对于B矩阵（转置矩阵）按行优先（连续写）。&lt;/p&gt;
+&lt;p&gt;通过优先处理对角线(a, a)的元素，保证了B矩阵的第a行被载入缓存中，接下来对于A矩阵的列优先处理保证了B矩阵的第a行缓存被充分利用。&lt;/p&gt;
+&lt;p&gt;对于32 × 32的矩阵，总共存在1024次读和1024次写。对于非对角线的分块（总共12个），其缓存不命中率是1/8（仅强制不命中），对于对角线的分块（总共4个），其写的缓存不命中率是1/8（强制不命中），其读的缓存不命中率为1/4（强制不命中和冲突不命中各一半）。&lt;/p&gt;
+&lt;p&gt;因此，理论上优化之后的总缓存不命中数为2048 × 0.75 × 0.125 + 1024 × 0.25 × 0.125 + 1024 × 0.25 × 0.25 = 288次。&lt;/p&gt;
+&lt;p&gt;第一部分优化之后的代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;for (a = 0 ; a &amp;lt; N ; a += 8) {
+    for (b = 0 ; b &amp;lt; M ; b += 8) {
+        for (c = b ; c &amp;lt; b + 8 ; ++c) {
+            for (d = a + c - b ; d &amp;gt;= a ; --d) {
+                B[c][d] = A[d][c];
+            }
+            for (d = a + c - b + 1 ; d &amp;lt; a + 8 ; ++d) {
+                B[c][d] = A[d][c];
+            }
+        }
+    }
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实际测试的缓存不命中数为287次，与理论值几乎一致。&lt;/p&gt;
+&lt;h4&gt;第二部分 64 × 64矩阵优化&lt;/h4&gt;
+&lt;p&gt;第二部分的满分要求是misses小于1300，当misses大于2000则零分。&lt;/p&gt;
+&lt;p&gt;第二部分对于misses的要求限制的非常严格，同时如果采用第一部分的8 × 8分块方式会出人意料地带来大量的misses。下面具体分析8 × 8分块导致misses增多的原因。&lt;/p&gt;
+&lt;p&gt;实验采用的缓存为直接映射高速缓存，s = 5， b = 5， E = 1。对于任意一个地址，其从低地址开始的第0-4位为块偏移b，第5-9为组索引s。&lt;/p&gt;
+&lt;p&gt;对于32 × 32的矩阵M来说，M[0][1]和M[1][1]之间总共间隔32个int型元素，也就是0x80个字节，也就是说，同一列相邻行的元素之间的地址间隔为0x80 = 0x100|00000。对于8 × 8的矩阵分块而言，其8行可以全部被加载进入缓存中而不发生任何冲突不命中。&lt;/p&gt;
+&lt;p&gt;然而，对于64 × 64的矩阵，其同一列相邻行的元素之间的地址间隔为0x100 = 0x1000|00000。对于8 × 8的矩阵分块而言，其第1、2、3、4行的元素会和第5、6、7、8行的元素占用相同的高速缓存组，进而出现严重的冲突不命中现象。&lt;/p&gt;
+&lt;p&gt;使用4 × 4的矩阵分块又无法充分利用每一个高速缓存行（32个字节=8个int数据），仍然无法达到所要求的misses数。&lt;/p&gt;
+&lt;p&gt;经过大量的尝试，我使用了以下的方法进行矩阵转置的优化：&lt;/p&gt;
+&lt;p&gt;仍然按照8 × 8对矩阵进行分块，只是在8 × 8的分块内部再按照4 × 4进一步分块，得到左上、右上、左下、右下4个子块。&lt;/p&gt;
+&lt;p&gt;紧接着依次按照左上、右上、右下、左下的方式处理4个子块（A矩阵）。
+对于左上、右下这两个可能出现对角线元素的块，按照第一个矩阵优化的方式进行处理。
+右上、左下子块不能简单地按照A矩阵不连续读，B矩阵连续写的方式处理。原因是对于对角线上的8 × 8分块来说，A、B矩阵的左上子块和右下子块占用了相同的高速缓存组，存在着严重的冲突不命中风险。
+因此对于右上、左下的子块，我们按照下图的方式处理。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/matrix64-1"&gt;&lt;/p&gt;
+&lt;p&gt;图中，上方的矩阵为矩阵A，下方的矩阵为矩阵B，小方块代表矩阵的元素，黑色方块的表明加载进入临时变量/已写入的元素。红色的线表明该行被缓存。
+1. 利用8个临时变量，将左上子块的前两行加载进入临时变量中，考虑到之前的缓存条件，该次加载的缓存命中。
+2. 将一个小的2×2的矩阵转置写入矩阵B右下子块的前两行，无论是否为对角线上的分块，该次写入一定会发生缓存不命中，同时将B矩阵的前两行载入高速缓存行。
+3. 将矩阵A左上子块的后两行的2×2的矩阵加载进入空闲的4个临时变量中，同之前加载相似，该次加载的缓存命中。
+4. 将刚刚加载的2×2矩阵转置写入B矩阵右下子块前两行的剩余位置，由于之前这两行已经加载进入了高速缓存行，故该次写入的缓存全部命中。
+5. 将矩阵A后两行的剩余元素加载进入空闲的4个临时变量中，缓存命中。
+6. 将8个临时变量中的元素依次转置写入矩阵B右下子块的最后两行中，同2相似，写入一定会发生缓存不命中，同时将矩阵B的后两行载入高速缓存行。&lt;/p&gt;
+&lt;p&gt;A矩阵左下子块的转置操作类似，这里不再赘述。&lt;/p&gt;
+&lt;p&gt;在A矩阵右上子块转置完成后，紧接着执行的是右下子块的转置，此时，对于非对角线上的分块而言，写入时的缓存必定命中。对于对角线上的分块，则会发生缓存不命中。&lt;/p&gt;
+&lt;p&gt;因此，对于64 × 64的矩阵，总共进行4096次读和4096次写，对于非对角线的分块（总共56个），对于A矩阵（原始矩阵而言），其左上、右下分块的不命中率为1/4，左下、右上分块的不命中率为0；对于B矩阵（转置矩阵而言），其左上、右上、左下分块的不命中率均为1/4，右下分块的不命中率为0。对于对角线上的矩阵，其B矩阵不命中率上升至1/4，对于A矩阵，其左上、右下的不命中率上升至1/2。&lt;/p&gt;
+&lt;p&gt;因此，理论上优化之后的总缓存不命中数为4096 × (8/64) × (1/2 × 1/4 + 0 × 1/4 + 0 × 1/4 + 1/2 × 1/4) + 4096 × (8/64) × 1/4 + 4096 × (56/64) × (1/4 × 1/4 + 0 × 1/4 + 0 × 1/4 + 1/4 × 1/4) + 4096 × (56/64) × (1/4 × 1/4 + 1/4 × 1/4 + 0 × 1/4 + 1/4 × 1/4) = 1376次。&lt;/p&gt;
+&lt;p&gt;该优化方法对应的代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;for (a = 0 ; a &amp;lt; M ; a += 8) {
+    for (b = 0 ; b &amp;lt; N ; b += 8) {
+        for (c = a ; c &amp;lt; a + 4 ; ++c) {
+            for (d = b + c - a ; d &amp;gt;= b ; -- d) {
+                B[c][d] = A[d][c];
+            }
+            for (d = b + c - a + 1; d &amp;lt; b + 4 ; ++d) {
+                B[c][d] = A[d][c];
+            }
+        }
+
+        tmp0 = A[b][a + 4];
+        tmp1 = A[b][a + 5];
+        tmp2 = A[b][a + 6];
+        tmp3 = A[b][a + 7];
+        tmp4 = A[b + 1][a + 4];
+        tmp5 = A[b + 1][a + 5];
+        tmp6 = A[b + 1][a + 6];
+        tmp7 = A[b + 1][a + 7];
+        B[a + 4][b] = tmp0;
+        B[a + 4][b + 1] = tmp4;
+        B[a + 5][b] = tmp1;
+        B[a + 5][b + 1] = tmp5;
+        tmp0 = A[b + 2][a + 4];
+        tmp4 = A[b + 2][a + 5];
+        tmp1 = A[b + 3][a + 4];
+        tmp5 = A[b + 3][a + 5];
+        B[a + 4][b + 2] = tmp0;
+        B[a + 4][b + 3] = tmp1;
+        B[a + 5][b + 2] = tmp4;
+        B[a + 5][b + 3] = tmp5;
+        tmp0 = A[b + 2][a + 6];
+        tmp4 = A[b + 2][a + 7];
+        tmp1 = A[b + 3][a + 6];
+        tmp5 = A[b + 3][a + 7];
+        B[a + 6][b] = tmp2;
+        B[a + 6][b + 1] = tmp6;
+        B[a + 6][b + 2] = tmp0;
+        B[a + 6][b + 3] = tmp1;
+        B[a + 7][b] = tmp3;
+        B[a + 7][b + 1] = tmp7;
+        B[a + 7][b + 2] = tmp4;
+        B[a + 7][b + 3] = tmp5;
+
+        for (c = a + 4; c &amp;lt; a + 8 ; ++c) {
+            for (d = b + c - a ; d &amp;gt;= b + 4 ; --d) {
+                B[c][d] = A[d][c];
+            }
+            for (d = b + c - a + 1 ; d &amp;lt; b + 8 ; ++d) {
+                B[c][d] = A[d][c];
+            }
+        }
+
+        tmp0 = A[b + 6][a];
+        tmp1 = A[b + 6][a + 1];
+        tmp2 = A[b + 6][a + 2];
+        tmp3 = A[b + 6][a + 3];
+        tmp4 = A[b + 7][a];
+        tmp5 = A[b + 7][a + 1];
+        tmp6 = A[b + 7][a + 2];
+        tmp7 = A[b + 7][a + 3];
+        B[a + 2][b + 6] = tmp2;
+        B[a + 2][b + 7] = tmp6;
+        B[a + 3][b + 6] = tmp3;
+        B[a + 3][b + 7] = tmp7;
+        tmp2 = A[b + 4][a + 2];
+        tmp3 = A[b + 4][a + 3];
+        tmp6 = A[b + 5][a + 2];
+        tmp7 = A[b + 5][a + 3];
+        B[a + 2][b + 4] = tmp2;
+        B[a + 2][b + 5] = tmp6;
+        B[a + 3][b + 4] = tmp3;
+        B[a + 3][b + 5] = tmp7;
+        tmp2 = A[b + 4][a];
+        tmp3 = A[b + 4][a + 1];
+        tmp6 = A[b + 5][a];
+        tmp7 = A[b + 5][a + 1];
+        B[a][b + 4] = tmp2;
+        B[a][b + 5] = tmp6;
+        B[a][b + 6] = tmp0;qizhongqizhong
+        B[a][b + 7] = tmp4;
+        B[a + 1][b + 4] = tmp3;
+        B[a + 1][b + 5] = tmp7;
+        B[a + 1][b + 6] = tmp1;
+        B[a + 1][b + 7] = tmp5;
+    }
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实际测试的缓存不命中数是1379次。&lt;/p&gt;
+&lt;p&gt;到了这里我已经优化到了极限，但是依然没有达到满分，最后参考了网上的满分答案。
+这里要注意到，实验讲义中说的很清楚，不允许修改矩阵A，但是矩阵B可以任意修改。因此，我们可以通过在矩阵B中暂存转置的结果来充分利用缓存，进一步降低缓存不命中数。思路如下图。&lt;/p&gt;
+&lt;p&gt;&lt;img alt="" src="/images/matrix64-2"&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;按行加载矩阵A，并且将其存入矩阵B。依次执行4次，直到整个分块的上半部分处理完毕。其中，每行的前4个元素被正确转置，后四个元素被暂存至矩阵B的右上分块。&lt;/li&gt;
+&lt;li&gt;对于分块的下半部分的第一行，先将矩阵B的右上分块的4个元素载入至临时变量，然后从矩阵A中的左下分块读取第一列并转置进入矩阵右上分块的第一行，然后将读出的4个元素存入矩阵B右下分块的第一行，最后再将矩阵A右下分块第一列转置送入矩阵B右下分块的第一行。&lt;/li&gt;
+&lt;li&gt;按照2的方式依次处理完下半部分的所有行。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;对于一个8×8的分块而言，过程1处理了分块的上半部分，共执行了32次读和32次写。对于对角线上的分块，其读不命中率为1/8，写不命中率为1/4；对于非对角线上的分块，其读不命中率为1/8，写不命中率为1/8。过程2和3处理了分块的下半部分包括将矩阵B的右上子块移动到正确位置，将矩阵A的左下子块转置到B的右上子块以及矩阵A右下子块的转置，共执行了48次读和48次写。对于对角线上的分块，其读不命中率为1/3，写不命中率为1/4；对于非对角线上的分块，其读不命中率为1/12，写不命中率为1/12。&lt;/p&gt;
+&lt;p&gt;因此对于56个非对角线分块以及8个对角线分块，理论上优化后的总缓存不命中数为(32 × 1/8 + 32 × 1/8) × 56 + (32 × 1/8 + 32 × 1/4) × 8 + (48 × 1/12 + 48 × 1/12) × 56 + (48 × 1/3 + 48 × 1/4) × 8 = 1216次。&lt;/p&gt;
+&lt;p&gt;该优化方法的代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;for (a = 0 ; a &amp;lt; N ; a += 8) {
+    for (b = 0 ; b &amp;lt; M ; b += 8) {
+        for (c = b ; c &amp;lt; b + 4 ; ++c) {
+            tmp0 = A[c][a];
+            tmp1 = A[c][a + 1];
+            tmp2 = A[c][a + 2];
+            tmp3 = A[c][a + 3];
+            tmp4 = A[c][a + 4];
+            tmp5 = A[c][a + 5];
+            tmp6 = A[c][a + 6];
+            tmp7 = A[c][a + 7];
+            B[a][c] = tmp0;
+            B[a + 1][c] = tmp1;
+            B[a + 2][c] = tmp2;
+            B[a + 3][c] = tmp3;
+            B[a][c + 4] = tmp4;
+            B[a + 1][c + 4] = tmp5;
+            B[a + 2][c + 4] = tmp6;
+            B[a + 3][c + 4] = tmp7;
+        }
+        for (c = a + 4 ; c &amp;lt; a + 8 ; ++c) {
+            tmp0 = B[c - 4][b + 4];
+            tmp1 = B[c - 4][b + 5];
+            tmp2 = B[c - 4][b + 6];
+            tmp3 = B[c - 4][b + 7];
+
+            B[c - 4][b + 4] = A[b + 4][c - 4];
+            B[c - 4][b + 5] = A[b + 5][c - 4];
+            B[c - 4][b + 6] = A[b + 6][c - 4];
+            B[c - 4][b + 7] = A[b + 7][c - 4];
+
+            B[c][b] = tmp0;
+            B[c][b + 1] = tmp1;
+            B[c][b + 2] = tmp2;
+            B[c][b + 3] = tmp3;
+
+            B[c][b + 4] = A[b + 4][c];
+            B[c][b + 5] = A[b + 5][c];
+            B[c][b + 6] = A[b + 6][c];
+            B[c][b + 7] = A[b + 7][c];
+        }
+    }
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实际测试的缓存不命中数是1219次。&lt;/p&gt;
+&lt;h4&gt;第三部分 61 × 67矩阵优化&lt;/h4&gt;
+&lt;p&gt;由于61 × 67的矩阵不是方阵，不方便定量分析。同时限制放的比较宽松，满分misses小于2000，misses大于3000零分。因此无需考虑处理对角线，仅尝试换用不同的边长分块即可。16 × 16的分块已可以保证满分。&lt;/p&gt;
+&lt;p&gt;第三部分优化之后的代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;for (a = 0 ; a &amp;lt; N ; a += 16) {
+    for (b = 0 ; b &amp;lt; M ; b += 16) {
+        for (c = b ; (c &amp;lt; b + 16) &amp;amp;&amp;amp; (c &amp;lt; M) ; ++c) {
+            for (d = a ; (d &amp;lt; a + 16) &amp;amp;&amp;amp; (d &amp;lt; N) ; ++d) {
+                    B[c][d] = A[d][c];
+            }
+        }
+    }
+}
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;实际测试的缓存不命中数是1847次。&lt;/p&gt;
+&lt;h2&gt;实验结果&lt;/h2&gt;
+&lt;p&gt;自动评分脚本给出的输出如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;Cache Lab summary:
+                        Points   Max pts      Misses
+Csim correctness          27.0        27
+Trans perf 32x32           8.0         8         287
+Trans perf 64x64           8.0         8        1219
+Trans perf 61x67          10.0        10        1847
+          Total points    53.0        53
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h2&gt;实验总结&lt;/h2&gt;
+&lt;p&gt;这次实验花费了我很久时间，最后还是参考了网上的解法并且花了很大精力去理解，实验给出的缓存条件非常苛刻，但同时也方便了定量分析。完成后确实大大加深了我对于缓存的理解。&lt;/p&gt;
+&lt;p&gt;这次实验中我认为比较重要/难的地方：一是对于缓存的理解以及矩阵元素在缓存中的排布问题；二是位于对角线上的分块不仅是内部而且在分块间存在的冲突不命中问题；三是虽然是矩阵，但是也要明确统一控制行列的变量。&lt;/p&gt;</content></entry><entry><title>Android 触摸事件分发机制（一）从内核到应用 一切的开始</title><link href="/android-hong-mo-shi-jian-fen-fa-ji-zhi-yi-cong-nei-he-dao-ying-yong-yi-qie-de-kai-shi.html" rel="alternate"></link><published>2017-09-14T13:40:38+08:00</published><updated>2017-09-14T13:40:38+08:00</updated><author><name>Di Wu</name></author><id>tag:None,2017-09-14:/android-hong-mo-shi-jian-fen-fa-ji-zhi-yi-cong-nei-he-dao-ying-yong-yi-qie-de-kai-shi.html</id><summary type="html">&lt;h2&gt;写在前面&lt;/h2&gt;
 &lt;p&gt;&lt;strong&gt;本文基于&lt;code&gt;Android 7.1.1 (API 25)&lt;/code&gt;的源码分析编写&lt;/strong&gt;&lt;/p&gt;
 &lt;p&gt;安卓是基于触摸操作进行交互的系统，几乎所有的操作都由对屏幕的一次次触摸完成，如何正确处理触摸事件关乎整个应用的操作体验。因此安卓对于触摸事件的分发与处理机制也是我们学习安卓开发的重中之重。同时几乎每一个安卓技术博客中都会对触摸分发机制这一块进行详解，例如比较早期也是最为出名的&lt;a href="http://blog.csdn.net/guolin_blog/article/details/9097463/"&gt;郭霖&lt;/a&gt;（《第一行代码》的作者）。现在网络上对于这一块的分析也已经比较详尽了，基本上一篇博客中遗漏的部分都可以在其他博客中找到答案。&lt;/p&gt;
 &lt;p&gt;但是无论别人的文章讲得多好，多么详细，我们都需要自己去打开源码仔细分析好好体会，一是这样一个比较复杂的过程不经历自己的思考很难完全理解，二是随着&lt;code&gt;api&lt;/code&gt;版本的推进这部分源码也会发生很多变化，虽然大致思路相同，但是接触到新的内容总是一件好事。&lt;/p&gt;
